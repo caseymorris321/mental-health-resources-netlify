@@ -7,6 +7,7 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  external_node_modules = ["express-oauth2-jwt-bearer", "mongodb", "mongoose"]
 
 [[redirects]]
   from = "/api/resources"
