@@ -20,8 +20,8 @@ const AdminDashboard = () => {
   const [selectedResource, setSelectedResource] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState({ _id: '', name: '', oldName: '' });
   const [selectedSubCategory, setSelectedSubCategory] = useState({ _id: '', name: '', oldName: '', category: '' });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [setIsLoading] = useState(true);
+  const [setError] = useState(null);
   const location = useLocation();
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
