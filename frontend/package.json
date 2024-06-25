@@ -34,7 +34,7 @@
     "start:dev": "nodemon --watch src --exec 'npm run start'",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "build": "CI=false react-scripts build"
+    "build": "react-scripts build"
   },
   "eslintConfig": {
     "extends": [
