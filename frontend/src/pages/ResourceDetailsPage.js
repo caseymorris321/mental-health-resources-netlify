@@ -30,7 +30,7 @@ const ResourceDetailsPage = () => {
       console.error('Error fetching resource:', error);
       setError(error.message);
     }
-  }, [id]);
+  }, [id, apiUrl]);
 
   const fetchCategories = useCallback(async () => {
     try {

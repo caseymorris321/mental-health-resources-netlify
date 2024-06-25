@@ -51,7 +51,7 @@ const Home = () => {
     };
 
     fetchAllData();
-  }, [location]);
+  }, [location, apiUrl]);
 
 
   useEffect(() => {
