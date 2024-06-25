@@ -42,7 +42,7 @@ const ResourceDetailsPage = () => {
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
-  }, []);
+  }, [apiUrl]);
 
   const fetchSubCategories = useCallback(async () => {
     try {
@@ -54,7 +54,7 @@ const ResourceDetailsPage = () => {
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
-  }, []);
+  }, [apiUrl]);
 
   useEffect(() => {
     fetchResource();
