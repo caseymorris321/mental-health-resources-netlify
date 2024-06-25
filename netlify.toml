@@ -1,4 +1,13 @@
 
+[build]
+  base = "frontend"
+  command = "npm install && npm run build"
+  publish = "build"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 [[redirects]]
   from = "/api/resources"
   to = "/.netlify/functions/getResources"
@@ -91,6 +100,11 @@
   status = 200
   methods = ["PATCH"]
 
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [[redirects]]
   from = "/api/*"
