@@ -13,7 +13,7 @@ const Home = () => {
   const location = useLocation();
   const dataFetchedRef = useRef(false);
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/.netlify/functions';
 
   useEffect(() => {
     const fetchAllData = async () => {

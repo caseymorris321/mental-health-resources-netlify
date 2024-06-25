@@ -15,7 +15,7 @@ const ResourceDetailsPage = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const navigate = useNavigate();
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/.netlify/functions';
 
   const fetchResource = useCallback(async () => {
     try {

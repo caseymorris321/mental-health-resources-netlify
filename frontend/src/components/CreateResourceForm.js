@@ -16,6 +16,8 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
     tags: ''
   });
 
+  const apiUrl = process.env.REACT_APP_API_URL || '/.netlify/functions';
+
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
@@ -36,8 +38,8 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
     try {
       const token = await getAccessTokenSilently();
       const url = initialData
-        ? `http://localhost:4000/api/resources/${initialData._id}`
-        : 'http://localhost:4000/api/resources';
+        ? `${apiUrl}/api/resources/${initialData._id}`
+        : `${apiUrl}/api/resources`;
       const method = initialData ? 'PUT' : 'POST';
 
       const response = await fetch(url, {

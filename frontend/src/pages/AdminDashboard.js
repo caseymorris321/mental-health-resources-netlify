@@ -23,8 +23,8 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
-
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+  
+  const apiUrl = process.env.REACT_APP_API_URL || '/.netlify/functions';
 
   const fetchCategories = useCallback(async () => {
     try {
