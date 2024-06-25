@@ -9,6 +9,27 @@
   node_bundler = "esbuild"
   external_node_modules = ["express-oauth2-jwt-bearer", "mongodb", "mongoose"]
 
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "max-age=31536000"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "max-age=31536000"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+
 [[redirects]]
   from = "/api/resources"
   to = "/.netlify/functions/getResources"
