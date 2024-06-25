@@ -20,8 +20,8 @@ const AdminDashboard = () => {
   const [selectedResource, setSelectedResource] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState({ _id: '', name: '', oldName: '' });
   const [selectedSubCategory, setSelectedSubCategory] = useState({ _id: '', name: '', oldName: '', category: '' });
-  const [setIsLoading] = useState(true);
-  const [setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const location = useLocation();
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
-  }, [getAccessTokenSilently]);
+  }, [getAccessTokenSilently, apiUrl]);
 
   const fetchSubCategories = useCallback(async () => {
     try {
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
-  }, [getAccessTokenSilently]);
+  }, [getAccessTokenSilently, apiUrl]);
 
   const fetchResources = useCallback(async () => {
     try {
@@ -92,7 +92,7 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching resources:', error);
     }
-  }, [getAccessTokenSilently]);
+  }, [getAccessTokenSilently, apiUrl]);
 
   const fetchAllData = useCallback(async () => {
     setIsLoading(true);
@@ -142,7 +142,7 @@ const AdminDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessTokenSilently]);
+  }, [getAccessTokenSilently, apiUrl]);
 
   useEffect(() => {
     if (isAuthenticated && location.pathname === '/admin') {
@@ -150,14 +150,17 @@ const AdminDashboard = () => {
     }
   }, [isAuthenticated, fetchAllData, location]);
 
-  if (authLoading) {
+  if (authLoading || isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
 
   const handleDeleteResource = async (id, name) => {
     const isConfirmed = window.confirm(`Are you sure you want to delete the resource "${name}"?`);
