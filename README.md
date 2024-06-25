@@ -20,7 +20,11 @@ The Mental Health Resource Manager App is a web application designed to provide 
 
 ### Technology Stack
 - MERN stack (MongoDB, Express, React, Node)
-- Additional libraries and tools:
+- Additional libraries and tools: react-table, 
+
+### Resources Used
+- https://react-table.tanstack.com/
+- https://www.youtube.com/watch?v=pAzqscDx580&ab_channel=DaveGray
 
 ## Development Plan
 ### Week 1

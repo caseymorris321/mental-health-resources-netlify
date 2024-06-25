@@ -1,0 +1,98 @@
+
+[[redirects]]
+  from = "/api/resources"
+  to = "/.netlify/functions/getResources"
+  status = 200
+
+[[redirects]]
+  from = "/api/resources/:id"
+  to = "/.netlify/functions/getResource/:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/resources"
+  to = "/.netlify/functions/createResource"
+  status = 200
+  methods = ["POST"]
+
+[[redirects]]
+  from = "/api/resources/:id"
+  to = "/.netlify/functions/updateResource/:id"
+  status = 200
+  methods = ["PUT"]
+
+[[redirects]]
+  from = "/api/resources/:id"
+  to = "/.netlify/functions/deleteResource/:id"
+  status = 200
+  methods = ["DELETE"]
+
+[[redirects]]
+  from = "/api/resources/:id/:direction"
+  to = "/.netlify/functions/moveResource/:id/:direction"
+  status = 200
+  methods = ["PATCH"]
+
+[[redirects]]
+  from = "/api/categories"
+  to = "/.netlify/functions/getCategories"
+  status = 200
+
+[[redirects]]
+  from = "/api/categories"
+  to = "/.netlify/functions/addCategory"
+  status = 200
+  methods = ["POST"]
+
+[[redirects]]
+  from = "/api/categories/:id"
+  to = "/.netlify/functions/updateCategory/:id"
+  status = 200
+  methods = ["PUT"]
+
+[[redirects]]
+  from = "/api/categories/:id"
+  to = "/.netlify/functions/deleteCategory/:id"
+  status = 200
+  methods = ["DELETE"]
+
+[[redirects]]
+  from = "/api/categories/:id/:direction"
+  to = "/.netlify/functions/moveCategory/:id/:direction"
+  status = 200
+  methods = ["PATCH"]
+
+[[redirects]]
+  from = "/api/subcategories"
+  to = "/.netlify/functions/getSubCategories"
+  status = 200
+
+[[redirects]]
+  from = "/api/subcategories"
+  to = "/.netlify/functions/addSubCategory"
+  status = 200
+  methods = ["POST"]
+
+[[redirects]]
+  from = "/api/subcategories/:id"
+  to = "/.netlify/functions/updateSubCategory/:id"
+  status = 200
+  methods = ["PUT"]
+
+[[redirects]]
+  from = "/api/subcategories/:id"
+  to = "/.netlify/functions/deleteSubCategory/:id"
+  status = 200
+  methods = ["DELETE"]
+
+[[redirects]]
+  from = "/api/subcategories/:id/:direction"
+  to = "/.netlify/functions/moveSubCategory/:id/:direction"
+  status = 200
+  methods = ["PATCH"]
+
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
