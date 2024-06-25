@@ -1,5 +1,5 @@
-const { Category } = require('../models/resourceModel');
-const authMiddleware = require('./auth');
+const { Category } = require('./models/resourceModel');
+const authMiddleware = require('./middleware/requireAuth');
 
 const handler = async (event, context, auth) => {
   if (event.httpMethod !== 'DELETE') {

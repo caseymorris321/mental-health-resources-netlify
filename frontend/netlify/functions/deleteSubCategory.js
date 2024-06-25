@@ -1,5 +1,5 @@
-const { SubCategory } = require('../models/resourceModel');
-const authMiddleware = require('./auth');
+const { SubCategory } = require('./models/resourceModel');
+const authMiddleware = require('./middleware/requireAuth');
 
 const handler = async (event, context, auth) => {
   if (event.httpMethod !== 'DELETE') {

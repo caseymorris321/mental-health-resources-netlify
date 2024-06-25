@@ -1,4 +1,4 @@
-const { SubCategory } = require('../models/resourceModel');
+const { SubCategory } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'GET') {
