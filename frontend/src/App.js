@@ -58,12 +58,12 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-    
+
       <Auth0Provider
         domain={domain}
         clientId={clientId}
         authorizationParams={{
-          redirect_uri: window.location.origin,
+          redirect_uri: `${window.location.origin}`,
           audience: process.env.REACT_APP_AUTH0_AUDIENCE
         }}
         onRedirectCallback={(appState) => {
