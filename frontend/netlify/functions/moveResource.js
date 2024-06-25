@@ -1,73 +1,64 @@
-const { Resource } = require('./models/resourceModel');
+const mongoose = require('mongoose');
+const { Category } = require('./models/resourceModel');
 const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context, auth) => {
-  if (event.httpMethod !== 'PATCH') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-  }
-
-  const pathParts = event.path.split('/');
-  const id = pathParts[pathParts.length - 2];
-  const direction = pathParts[pathParts.length - 1];
-
+const handler = async (event, context) => {
   try {
-    const resource = await Resource.findById(id);
-    if (!resource) {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    if (event.httpMethod !== 'PATCH') {
+      return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+    }
+
+    const pathParts = event.path.split('/');
+    const id = pathParts[pathParts.length - 2];
+    const direction = pathParts[pathParts.length - 1];
+
+    const category = await Category.findById(id);
+    if (!category) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ message: 'Resource not found' })
+        body: JSON.stringify({ message: 'Category not found' })
       };
     }
 
     const operator = direction === 'up' ? '$lt' : '$gt';
     const sort = direction === 'up' ? -1 : 1;
 
-    const adjacentResource = await Resource.findOne({ 
-      category: resource.category,
-      subCategory: resource.subCategory,
-      order: { [operator]: resource.order } 
-    }).sort({ order: sort });
+    const adjacentCategory = await Category.findOne({ order: { [operator]: category.order } })
+      .sort({ order: sort });
 
-    if (adjacentResource) {
-      const tempOrder = resource.order;
-      resource.order = adjacentResource.order;
-      adjacentResource.order = tempOrder;
+    if (adjacentCategory) {
+      const tempOrder = category.order;
+      category.order = adjacentCategory.order;
+      adjacentCategory.order = tempOrder;
 
-      await Promise.all([resource.save(), adjacentResource.save()]);
+      await Promise.all([category.save(), adjacentCategory.save()]);
     } else {
-      // If there's no adjacent resource, move to the start or end
-      const extremeResource = await Resource.findOne({ 
-        category: resource.category,
-        subCategory: resource.subCategory 
-      }).sort({ order: direction === 'up' ? 1 : -1 });
-      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
-        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
-        await resource.save();
+      const extremeCategory = await Category.findOne().sort({ order: direction === 'up' ? 1 : -1 });
+      if (extremeCategory && extremeCategory._id.toString() !== category._id.toString()) {
+        category.order = direction === 'up' ? extremeCategory.order - 1 : extremeCategory.order + 1;
+        await category.save();
       }
     }
 
-    // ensure orders are sequential and start from 0
-    const allResources = await Resource.find({ 
-      category: resource.category,
-      subCategory: resource.subCategory 
-    }).sort('order');
-    for (let i = 0; i < allResources.length; i++) {
-      allResources[i].order = i;
-      await allResources[i].save();
+    const allCategories = await Category.find().sort('order');
+    for (let i = 0; i < allCategories.length; i++) {
+      allCategories[i].order = i;
+      await allCategories[i].save();
     }
 
-    const updatedResources = await Resource.find({ 
-      category: resource.category,
-      subCategory: resource.subCategory 
-    }).sort('order');
-    console.log('Sending updated resources:', updatedResources);
-    
+    const updatedCategories = await Category.find().sort('order');
+    console.log('Sending updated categories:', updatedCategories);
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedResources)
+      body: JSON.stringify(updatedCategories)
     };
   } catch (error) {
-    console.error('Error in moveResource:', error);
+    console.error('Error in moveCategory:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })

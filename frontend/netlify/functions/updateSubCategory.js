@@ -1,12 +1,18 @@
+const mongoose = require('mongoose');
 const { SubCategory, Resource } = require('./models/resourceModel');
 const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context, auth) => {
-  if (event.httpMethod !== 'PUT') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-  }
-
+const handler = async (event, context) => {
   try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    if (event.httpMethod !== 'PUT') {
+      return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+    }
+
     const id = event.path.split('/').pop();
     const { name, oldName, category } = JSON.parse(event.body);
 
@@ -38,6 +44,7 @@ const handler = async (event, context, auth) => {
       })
     };
   } catch (error) {
+    console.error('Error in updateSubCategory:', error);
     return {
       statusCode: 400,
       body: JSON.stringify({ message: error.message })

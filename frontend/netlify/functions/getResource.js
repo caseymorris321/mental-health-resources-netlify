@@ -1,13 +1,19 @@
+const mongoose = require('mongoose');
 const { Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
-  if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-  }
-
-  const id = event.path.split('/').pop();
-
   try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    if (event.httpMethod !== 'GET') {
+      return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+    }
+
+    const id = event.path.split('/').pop();
+
     const resource = await Resource.findById(id);
     if (!resource) {
       return {
@@ -20,6 +26,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify(resource)
     };
   } catch (error) {
+    console.error('Error in getResource:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })

@@ -1,12 +1,18 @@
+const mongoose = require('mongoose');
 const { SubCategory } = require('./models/resourceModel');
 const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context, auth) => {
-  if (event.httpMethod !== 'PATCH') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-  }
-
+const handler = async (event, context) => {
   try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    if (event.httpMethod !== 'PATCH') {
+      return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+    }
+
     const pathParts = event.path.split('/');
     const id = pathParts[pathParts.length - 2];
     const direction = pathParts[pathParts.length - 1];
