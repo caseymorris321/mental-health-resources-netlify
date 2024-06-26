@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Button, Modal, Form, ListGroup } from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react';
 import CreateResourceForm from '../components/CreateResourceForm';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const { user, getAccessTokenSilently, isAuthenticated, isLoading: authLoading } = useAuth0();
@@ -438,7 +438,14 @@ const AdminDashboard = () => {
       <div className='text-center'>
         <div className="row g-2 justify-content-center">
           <div className="col-12 col-sm-auto">
-            <Button onClick={() => setShowCategoryModal(true)} className="w-100">Create Category</Button>
+            <Button
+              variant="success"
+              onClick={() => setShowCategoryModal(true)}
+              className="w-100"
+            >
+              <i className="fas fa-plus me-1"></i>
+              <span>Create Category</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -449,27 +456,29 @@ const AdminDashboard = () => {
           <div key={category._id} className="card mb-4">
             <div className="card-header">
               <div className="d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center flex-wrap">
                   <h3 className="mb-0 me-2">Category: {category.name}</h3>
                   <Button
                     variant="success"
                     size="sm"
+                    className="mt-2 mt-md-0"
                     onClick={() => {
                       setNewSubCategory({ name: '', category: category.name });
                       setShowSubCategoryModal(true);
                     }}
                   >
-                    Create Subcategory
+                    <i className="fas fa-plus me-1"></i>
+                    <span className="d-none d-md-inline">New Subcategory</span>
                   </Button>
                 </div>
-                <div>
+                <div className="mt-2 mt-md-0">
                   <Button
                     variant="outline-secondary"
                     size="sm"
                     className="me-2"
                     onClick={() => handleMoveCategory(category._id, 'up')}
                   >
-                    Move Up ↑
+                    <i className="fas fa-arrow-up"></i>
                   </Button>
                   <Button
                     variant="outline-secondary"
@@ -477,10 +486,10 @@ const AdminDashboard = () => {
                     className="me-2"
                     onClick={() => handleMoveCategory(category._id, 'down')}
                   >
-                    Move Down ↓
+                    <i className="fas fa-arrow-down"></i>
                   </Button>
                   <Button
-                    variant="primary"
+                    variant="outline-primary"
                     size="sm"
                     className="me-2"
                     onClick={() => {
@@ -488,14 +497,14 @@ const AdminDashboard = () => {
                       setShowUpdateCategoryModal(true);
                     }}
                   >
-                    Update
+                    <i className="fas fa-edit"></i>
                   </Button>
                   <Button
-                    variant="danger"
+                    variant="outline-danger"
                     size="sm"
                     onClick={() => handleDeleteCategory(category._id, category.name)}
                   >
-                    Delete
+                    <i className="fas fa-trash-alt"></i>
                   </Button>
                 </div>
               </div>
@@ -507,11 +516,12 @@ const AdminDashboard = () => {
                   .map(subCategory => (
                     <ListGroup.Item key={subCategory._id} className="border-0">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <div className="d-flex align-items-center">
+                        <div className="d-flex align-items-center flex-wrap">
                           <h4 className="mb-0 me-2">Subcategory: {subCategory.name}</h4>
                           <Button
                             variant="success"
                             size="sm"
+                            className="mt-2 mt-md-0"
                             onClick={() => {
                               setSelectedResource({
                                 name: '',
@@ -527,17 +537,18 @@ const AdminDashboard = () => {
                               setShowResourceModal(true);
                             }}
                           >
-                            Create New Resource
+                            <i className="fas fa-plus me-1"></i>
+                            <span className="d-none d-md-inline">New Resource</span>
                           </Button>
                         </div>
-                        <div>
+                        <div className="mt-2 mt-md-0">
                           <Button
                             variant="outline-secondary"
                             size="sm"
                             className="me-2"
                             onClick={() => handleMoveSubCategory(subCategory._id, 'up')}
                           >
-                            Move Up ↑
+                            <i className="fas fa-arrow-up"></i>
                           </Button>
                           <Button
                             variant="outline-secondary"
@@ -545,7 +556,7 @@ const AdminDashboard = () => {
                             className="me-2"
                             onClick={() => handleMoveSubCategory(subCategory._id, 'down')}
                           >
-                            Move Down ↓
+                            <i className="fas fa-arrow-down"></i>
                           </Button>
                           <Button
                             variant="outline-primary"
@@ -561,14 +572,14 @@ const AdminDashboard = () => {
                               setShowUpdateSubCategoryModal(true);
                             }}
                           >
-                            Update
+                            <i className="fas fa-edit"></i>
                           </Button>
                           <Button
                             variant="outline-danger"
                             size="sm"
                             onClick={() => handleDeleteSubCategory(subCategory._id, subCategory.name)}
                           >
-                            Delete
+                            <i className="fas fa-trash-alt"></i>
                           </Button>
                         </div>
                       </div>
@@ -578,7 +589,7 @@ const AdminDashboard = () => {
                           .filter(resource => resource.category === category.name && resource.subCategory === subCategory.name)
                           .map(resource => (
                             <ListGroup.Item key={resource._id} className="d-flex justify-content-between align-items-center">
-                              <span>{resource.name}</span>
+                              <Link to={`/resources/${resource._id}`}>{resource.name}</Link>
                               <div>
                                 <Button
                                   variant="outline-secondary"
@@ -586,7 +597,7 @@ const AdminDashboard = () => {
                                   className="me-2"
                                   onClick={() => handleMoveResource(resource._id, 'up')}
                                 >
-                                  Move Up ↑
+                                  <i className="fas fa-arrow-up"></i>
                                 </Button>
                                 <Button
                                   variant="outline-secondary"
@@ -594,7 +605,7 @@ const AdminDashboard = () => {
                                   className="me-2"
                                   onClick={() => handleMoveResource(resource._id, 'down')}
                                 >
-                                  Move Down ↓
+                                  <i className="fas fa-arrow-down"></i>
                                 </Button>
                                 <Button
                                   variant="outline-primary"
@@ -609,14 +620,14 @@ const AdminDashboard = () => {
                                     }
                                   }}
                                 >
-                                  Update
+                                  <i className="fas fa-edit"></i>
                                 </Button>
                                 <Button
                                   variant="outline-danger"
                                   size="sm"
                                   onClick={() => handleDeleteResource(resource._id, resource.name)}
                                 >
-                                  Delete
+                                  <i className="fas fa-trash-alt"></i>
                                 </Button>
                               </div>
                             </ListGroup.Item>

@@ -69,7 +69,12 @@ const ResourceDetailsPage = () => {
   }, [fetchResource, fetchCategories, fetchSubCategories, isAuthenticated]);
 
   const handleGoBack = () => {
-    navigate('/');
+    navigate('/', {
+      state: {
+        category: resource.category,
+        subCategory: resource.subCategory
+      }
+    });
   };
 
   const handleUpdate = async (updatedResource) => {

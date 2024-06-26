@@ -15,15 +15,15 @@ const Home = () => {
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
-  
+
   useEffect(() => {
     const fetchAllData = async () => {
       if (location.pathname === '/' && !dataFetchedRef.current) {
         setIsLoading(true);
         try {
-          const fetchUrl = (endpoint) => 
+          const fetchUrl = (endpoint) =>
             isProduction ? `${apiUrl}/${endpoint}` : `${apiUrl}/api/resources/${endpoint}`;
-  
+
           const [categoriesRes, subCategoriesRes, resourcesRes] = await Promise.all([
             fetch(fetchUrl(isProduction ? 'getCategories' : 'categories')),
             fetch(fetchUrl(isProduction ? 'getSubCategories' : 'subcategories')),
@@ -60,27 +60,37 @@ const Home = () => {
 
   useEffect(() => {
     if (location.pathname === '/') {
-      console.log('Location state:', location.state);
+      console.log('Home page loaded. Location state:', location.state);
       if (location.state?.category && location.state?.subCategory) {
         const tableId = `${location.state.category}-${location.state.subCategory}`
           .toLowerCase()
           .replace(/\s+/g, '-');
-        console.log('Table ID:', tableId);
+        console.log('Attempting to scroll to table ID:', tableId);
 
         const scrollToTable = () => {
           const tableElement = document.getElementById(tableId);
-          console.log('Table element:', tableElement);
+          console.log('Found table element:', tableElement);
           if (tableElement) {
-            tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            console.log('Scrolling to table element');
+            tableElement.scrollIntoView({ behavior: 'auto', block: 'start' });
           } else {
-            console.log('Element not found:', tableId);
+            console.log('Table element not found in DOM');
+            // Log all table IDs present in the DOM
+            const allTableIds = Array.from(document.querySelectorAll('[id]'))
+              .map(el => el.id)
+              .filter(id => id.includes('-'));
+            console.log('All table IDs in DOM:', allTableIds);
           }
         };
 
-        setTimeout(scrollToTable, 500);
+        // Increase timeout to ensure content is loaded
+        setTimeout(scrollToTable, 200);
+      } else {
+        console.log('No category and subCategory in location state');
       }
     }
   }, [location]);
+
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);

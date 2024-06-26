@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { useTable, useGlobalFilter, useSortBy, usePagination } from 'react-table';
 
-const ResourceTable = ({ title, data, columns, globalFilter }) => {
+const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
   const memoizedColumns = useMemo(() => columns, [columns]);
   const memoizedData = useMemo(() => data, [data]);
 
@@ -35,6 +35,17 @@ const ResourceTable = ({ title, data, columns, globalFilter }) => {
   useEffect(() => {
     setGlobalFilter(globalFilter);
   }, [globalFilter, setGlobalFilter]);
+
+  if (isLoading) {
+    return (
+      <div className="d-flex flex-column align-items-center">
+        <h3 className="text-center mb-3">{title}</h3>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (data.length === 0) {
     return (
@@ -91,7 +102,7 @@ const ResourceTable = ({ title, data, columns, globalFilter }) => {
         </table>
       </div>
       <div className="d-flex justify-content-between align-items-center mt-3">
-        <div>
+        <div className="me-3">
           <button className="btn btn-outline-primary me-2" onClick={() => previousPage()} disabled={!canPreviousPage}>
             Previous
           </button>
@@ -99,9 +110,9 @@ const ResourceTable = ({ title, data, columns, globalFilter }) => {
             Next
           </button>
         </div>
-        <span>
+        <span className="me-3">
           Page{' '}
-          <strong>
+          <strong className={pageIndex + 1 === pageOptions.length ? 'text-primary' : ''}>
             {pageIndex + 1} of {pageOptions.length}
           </strong>
         </span>
