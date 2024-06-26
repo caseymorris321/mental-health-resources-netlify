@@ -29,11 +29,9 @@ function ErrorHandler() {
     }
     if (!isLoading && !isAuthenticated) {
       const redirectPath = localStorage.getItem('redirectAfterLogout');
-      if (redirectPath && redirectPath !== '/login') {
+      if (redirectPath) {
         localStorage.removeItem('redirectAfterLogout');
         navigate(redirectPath);
-      } else {
-        navigate('/');
       }
     }
   }, [location, navigate, isAuthenticated, isLoading]);
