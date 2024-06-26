@@ -14,6 +14,16 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
     setIsUpdating(false);
   };
 
+  const formatLink = (link) => {
+    if (link.startsWith('http://') || link.startsWith('https://')) {
+      return link;
+    } else if (link.startsWith('www.')) {
+      return `https://${link}`;
+    } else {
+      return `https://www.${link}`;
+    }
+  };
+
   return (
     <Card className="mt-4 mb-3">
       <Card.Body>
@@ -37,7 +47,12 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
           <>
             <Card.Title>{resource.name}</Card.Title>
             <Card.Text><strong>Description:</strong> {resource.description}</Card.Text>
-            <Card.Text><strong>Link:</strong> <a href={resource.link} target="_blank" rel="noopener noreferrer">{resource.link}</a></Card.Text>
+            <Card.Text>
+              <strong>Link:</strong>{' '}
+              <a href={formatLink(resource.link)} target="_blank" rel="noopener noreferrer">
+                {resource.link}
+              </a>
+            </Card.Text>
             <Card.Text><strong>Contact Info:</strong> {resource.contactInfo}</Card.Text>
             <Card.Text><strong>Address:</strong> {resource.address}</Card.Text>
             <Card.Text><strong>Available Hours:</strong> {resource.availableHours}</Card.Text>
