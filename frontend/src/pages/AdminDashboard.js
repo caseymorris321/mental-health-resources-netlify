@@ -448,11 +448,11 @@ const AdminDashboard = () => {
           <div key={category._id} className="card mb-4">
             <div className="card-header">
               <div className="d-flex justify-content-between align-items-center">
-                <div>
+                <div className="d-flex align-items-center">
+                  <h3 className="mb-0 me-2">Category: {category.name}</h3>
                   <Button
                     variant="success"
                     size="sm"
-                    className="me-2"
                     onClick={() => {
                       setNewSubCategory({ name: '', category: category.name });
                       setShowSubCategoryModal(true);
@@ -460,7 +460,6 @@ const AdminDashboard = () => {
                   >
                     Create Subcategory
                   </Button>
-                  <h3 className="mb-0 d-inline">Category: {category.name}</h3>
                 </div>
                 <div>
                   <Button
