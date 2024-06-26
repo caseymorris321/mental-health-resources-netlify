@@ -226,7 +226,7 @@ const AdminDashboard = () => {
         fetchCategories();
         setNewCategory('');
       } else {
-        console.error('Failed to add category');
+        console.error('Failed to create category');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -304,7 +304,7 @@ const AdminDashboard = () => {
         fetchSubCategories();
         setNewSubCategory({ name: '', category: '' });
       } else {
-        console.error('Failed to add subcategory');
+        console.error('Failed to create subcategory');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -437,10 +437,10 @@ const AdminDashboard = () => {
             <Button onClick={() => setShowResourceModal(true)} className='w-100'>Create New Resource</Button>
           </div>
           <div className="col-12 col-sm-auto">
-            <Button onClick={() => setShowCategoryModal(true)} className="w-100">Add Category</Button>
+            <Button onClick={() => setShowCategoryModal(true)} className="w-100">Create Category</Button>
           </div>
           <div className="col-12 col-sm-auto">
-            <Button onClick={() => setShowSubCategoryModal(true)} className="w-100">Add Subcategory</Button>
+            <Button onClick={() => setShowSubCategoryModal(true)} className="w-100">Create Subcategory</Button>
           </div>
         </div>
       </div>
@@ -651,7 +651,7 @@ const AdminDashboard = () => {
                 required
               />
             </Form.Group>
-            <Button type="submit" className='mt-2'>Add Category</Button>
+            <Button type="submit" className='mt-2'>Create Category</Button>
           </Form>
         </Modal.Body>
       </Modal>
@@ -714,7 +714,7 @@ const AdminDashboard = () => {
                 ))}
               </Form.Control>
             </Form.Group>
-            <Button type="submit" className='mt-2'>Add Subcategory</Button>
+            <Button type="submit" className='mt-2'>Create Subcategory</Button>
           </Form>
         </Modal.Body>
       </Modal>
