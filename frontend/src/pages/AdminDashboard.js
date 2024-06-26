@@ -593,7 +593,10 @@ const AdminDashboard = () => {
                                   size="sm"
                                   className="me-2"
                                   onClick={() => {
-                                    setSelectedResource(resource);
+                                    setSelectedResource({
+                                      _id: resource._id,
+                                      ...resource
+                                    });
                                     setShowUpdateResourceModal(true);
                                   }}
                                 >
