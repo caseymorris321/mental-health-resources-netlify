@@ -1,20 +1,20 @@
 const mongoose = require('mongoose');
 const { Resource } = require('./models/resourceModel');
 
-let cachedDb = null;
 
 const connectToDatabase = async () => {
-  if (cachedDb) {
-    return cachedDb;
-  }
+    if (mongoose.connection.readyState === 1) {
+      console.log('Using existing database connection');
+      return mongoose.connection;
+    }
 
-  const db = await mongoose.connect(process.env.MONGODB_URI, {
+  await mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
 
-  cachedDb = db;
-  return db;
+  return mongoose.connection;
+
 };
 
 exports.handler = async (event, context) => {
