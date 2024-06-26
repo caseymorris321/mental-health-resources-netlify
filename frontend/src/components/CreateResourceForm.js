@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react';
 
-const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, isCreate }) => {
+const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCategory }) => {
   const { getAccessTokenSilently } = useAuth0();
   const [resource, setResource] = useState({
     name: '',
     description: '',
     link: '',
-    category: '',
-    subCategory: '',
+    category: category || initialData?.category || '',
+    subCategory: subCategory || initialData?.subCategory || '',
     contactInfo: '',
     address: '',
     availableHours: '',
@@ -51,9 +51,8 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
         },
         body: JSON.stringify({
           ...resource,
-          _id: initialData ? initialData._id : undefined,
           tags: resource.tags.split(',').map(tag => tag.trim()),
-          link: resource.link ? resource.link.trim() : undefined
+          link: resource.link ? resource.link.trim() : undefined,
         }),
       });
 
@@ -67,8 +66,8 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
             name: '',
             description: '',
             link: '',
-            category: '',
-            subCategory: '',
+            category: resource.category,
+            subCategory: resource.subCategory,
             contactInfo: '',
             address: '',
             availableHours: '',
@@ -109,21 +108,23 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
       </Form.Group>
       <Form.Group>
         <Form.Label>Category</Form.Label>
-        <Form.Control as="select" name="category" value={resource.category} onChange={handleChange} required>
-          {categories.map(cat => (
-            <option key={cat._id} value={cat.name}>{cat.name}</option>
-          ))}
-        </Form.Control>
+        <Form.Control
+          type="text"
+          name="category"
+          value={resource.category}
+          readOnly
+          disabled
+        />
       </Form.Group>
       <Form.Group>
         <Form.Label>Sub-Category</Form.Label>
-        <Form.Control as="select" name="subCategory" value={resource.subCategory} onChange={handleChange} required>
-          {subCategories
-            .filter(subCat => subCat.category === resource.category)
-            .map(subCat => (
-              <option key={subCat._id} value={subCat.name}>{subCat.name}</option>
-            ))}
-        </Form.Control>
+        <Form.Control
+          type="text"
+          name="subCategory"
+          value={resource.subCategory}
+          readOnly
+          disabled
+        />
       </Form.Group>
       <Form.Group>
         <Form.Label>Contact Info</Form.Label>

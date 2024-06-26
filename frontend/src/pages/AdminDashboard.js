@@ -516,9 +516,13 @@ const AdminDashboard = () => {
                               setSelectedResource({
                                 name: '',
                                 description: '',
-                                url: '',
+                                link: '',
                                 category: category.name,
                                 subCategory: subCategory.name,
+                                contactInfo: '',
+                                address: '',
+                                availableHours: '',
+                                tags: []
                               });
                               setShowResourceModal(true);
                             }}
@@ -597,11 +601,12 @@ const AdminDashboard = () => {
                                   size="sm"
                                   className="me-2"
                                   onClick={() => {
-                                    setSelectedResource({
-                                      _id: resource._id,
-                                      ...resource
-                                    });
-                                    setShowUpdateResourceModal(true);
+                                    if (resource._id) {
+                                      setSelectedResource(resource);
+                                      setShowUpdateResourceModal(true);
+                                    } else {
+                                      console.error('Resource _id is missing');
+                                    }
                                   }}
                                 >
                                   Update
@@ -629,13 +634,12 @@ const AdminDashboard = () => {
 
       <Modal show={showResourceModal} onHide={() => setShowResourceModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Create New Resource for {selectedResource?.category} - {selectedResource?.subCategory}</Modal.Title>
+          <Modal.Title>Create New Resource</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <CreateResourceForm
-            initialData={selectedResource}
-            categories={categories}
-            subCategories={subCategories}
+            category={selectedResource?.category}
+            subCategory={selectedResource?.subCategory}
             isCreate={true}
             onSubmit={(resourceData) => {
               console.log('Resource created:', resourceData);
