@@ -1,13 +1,27 @@
 const mongoose = require('mongoose');
 const { Category, SubCategory, Resource } = require('./models/resourceModel');
-const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context) => {
+let cachedDb = null;
+
+const connectToDatabase = async () => {
+  if (cachedDb) {
+    return cachedDb;
+  }
+  
+  const db = await mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  
+  cachedDb = db;
+  return db;
+};
+
+exports.handler = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await connectToDatabase();
 
     if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
@@ -29,18 +43,21 @@ const handler = async (event, context) => {
       };
     }
 
-    await SubCategory.updateMany(
-      { category: oldName },
-      { category: name }
-    );
+    await Promise.all([
+      SubCategory.updateMany(
+        { category: oldName },
+        { category: name }
+      ),
+      Resource.updateMany(
+        { category: oldName },
+        { category: name }
+      )
+    ]);
 
-    await Resource.updateMany(
-      { category: oldName },
-      { category: name }
-    );
-
-    const updatedSubCategories = await SubCategory.find({ category: name });
-    const updatedResources = await Resource.find({ category: name });
+    const [updatedSubCategories, updatedResources] = await Promise.all([
+      SubCategory.find({ category: name }),
+      Resource.find({ category: name })
+    ]);
 
     return {
       statusCode: 200,
@@ -56,7 +73,9 @@ const handler = async (event, context) => {
       statusCode: 400,
       body: JSON.stringify({ message: error.message })
     };
+  } finally {
+    if (cachedDb) {
+      await cachedDb.disconnect();
+    }
   }
 };
-
-exports.handler = authMiddleware(handler);

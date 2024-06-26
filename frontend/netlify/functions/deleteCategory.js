@@ -1,13 +1,27 @@
 const mongoose = require('mongoose');
 const { Category } = require('./models/resourceModel');
-const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context) => {
+let cachedDb = null;
+
+const connectToDatabase = async () => {
+  if (cachedDb) {
+    return cachedDb;
+  }
+
+  const db = await mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  cachedDb = db;
+  return db;
+};
+
+exports.handler = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await connectToDatabase();
 
     if (event.httpMethod !== 'DELETE') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
@@ -33,5 +47,3 @@ const handler = async (event, context) => {
     };
   }
 };
-
-exports.handler = authMiddleware(handler);

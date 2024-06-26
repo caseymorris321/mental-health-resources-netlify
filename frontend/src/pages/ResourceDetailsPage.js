@@ -15,11 +15,13 @@ const ResourceDetailsPage = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const navigate = useNavigate();
 
-  const apiUrl = process.env.REACT_APP_API_URL || '/.netlify/functions';
+  const isProduction = process.env.REACT_APP_ENV === 'production';
+  const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
 
   const fetchResource = useCallback(async () => {
     try {
-      const response = await fetch(`${apiUrl}/api/resources/${id}`);
+      const fetchUrl = isProduction ? `${apiUrl}/getResource/${id}` : `${apiUrl}/api/resources/${id}`;
+      const response = await fetch(fetchUrl);
       if (response.ok) {
         const data = await response.json();
         setResource(data);
@@ -30,11 +32,12 @@ const ResourceDetailsPage = () => {
       console.error('Error fetching resource:', error);
       setError(error.message);
     }
-  }, [id, apiUrl]);
+  }, [id, isProduction, apiUrl]);
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await  fetch(`${apiUrl}/api/resources/categories`);
+      const fetchUrl = isProduction ? `${apiUrl}/getCategories` : `${apiUrl}/api/resources/categories`;
+      const response = await fetch(fetchUrl);
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
@@ -42,11 +45,12 @@ const ResourceDetailsPage = () => {
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
-  }, [apiUrl]);
+  }, [isProduction, apiUrl]);
 
   const fetchSubCategories = useCallback(async () => {
     try {
-      const response = await  fetch(`${apiUrl}/api/resources/subcategories`);
+      const fetchUrl = isProduction ? `${apiUrl}/getSubCategories` : `${apiUrl}/api/resources/subcategories`;
+      const response = await fetch(fetchUrl);
       if (response.ok) {
         const data = await response.json();
         setSubCategories(data);
@@ -54,7 +58,7 @@ const ResourceDetailsPage = () => {
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
-  }, [apiUrl]);
+  }, [isProduction, apiUrl]);
 
   useEffect(() => {
     fetchResource();
@@ -72,7 +76,8 @@ const ResourceDetailsPage = () => {
     if (!isAuthenticated) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await  fetch(`${apiUrl}/api/resources/${id}`, {
+      const fetchUrl = isProduction ? `${apiUrl}/updateResource/${id}` : `${apiUrl}/api/resources/${id}`;
+      const response = await fetch(fetchUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +103,8 @@ const ResourceDetailsPage = () => {
     if (window.confirm('Are you sure you want to delete this resource?')) {
       try {
         const token = await getAccessTokenSilently();
-        const response = await  fetch(`${apiUrl}/api/resources/${id}`, {
+        const fetchUrl = isProduction ? `${apiUrl}/deleteResource/${id}` : `${apiUrl}/api/resources/${id}`;
+        const response = await fetch(fetchUrl, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });

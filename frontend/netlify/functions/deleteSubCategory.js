@@ -1,12 +1,27 @@
 const mongoose = require('mongoose');
 const { SubCategory } = require('./models/resourceModel');
 
+let cachedDb = null;
+
+const connectToDatabase = async () => {
+  if (cachedDb) {
+    return cachedDb;
+  }
+
+  const db = await mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  cachedDb = db;
+  return db;
+};
+
 exports.handler = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await connectToDatabase();
 
     if (event.httpMethod !== 'DELETE') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
@@ -30,7 +45,5 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })
     };
-  } finally {
-    await mongoose.disconnect();
   }
 };

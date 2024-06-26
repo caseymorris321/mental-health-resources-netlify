@@ -1,22 +1,36 @@
 const mongoose = require('mongoose');
 const { Resource } = require('./models/resourceModel');
-const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context) => {
+let cachedDb = null;
+
+const connectToDatabase = async () => {
+  if (cachedDb) {
+    return cachedDb;
+  }
+
+  const db = await mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  cachedDb = db;
+  return db;
+};
+
+exports.handler = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await connectToDatabase();
 
     if (event.httpMethod !== 'POST') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     const body = JSON.parse(event.body);
-    const maxOrderResource = await Resource.findOne({ 
+    const maxOrderResource = await Resource.findOne({
       category: body.category,
-      subCategory: body.subCategory 
+      subCategory: body.subCategory
     }).sort('-order');
     const newOrder = maxOrderResource ? maxOrderResource.order + 1 : 0;
     const resource = new Resource({
@@ -36,5 +50,3 @@ const handler = async (event, context) => {
     };
   }
 };
-
-exports.handler = authMiddleware(handler);

@@ -1,13 +1,27 @@
 const mongoose = require('mongoose');
 const { SubCategory, Resource } = require('./models/resourceModel');
-const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context) => {
+let cachedDb = null;
+
+const connectToDatabase = async () => {
+  if (cachedDb) {
+    return cachedDb;
+  }
+  
+  const db = await mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  
+  cachedDb = db;
+  return db;
+};
+
+exports.handler = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await connectToDatabase();
 
     if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
@@ -29,12 +43,15 @@ const handler = async (event, context) => {
       };
     }
 
-    await Resource.updateMany(
-      { subCategory: oldName, category: category },
-      { subCategory: name }
-    );
+    const [updatedResourcesResult] = await Promise.all([
+      Resource.updateMany(
+        { subCategory: oldName, category: category },
+        { subCategory: name }
+      ),
+      Resource.find({ subCategory: name, category: category })
+    ]);
 
-    const updatedResources = await Resource.find({ subCategory: name, category: category });
+    const updatedResources = updatedResourcesResult;
 
     return {
       statusCode: 200,
@@ -49,7 +66,9 @@ const handler = async (event, context) => {
       statusCode: 400,
       body: JSON.stringify({ message: error.message })
     };
+  } finally {
+    if (cachedDb) {
+      await cachedDb.disconnect();
+    }
   }
 };
-
-exports.handler = authMiddleware(handler);

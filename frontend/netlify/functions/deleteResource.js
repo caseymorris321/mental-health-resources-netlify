@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { Resource } = require('./models/resourceModel');
-const authMiddleware = require('./middleware/requireAuth');
 
 let cachedDb = null;
 
@@ -18,7 +17,7 @@ const connectToDatabase = async () => {
   return db;
 };
 
-const handler = async (event, context) => {
+exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   try {
@@ -47,7 +46,9 @@ const handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })
     };
+  } finally {
+    if (cachedDb) {
+      await cachedDb.disconnect();
+    }
   }
 };
-
-exports.handler = authMiddleware(handler);
