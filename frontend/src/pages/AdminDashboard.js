@@ -514,7 +514,7 @@ const AdminDashboard = () => {
                             className="me-2"
                             onClick={() => handleMoveSubCategory(subCategory._id, 'up')}
                           >
-                            Move Up
+                            Move Up ↑
                           </Button>
                           <Button
                             variant="outline-secondary"
@@ -522,7 +522,7 @@ const AdminDashboard = () => {
                             className="me-2"
                             onClick={() => handleMoveSubCategory(subCategory._id, 'down')}
                           >
-                            Move Down
+                            Move Down ↓
                           </Button>
                           <Button
                             variant="outline-primary"
