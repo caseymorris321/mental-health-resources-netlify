@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const { SubCategory } = require('./models/resourceModel');
-const authMiddleware = require('./middleware/requireAuth');
 
-const handler = async (event, context) => {
+exports.handler = async (event, context) => {
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
@@ -31,7 +30,7 @@ const handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })
     };
+  } finally {
+    await mongoose.disconnect();
   }
 };
-
-exports.handler = authMiddleware(handler);
