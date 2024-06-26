@@ -23,37 +23,42 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
-  
-  const apiUrl = process.env.REACT_APP_API_URL || '/.netlify/functions';
+
+  const isProduction = process.env.REACT_APP_ENV === 'production';
+  const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
+
+  const fetchUrl = useCallback((endpoint) =>
+    isProduction ? `${apiUrl}/${endpoint}` : `${apiUrl}/api/resources/${endpoint}`,
+    [isProduction, apiUrl]);
 
   const fetchCategories = useCallback(async () => {
     try {
+
       const token = await getAccessTokenSilently();
-      const response = await   fetch(`${apiUrl}/api/resources/categories`, {
+      const response = await fetch(fetchUrl(isProduction ? 'getCategories' : 'categories'), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (response.ok) {
         const data = await response.json();
-        setCategories(data.sort((a, b) => a.order - b.order)); // Sort categories by order
+        setCategories(data.sort((a, b) => a.order - b.order));
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
-  }, [getAccessTokenSilently, apiUrl]);
+  }, [getAccessTokenSilently, fetchUrl, isProduction]);
 
   const fetchSubCategories = useCallback(async () => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/subcategories`, {
+      const response = await fetch(fetchUrl(isProduction ? 'getSubCategories' : 'subcategories'), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (response.ok) {
         const data = await response.json();
-        // Sort subcategories by category and then by order
         const sortedData = data.sort((a, b) => {
           if (a.category !== b.category) {
             return a.category.localeCompare(b.category);
@@ -65,19 +70,18 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
-  }, [getAccessTokenSilently, apiUrl]);
+  }, [getAccessTokenSilently, fetchUrl, isProduction]);
 
   const fetchResources = useCallback(async () => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await   fetch(`${apiUrl}/api/resources`, {
+      const response = await fetch(fetchUrl(isProduction ? 'getResources' : ''), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (response.ok) {
         const data = await response.json();
-        // Sort resources by category, then subcategory, then order
         const sortedData = data.sort((a, b) => {
           if (a.category !== b.category) {
             return a.category.localeCompare(b.category);
@@ -92,20 +96,20 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching resources:', error);
     }
-  }, [getAccessTokenSilently, apiUrl]);
+  }, [getAccessTokenSilently, fetchUrl, isProduction]);
 
   const fetchAllData = useCallback(async () => {
     setIsLoading(true);
     try {
       const token = await getAccessTokenSilently();
       const [categoriesRes, subCategoriesRes, resourcesRes] = await Promise.all([
-        fetch(`${apiUrl}/api/resources/categories`, {
+        fetch(fetchUrl(isProduction ? 'getCategories' : 'categories'), {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${apiUrl}/api/resources/subcategories`, {
+        fetch(fetchUrl(isProduction ? 'getSubCategories' : 'subcategories'), {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${apiUrl}/api/resources`, {
+        fetch(fetchUrl(isProduction ? 'getResources' : ''), {
           headers: { Authorization: `Bearer ${token}` },
         })
       ]);
@@ -142,7 +146,7 @@ const AdminDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessTokenSilently, apiUrl]);
+  }, [getAccessTokenSilently, fetchUrl, isProduction]);
 
   useEffect(() => {
     if (isAuthenticated && location.pathname === '/admin') {
@@ -167,7 +171,7 @@ const AdminDashboard = () => {
     if (!isConfirmed) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await  fetch(`${apiUrl}/api/resources/${id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `deleteResource/${id}` : `${id}`), {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -186,7 +190,7 @@ const AdminDashboard = () => {
   const handleUpdateResource = async (updatedResource) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/${updatedResource._id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `updateResource/${updatedResource._id}` : `${updatedResource._id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +213,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/categories`, {
+      const response = await fetch(fetchUrl(isProduction ? 'createCategory' : 'categories'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +236,7 @@ const AdminDashboard = () => {
   const handleUpdateCategory = async (updatedCategory) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/categories/${updatedCategory._id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `updateCategory/${updatedCategory._id}` : `categories/${updatedCategory._id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -265,7 +269,7 @@ const AdminDashboard = () => {
     if (!isConfirmed) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/categories/${id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `deleteCategory/${id}` : `categories/${id}`), {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -287,7 +291,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/subcategories`, {
+      const response = await fetch(fetchUrl(isProduction ? 'createSubCategory' : 'subcategories'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -310,7 +314,7 @@ const AdminDashboard = () => {
   const handleUpdateSubCategory = async (updatedSubCategory) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/subcategories/${updatedSubCategory._id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `updateSubCategory/${updatedSubCategory._id}` : `subcategories/${updatedSubCategory._id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -343,7 +347,7 @@ const AdminDashboard = () => {
     if (!isConfirmed) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/subcategories/${id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `deleteSubCategory/${id}` : `subcategories/${id}`), {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -363,7 +367,7 @@ const AdminDashboard = () => {
   const handleMoveCategory = async (categoryId, direction) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await  fetch(`${apiUrl}/api/resources/categories/${categoryId}/move/${direction}`, {
+      const response = await fetch(fetchUrl(isProduction ? `moveCategory/${categoryId}/${direction}` : `categories/${categoryId}/move/${direction}`), {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -384,7 +388,7 @@ const AdminDashboard = () => {
   const handleMoveSubCategory = async (subCategoryId, direction) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/subcategories/${subCategoryId}/move/${direction}`, {
+      const response = await fetch(fetchUrl(isProduction ? `moveSubCategory/${subCategoryId}/${direction}` : `subcategories/${subCategoryId}/move/${direction}`), {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -405,7 +409,7 @@ const AdminDashboard = () => {
   const handleMoveResource = async (resourceId, direction) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`${apiUrl}/api/resources/${resourceId}/move/${direction}`, {
+      const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}/${direction}` : `${resourceId}/move/${direction}`), {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,

@@ -13,17 +13,21 @@ const Home = () => {
   const location = useLocation();
   const dataFetchedRef = useRef(false);
 
-  const apiUrl = process.env.REACT_APP_API_URL || '/.netlify/functions';
-
+  const isProduction = process.env.REACT_APP_ENV === 'production';
+  const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
+  
   useEffect(() => {
     const fetchAllData = async () => {
       if (location.pathname === '/' && !dataFetchedRef.current) {
         setIsLoading(true);
         try {
+          const fetchUrl = (endpoint) => 
+            isProduction ? `${apiUrl}/${endpoint}` : `${apiUrl}/api/resources/${endpoint}`;
+  
           const [categoriesRes, subCategoriesRes, resourcesRes] = await Promise.all([
-            fetch(`${apiUrl}/api/resources/categories`),
-            fetch(`${apiUrl}/api/resources/subcategories`),
-            fetch(`${apiUrl}/api/resources`)
+            fetch(fetchUrl(isProduction ? 'getCategories' : 'categories')),
+            fetch(fetchUrl(isProduction ? 'getSubCategories' : 'subcategories')),
+            fetch(fetchUrl(isProduction ? 'getResources' : ''))
           ]);
 
           if (categoriesRes.ok && subCategoriesRes.ok && resourcesRes.ok) {
@@ -51,7 +55,7 @@ const Home = () => {
     };
 
     fetchAllData();
-  }, [location, apiUrl]);
+  }, [location, isProduction, apiUrl]);
 
 
   useEffect(() => {
