@@ -1,12 +1,18 @@
-import mongoose from 'mongoose';
-require('dotenv').config();
+const mongoose = require('mongoose');
+
+let connection;
 
 const connectToDatabase = async () => {
-  const db = await mongoose.connect(process.env.URI, {
+  if (connection && connection.readyState === 1) {
+    return connection;
+  }
+
+  connection = await mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
-  return db;
+
+  return connection;
 };
 
-connectToDatabase();
+module.exports = { connectToDatabase };
