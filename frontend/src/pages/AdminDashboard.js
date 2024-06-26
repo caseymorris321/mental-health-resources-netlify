@@ -188,9 +188,13 @@ const AdminDashboard = () => {
   };
 
   const handleUpdateResource = async (updatedResource) => {
+    if (!updatedResource._id) {
+      console.error('Resource _id is undefined');
+      return;
+    }
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `updateResource/${updatedResource._id}` : `${updatedResource._id}`), {
+      const response = await fetch(fetchUrl(isProduction ? `updateResource/${updatedResource._id}` : updatedResource._id), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

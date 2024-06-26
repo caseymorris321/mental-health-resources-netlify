@@ -51,6 +51,7 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
         },
         body: JSON.stringify({
           ...resource,
+          _id: initialData ? initialData._id : undefined,
           tags: resource.tags.split(',').map(tag => tag.trim()),
           link: resource.link ? resource.link.trim() : undefined
         }),
