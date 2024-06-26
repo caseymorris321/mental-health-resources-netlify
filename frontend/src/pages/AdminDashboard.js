@@ -162,8 +162,16 @@ const AdminDashboard = () => {
     return <Navigate to="/login" replace />;
   }
 
+  if (isLoading) {
+    return <div>Loading resources...</div>;
+  }
+
   if (error) {
     return <div>Error: {error}</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
   const handleDeleteResource = async (id, name) => {
