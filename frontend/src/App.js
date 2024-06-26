@@ -12,6 +12,7 @@ import ResourceDetailsPage from './pages/ResourceDetailsPage';
 
 // Components
 import Navbar from './components/Navbar';
+import LogoutButton from './components/LogoutButton';
 
 const domain = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -31,6 +32,8 @@ function ErrorHandler() {
       if (redirectPath) {
         localStorage.removeItem('redirectAfterLogout');
         navigate(redirectPath);
+      } else {
+        navigate('/');
       }
     }
   }, [location, navigate, isAuthenticated, isLoading]);
@@ -42,6 +45,7 @@ function AppContent() {
   return (
     <div className="App">
       <Navbar />
+      <LogoutButton />
       <div className="container mt-4">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -58,7 +62,6 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-
       <Auth0Provider
         domain={domain}
         clientId={clientId}
@@ -70,7 +73,7 @@ function App() {
           window.history.replaceState(
             {},
             document.title,
-            appState?.returnTo || '/'
+            '/'
           );
         }}
       >
