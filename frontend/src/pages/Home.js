@@ -114,10 +114,11 @@ const Home = () => {
         Header: 'Description',
         accessor: 'description',
       },
-      {
-        Header: 'Contact Info',
-        accessor: 'contactInfo',
-      },
+     {
+      Header: 'Contact',
+      accessor: 'contactInfo',
+      Cell: ({ value }) => (value ? value : 'N/A'),
+    },
       {
         Header: 'Link',
         accessor: 'link',
