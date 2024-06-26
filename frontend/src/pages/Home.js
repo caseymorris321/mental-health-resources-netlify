@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import TableOfContents from '../components/TableOfContents';
 import ResourceTable from '../components/Resources/ResourceTable';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
@@ -58,8 +58,8 @@ const Home = () => {
   }, [location, isProduction, apiUrl]);
 
 
-  useEffect(() => {
-    if (location.pathname === '/') {
+  useLayoutEffect(() => {
+    if (location.pathname === '/' && !isLoading && resources.length > 0) {
       console.log('Home page loaded. Location state:', location.state);
       if (location.state?.category && location.state?.subCategory) {
         const tableId = `${location.state.category}-${location.state.subCategory}`
@@ -67,29 +67,24 @@ const Home = () => {
           .replace(/\s+/g, '-');
         console.log('Attempting to scroll to table ID:', tableId);
 
-        const scrollToTable = () => {
-          const tableElement = document.getElementById(tableId);
-          console.log('Found table element:', tableElement);
-          if (tableElement) {
-            console.log('Scrolling to table element');
-            tableElement.scrollIntoView({ behavior: 'auto', block: 'start' });
-          } else {
-            console.log('Table element not found in DOM');
-            // Log all table IDs present in the DOM
-            const allTableIds = Array.from(document.querySelectorAll('[id]'))
-              .map(el => el.id)
-              .filter(id => id.includes('-'));
-            console.log('All table IDs in DOM:', allTableIds);
-          }
-        };
-
-        // Increase timeout to ensure content is loaded
-        setTimeout(scrollToTable, 200);
+        const tableElement = document.getElementById(tableId);
+        console.log('Found table element:', tableElement);
+        if (tableElement) {
+          console.log('Scrolling to table element');
+          tableElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+        } else {
+          console.log('Table element not found in DOM');
+          // Log all table IDs present in the DOM
+          const allTableIds = Array.from(document.querySelectorAll('[id]'))
+            .map(el => el.id)
+            .filter(id => id.includes('-'));
+          console.log('All table IDs in DOM:', allTableIds);
+        }
       } else {
         console.log('No category and subCategory in location state');
       }
     }
-  }, [location]);
+  }, [location, isLoading, resources]);
 
 
   const handleSearch = (event) => {
@@ -114,11 +109,11 @@ const Home = () => {
         Header: 'Description',
         accessor: 'description',
       },
-     {
-      Header: 'Contact',
-      accessor: 'contactInfo',
-      Cell: ({ value }) => (value ? value : 'N/A'),
-    },
+      {
+        Header: 'Contact',
+        accessor: 'contactInfo',
+        Cell: ({ value }) => (value ? value : 'N/A'),
+      },
       {
         Header: 'Link',
         accessor: 'link',
