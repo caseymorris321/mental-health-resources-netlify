@@ -6,7 +6,6 @@ exports.handler = async (event, context) => {
 
   try {
     await getConnection();
-    console.log('Using existing database connection');
 
     if (event.httpMethod !== 'GET') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };

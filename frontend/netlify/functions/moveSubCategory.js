@@ -1,29 +1,13 @@
-const mongoose = require('mongoose');
+const { getConnection, closeConnection } = require('./db');
 const { SubCategory } = require('./models/resourceModel');
-
-
-const connectToDatabase = async () => {
-    if (mongoose.connection.readyState === 1) {
-      return mongoose.connection;
-    }
-  
-  await mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  
-  return mongoose.connection;
-
-};
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   try {
-    await connectToDatabase();
-
+    await getConnection();
     if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
-        return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+      return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     const pathParts = event.path.split('/');
@@ -79,5 +63,7 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })
     };
-  } 
+  } finally {
+    await closeConnection();
+  }
 };
