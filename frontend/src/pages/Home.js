@@ -62,23 +62,21 @@ const Home = () => {
     if (location.pathname === '/' && !isLoading && resources.length > 0) {
       console.log('Home page loaded. Location state:', location.state);
       if (location.state?.category && location.state?.subCategory) {
-        const tableId = `${location.state.category}-${location.state.subCategory}`
-          .toLowerCase()
-          .replace(/\s+/g, '-');
-        console.log('Attempting to scroll to table ID:', tableId);
+        const categoryId = location.state.category.toLowerCase().replace(/\s+/g, '-');
+        console.log('Attempting to scroll to category ID:', categoryId);
 
-        const tableElement = document.getElementById(tableId);
-        console.log('Found table element:', tableElement);
-        if (tableElement) {
-          console.log('Scrolling to table element');
-          tableElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+        const categoryElement = document.getElementById(categoryId);
+        console.log('Found category element:', categoryElement);
+        if (categoryElement) {
+          console.log('Scrolling to category element');
+          categoryElement.scrollIntoView({ behavior: 'instant', block: 'start' });
         } else {
-          console.log('Table element not found in DOM');
-          // Log all table IDs present in the DOM
-          const allTableIds = Array.from(document.querySelectorAll('[id]'))
+          console.log('Category element not found in DOM');
+          // Log all category IDs present in the DOM
+          const allCategoryIds = Array.from(document.querySelectorAll('[id]'))
             .map(el => el.id)
-            .filter(id => id.includes('-'));
-          console.log('All table IDs in DOM:', allTableIds);
+            .filter(id => !id.includes('-'));
+          console.log('All category IDs in DOM:', allCategoryIds);
         }
       } else {
         console.log('No category and subCategory in location state');
