@@ -450,7 +450,6 @@ const AdminDashboard = () => {
         {categories.map((category) => (
           <div key={category._id} className="card mb-4">
             <div className="card-header">
-
               <div className="d-flex justify-content-between align-items-center">
                 <h3 className="mb-0">Category: {category.name}</h3>
                 <div>
@@ -484,9 +483,20 @@ const AdminDashboard = () => {
                   <Button
                     variant="danger"
                     size="sm"
+                    className="me-2"
                     onClick={() => handleDeleteCategory(category._id, category.name)}
                   >
                     Delete
+                  </Button>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    onClick={() => {
+                      setNewSubCategory({ name: '', category: category.name });
+                      setShowSubCategoryModal(true);
+                    }}
+                  >
+                    Create Subcategory
                   </Button>
                 </div>
               </div>
@@ -685,7 +695,7 @@ const AdminDashboard = () => {
 
       <Modal show={showSubCategoryModal} onHide={() => setShowSubCategoryModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Add New Subcategory</Modal.Title>
+          <Modal.Title>Add New Subcategory for {newSubCategory.category}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleAddSubCategory}>
@@ -699,20 +709,6 @@ const AdminDashboard = () => {
                 autoFocus
                 required
               />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Category</Form.Label>
-              <Form.Control
-                as="select"
-                value={newSubCategory.category}
-                onChange={(e) => setNewSubCategory({ ...newSubCategory, category: e.target.value })}
-                required
-              >
-                <option value="">Select a category</option>
-                {categories.map(cat => (
-                  <option key={cat._id} value={cat.name}>{cat.name}</option>
-                ))}
-              </Form.Control>
             </Form.Group>
             <Button type="submit" className='mt-2'>Create Subcategory</Button>
           </Form>

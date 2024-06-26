@@ -25,9 +25,15 @@ exports.handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Error in createSubCategory:', error);
+    if (error.name === 'ValidationError') {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Invalid subcategory data' })
+      };
+    }
     return {
-      statusCode: 400,
-      body: JSON.stringify({ message: error.message })
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Internal Server Error' })
     };
   } finally {
     await closeConnection();
