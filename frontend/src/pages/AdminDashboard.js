@@ -503,12 +503,11 @@ const AdminDashboard = () => {
                   .map(subCategory => (
                     <ListGroup.Item key={subCategory._id} className="border-0">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h4 className="mb-0">Subcategory: {subCategory.name}</h4>
-                        <div>
+                        <div className="d-flex align-items-center">
+                          <h4 className="mb-0 me-2">Subcategory: {subCategory.name}</h4>
                           <Button
                             variant="success"
                             size="sm"
-                            className="me-2"
                             onClick={() => {
                               setSelectedResource({
                                 name: '',
@@ -522,6 +521,8 @@ const AdminDashboard = () => {
                           >
                             Create New Resource
                           </Button>
+                        </div>
+                        <div>
                           <Button
                             variant="outline-secondary"
                             size="sm"
