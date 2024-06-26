@@ -25,7 +25,7 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
     if (initialData) {
       setResource({
         ...initialData,
-        tags: initialData.tags.join(', ')
+        tags: initialData.tags ? initialData.tags.join(', ') : '',
       });
     }
   }, [initialData]);
@@ -109,7 +109,6 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
       <Form.Group>
         <Form.Label>Category</Form.Label>
         <Form.Control as="select" name="category" value={resource.category} onChange={handleChange} required>
-          <option value="">Select a category</option>
           {categories.map(cat => (
             <option key={cat._id} value={cat.name}>{cat.name}</option>
           ))}
