@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Resource } = require('./models/resourceModel');
+const { SubCategory } = require('./models/resourceModel');
 
 let cachedDb = null;
 
@@ -31,60 +31,51 @@ exports.handler = async (event, context) => {
     const id = pathParts[pathParts.length - 2];
     const direction = pathParts[pathParts.length - 1];
 
-    const resource = await Resource.findById(id);
-    if (!resource) {
+    const subCategory = await SubCategory.findById(id);
+    if (!subCategory) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ message: 'Resource not found' })
+        body: JSON.stringify({ message: 'Subcategory not found' })
       };
     }
 
     const operator = direction === 'up' ? '$lt' : '$gt';
     const sort = direction === 'up' ? -1 : 1;
 
-    const adjacentResource = await Resource.findOne({
-      category: resource.category,
-      subCategory: resource.subCategory,
-      order: { [operator]: resource.order }
+    const adjacentSubCategory = await SubCategory.findOne({ 
+      category: subCategory.category,
+      order: { [operator]: subCategory.order }
     }).sort({ order: sort });
 
-    if (adjacentResource) {
-      const tempOrder = resource.order;
-      resource.order = adjacentResource.order;
-      adjacentResource.order = tempOrder;
+    if (adjacentSubCategory) {
+      const tempOrder = subCategory.order;
+      subCategory.order = adjacentSubCategory.order;
+      adjacentSubCategory.order = tempOrder;
 
-      await Promise.all([resource.save(), adjacentResource.save()]);
+      await Promise.all([subCategory.save(), adjacentSubCategory.save()]);
     } else {
-      const extremeResource = await Resource.findOne({
-        category: resource.category,
-        subCategory: resource.subCategory
-      }).sort({ order: direction === 'up' ? 1 : -1 });
-      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
-        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
-        await resource.save();
+      const extremeSubCategory = await SubCategory.findOne({ category: subCategory.category })
+        .sort({ order: direction === 'up' ? 1 : -1 });
+      if (extremeSubCategory && extremeSubCategory._id.toString() !== subCategory._id.toString()) {
+        subCategory.order = direction === 'up' ? extremeSubCategory.order - 1 : extremeSubCategory.order + 1;
+        await subCategory.save();
       }
     }
 
-    const allResources = await Resource.find({
-      category: resource.category,
-      subCategory: resource.subCategory
-    }).sort('order');
-    for (let i = 0; i < allResources.length; i++) {
-      allResources[i].order = i;
-      await allResources[i].save();
+    const allSubCategories = await SubCategory.find({ category: subCategory.category }).sort('order');
+    for (let i = 0; i < allSubCategories.length; i++) {
+      allSubCategories[i].order = i;
+      await allSubCategories[i].save();
     }
 
-    const updatedResources = await Resource.find({
-      category: resource.category,
-      subCategory: resource.subCategory
-    }).sort('order');
-    console.log('Sending updated resources:', updatedResources);
+    const updatedSubCategories = await SubCategory.find({ category: subCategory.category }).sort('order');
+    console.log('Sending updated subcategories:', updatedSubCategories);
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedResources)
+      body: JSON.stringify(updatedSubCategories)
     };
   } catch (error) {
-    console.error('Error in moveResource:', error);
+    console.error('Error in moveSubCategory:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })
