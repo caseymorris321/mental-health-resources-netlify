@@ -1,18 +1,27 @@
 const mongoose = require('mongoose');
 
-let connection;
+let connection = null;
 
-const connectToDatabase = async () => {
+const getConnection = async () => {
   if (connection && connection.readyState === 1) {
     return connection;
   }
 
-  connection = await mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  if (!connection) {
+    connection = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+  }
 
   return connection;
 };
 
-module.exports = { connectToDatabase };
+const closeConnection = async () => {
+  if (connection) {
+    await connection.disconnect();
+    connection = null;
+  }
+};
+
+module.exports = { getConnection, closeConnection };

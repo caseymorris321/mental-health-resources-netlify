@@ -5,7 +5,7 @@ exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   try {
-    const connection = await getConnection();
+    await getConnection();
     console.log('Using existing database connection');
 
     if (event.httpMethod !== 'GET') {
