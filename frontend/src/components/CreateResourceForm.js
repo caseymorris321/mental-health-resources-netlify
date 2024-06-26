@@ -19,7 +19,6 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
 
-
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
@@ -40,8 +39,8 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
     try {
       const token = await getAccessTokenSilently();
       const fetchUrl = initialData
-      ? (isProduction ? `${apiUrl}/updateResource/${initialData._id}` : `${apiUrl}/api/resources/${initialData._id}`)
-      : (isProduction ? `${apiUrl}/createResource` : `${apiUrl}/api/resources`);
+        ? (isProduction ? `${apiUrl}/updateResource/${initialData._id}` : `${apiUrl}/api/resources/${initialData._id}`)
+        : (isProduction ? `${apiUrl}/createResource` : `${apiUrl}/api/resources`);
       const method = initialData ? 'PUT' : 'POST';
 
       const response = await fetch(fetchUrl, {
@@ -119,7 +118,6 @@ const CreateResourceForm = ({ onSubmit, initialData, categories, subCategories, 
       <Form.Group>
         <Form.Label>Sub-Category</Form.Label>
         <Form.Control as="select" name="subCategory" value={resource.subCategory} onChange={handleChange} required>
-          <option value="">Select a sub-category</option>
           {subCategories
             .filter(subCat => subCat.category === resource.category)
             .map(subCat => (
