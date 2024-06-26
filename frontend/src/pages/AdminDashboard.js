@@ -18,8 +18,8 @@ const AdminDashboard = () => {
   const [newCategory, setNewCategory] = useState('');
   const [newSubCategory, setNewSubCategory] = useState({ name: '', category: '' });
   const [selectedResource, setSelectedResource] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState({ _id: '', name: '', oldName: '' });
-  const [selectedSubCategory, setSelectedSubCategory] = useState({ _id: '', name: '', oldName: '', category: '' });
+  const [selectedCategory, setSelectedCategory] = useState(() => ({ _id: '', name: '', oldName: '' }));
+  const [selectedSubCategory, setSelectedSubCategory] = useState(() => ({ _id: '', name: '', oldName: '', category: '' }));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();

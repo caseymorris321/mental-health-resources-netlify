@@ -15,7 +15,6 @@ const connectToDatabase = async () => {
   return mongoose.connection;
 
 };
-
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
