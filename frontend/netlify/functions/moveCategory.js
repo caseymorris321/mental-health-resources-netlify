@@ -23,7 +23,7 @@ exports.handler = async (event, context) => {
     try {
         await connectToDatabase();
 
-        if (event.httpMethod !== 'PATCH') {
+        if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
             return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
         }
 
