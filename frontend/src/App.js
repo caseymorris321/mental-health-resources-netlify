@@ -33,7 +33,7 @@ function ErrorHandler() {
         localStorage.removeItem('redirectAfterLogout');
         navigate(redirectPath);
       } else {
-        navigate('/login');
+        navigate('/');
       }
     }
   }, [location, navigate, isAuthenticated, isLoading]);
