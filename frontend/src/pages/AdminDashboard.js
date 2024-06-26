@@ -434,9 +434,6 @@ const AdminDashboard = () => {
       <div className='text-center'>
         <div className="row g-2 justify-content-center">
           <div className="col-12 col-sm-auto">
-            <Button onClick={() => setShowResourceModal(true)} className='w-100'>Create New Resource</Button>
-          </div>
-          <div className="col-12 col-sm-auto">
             <Button onClick={() => setShowCategoryModal(true)} className="w-100">Create Category</Button>
           </div>
         </div>
@@ -508,6 +505,23 @@ const AdminDashboard = () => {
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <h4 className="mb-0">Subcategory: {subCategory.name}</h4>
                         <div>
+                          <Button
+                            variant="success"
+                            size="sm"
+                            className="me-2"
+                            onClick={() => {
+                              setSelectedResource({
+                                name: '',
+                                description: '',
+                                url: '',
+                                category: category.name,
+                                subCategory: subCategory.name,
+                              });
+                              setShowResourceModal(true);
+                            }}
+                          >
+                            Create New Resource
+                          </Button>
                           <Button
                             variant="outline-secondary"
                             size="sm"
@@ -607,10 +621,11 @@ const AdminDashboard = () => {
 
       <Modal show={showResourceModal} onHide={() => setShowResourceModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Create New Resource</Modal.Title>
+          <Modal.Title>Create New Resource for {selectedResource?.category} - {selectedResource?.subCategory}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <CreateResourceForm
+            initialData={selectedResource}
             categories={categories}
             subCategories={subCategories}
             isCreate={true}
