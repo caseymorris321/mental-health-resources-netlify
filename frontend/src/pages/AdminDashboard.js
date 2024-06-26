@@ -468,7 +468,7 @@ const AdminDashboard = () => {
                     className="me-2"
                     onClick={() => handleMoveCategory(category._id, 'up')}
                   >
-                    Move Up
+                    Move Up ↑
                   </Button>
                   <Button
                     variant="outline-secondary"
@@ -476,7 +476,7 @@ const AdminDashboard = () => {
                     className="me-2"
                     onClick={() => handleMoveCategory(category._id, 'down')}
                   >
-                    Move Down
+                    Move Down ↓
                   </Button>
                   <Button
                     variant="primary"
@@ -563,7 +563,7 @@ const AdminDashboard = () => {
                                   className="me-2"
                                   onClick={() => handleMoveResource(resource._id, 'up')}
                                 >
-                                  Move Up
+                                  Move Up ↑
                                 </Button>
                                 <Button
                                   variant="outline-secondary"
@@ -571,7 +571,7 @@ const AdminDashboard = () => {
                                   className="me-2"
                                   onClick={() => handleMoveResource(resource._id, 'down')}
                                 >
-                                  Move Down
+                                  Move Down ↓
                                 </Button>
                                 <Button
                                   variant="outline-primary"
