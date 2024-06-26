@@ -439,9 +439,6 @@ const AdminDashboard = () => {
           <div className="col-12 col-sm-auto">
             <Button onClick={() => setShowCategoryModal(true)} className="w-100">Create Category</Button>
           </div>
-          <div className="col-12 col-sm-auto">
-            <Button onClick={() => setShowSubCategoryModal(true)} className="w-100">Create Subcategory</Button>
-          </div>
         </div>
       </div>
 
@@ -451,7 +448,20 @@ const AdminDashboard = () => {
           <div key={category._id} className="card mb-4">
             <div className="card-header">
               <div className="d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Category: {category.name}</h3>
+                <div>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="me-2"
+                    onClick={() => {
+                      setNewSubCategory({ name: '', category: category.name });
+                      setShowSubCategoryModal(true);
+                    }}
+                  >
+                    Create Subcategory
+                  </Button>
+                  <h3 className="mb-0 d-inline">Category: {category.name}</h3>
+                </div>
                 <div>
                   <Button
                     variant="outline-secondary"
@@ -483,20 +493,9 @@ const AdminDashboard = () => {
                   <Button
                     variant="danger"
                     size="sm"
-                    className="me-2"
                     onClick={() => handleDeleteCategory(category._id, category.name)}
                   >
                     Delete
-                  </Button>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={() => {
-                      setNewSubCategory({ name: '', category: category.name });
-                      setShowSubCategoryModal(true);
-                    }}
-                  >
-                    Create Subcategory
                   </Button>
                 </div>
               </div>
