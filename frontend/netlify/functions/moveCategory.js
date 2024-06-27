@@ -50,7 +50,7 @@ exports.handler = async (event, context) => {
     }
 
     const updatedCategories = await Category.find().sort('order');
-    console.log('Sending updated categories:', updatedCategories);
+    // console.log('Sending updated categories:', updatedCategories);
     return {
       statusCode: 200,
       body: JSON.stringify(updatedCategories)

@@ -52,7 +52,7 @@ exports.handler = async (event, context) => {
     }
 
     const updatedSubCategories = await SubCategory.find({ category: subCategory.category }).sort('order');
-    console.log('Sending updated subcategories:', updatedSubCategories);
+    // console.log('Sending updated subcategories:', updatedSubCategories);
     return {
       statusCode: 200,
       body: JSON.stringify(updatedSubCategories)

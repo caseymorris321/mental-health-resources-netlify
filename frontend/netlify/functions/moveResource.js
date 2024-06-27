@@ -62,7 +62,7 @@ exports.handler = async (event, context) => {
       category: resource.category,
       subCategory: resource.subCategory
     }).sort('order');
-    console.log('Sending updated resources:', updatedResources);
+    // console.log('Sending updated resources:', updatedResources);
     return {
       statusCode: 200,
       body: JSON.stringify(updatedResources)

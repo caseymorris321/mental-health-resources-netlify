@@ -58,7 +58,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
 
       if (response.ok) {
         const data = await response.json();
-        console.log(initialData ? 'Resource updated:' : 'Resource created:', data);
+        // console.log(initialData ? 'Resource updated:' : 'Resource created:', data);
         setMessage({ type: 'success', text: initialData ? 'Resource updated successfully!' : 'Resource created successfully!' });
         onSubmit(data);
         if (!initialData) {

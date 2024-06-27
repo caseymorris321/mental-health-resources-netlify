@@ -37,7 +37,7 @@ const Home = () => {
               resourcesRes.json()
             ]);
 
-            console.log('Fetched resources:', resourcesData);
+            // console.log('Fetched resources:', resourcesData);
             setCategories(categoriesData);
             setSubCategories(subCategoriesData);
             setResources(Array.isArray(resourcesData) ? resourcesData : []);
@@ -60,26 +60,27 @@ const Home = () => {
 
   useLayoutEffect(() => {
     if (location.pathname === '/' && !isLoading && resources.length > 0) {
-      console.log('Home page loaded. Location state:', location.state);
+      // console.log('Home page loaded. Location state:', location.state);
       if (location.state?.category && location.state?.subCategory) {
         const categoryId = location.state.category.toLowerCase().replace(/\s+/g, '-');
-        console.log('Attempting to scroll to category ID:', categoryId);
+        // console.log('Attempting to scroll to category ID:', categoryId);
 
         const categoryElement = document.getElementById(categoryId);
-        console.log('Found category element:', categoryElement);
+        // console.log('Found category element:', categoryElement);
         if (categoryElement) {
-          console.log('Scrolling to category element');
+          // console.log('Scrolling to category element');
           categoryElement.scrollIntoView({ behavior: 'instant', block: 'start' });
         } else {
-          console.log('Category element not found in DOM');
+          // console.log('Category element not found in DOM');
           // Log all category IDs present in the DOM
-          const allCategoryIds = Array.from(document.querySelectorAll('[id]'))
+          // const allCategoryIds = 
+          Array.from(document.querySelectorAll('[id]'))
             .map(el => el.id)
             .filter(id => !id.includes('-'));
-          console.log('All category IDs in DOM:', allCategoryIds);
+          // console.log('All category IDs in DOM:', allCategoryIds);
         }
       } else {
-        console.log('No category and subCategory in location state');
+        // console.log('No category and subCategory in location state');
       }
     }
   }, [location, isLoading, resources]);

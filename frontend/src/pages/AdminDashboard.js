@@ -387,7 +387,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const updatedCategories = await response.json();
-        console.log('Updated categories:', updatedCategories); // Add this line for debugging
+        // console.log('Updated categories:', updatedCategories);
         setCategories(updatedCategories);
       } else {
         console.error('Failed to move category');
@@ -408,7 +408,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
-        console.log('Updated subcategories:', updatedSubCategories);
+        // console.log('Updated subcategories:', updatedSubCategories);
         setSubCategories(updatedSubCategories);
       } else {
         console.error('Failed to move subcategory');
@@ -429,7 +429,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const updatedResources = await response.json();
-        console.log('Updated resources:', updatedResources);
+        // console.log('Updated resources:', updatedResources);
         setResources(updatedResources);
       } else {
         console.error('Failed to move resource');
@@ -661,7 +661,7 @@ const AdminDashboard = () => {
             subCategory={selectedResource?.subCategory}
             isCreate={true}
             onSubmit={(resourceData) => {
-              console.log('Resource created:', resourceData);
+              // console.log('Resource created:', resourceData);
               setShowResourceModal(false);
               fetchResources();
             }}

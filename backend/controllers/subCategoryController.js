@@ -107,7 +107,7 @@ const moveSubCategory = async (req, res) => {
       }
   
       const updatedSubCategories = await SubCategory.find({ category: subCategory.category }).sort('order');
-      console.log('Sending updated subcategories:', updatedSubCategories);
+      // console.log('Sending updated subcategories:', updatedSubCategories);
       res.json(updatedSubCategories);
     } catch (error) {
       console.error('Error in moveSubCategory:', error);
