@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { debounce } from 'lodash';
 import TableOfContents from '../components/TableOfContents';
 import ResourceTable from '../components/Resources/ResourceTable';
 import { Link as RouterLink } from 'react-router-dom';
 
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [subCategories, setSubCategories] = useState([]);
   const [categories, setCategories] = useState([]);
   const [resources, setResources] = useState([]);
@@ -22,6 +24,7 @@ const Home = () => {
     const searchParams = new URLSearchParams(location.search);
     const searchTermFromQuery = searchParams.get('search') || '';
     setSearchTerm(searchTermFromQuery);
+    setDebouncedSearchTerm(searchTermFromQuery);
   }, [location.search]);
 
   useEffect(() => {
@@ -45,7 +48,6 @@ const Home = () => {
               resourcesRes.json()
             ]);
 
-            // console.log('Fetched resources:', resourcesData);
             setCategories(categoriesData);
             setSubCategories(subCategoriesData);
             setResources(Array.isArray(resourcesData) ? resourcesData : []);
@@ -65,51 +67,45 @@ const Home = () => {
     fetchAllData();
   }, [location, isProduction, apiUrl]);
 
-
   useLayoutEffect(() => {
     if (location.pathname === '/' && !isLoading && resources.length > 0) {
-      // console.log('Home page loaded. Location state:', location.state);
       if (location.state?.category && location.state?.subCategory) {
         const categoryId = location.state.category.toLowerCase().replace(/\s+/g, '-');
-        // console.log('Attempting to scroll to category ID:', categoryId);
-
         const categoryElement = document.getElementById(categoryId);
-        // console.log('Found category element:', categoryElement);
         if (categoryElement) {
-          // console.log('Scrolling to category element');
           categoryElement.scrollIntoView({ behavior: 'instant', block: 'start' });
-        } else {
-          // console.log('Category element not found in DOM');
-          // Log all category IDs present in the DOM
-          // const allCategoryIds = 
-          Array.from(document.querySelectorAll('[id]'))
-            .map(el => el.id)
-            .filter(id => !id.includes('-'));
-          // console.log('All category IDs in DOM:', allCategoryIds);
         }
-      } else {
-        // console.log('No category and subCategory in location state');
       }
     }
   }, [location, isLoading, resources]);
-
 
   const updateSearchParams = (searchTerm) => {
     const searchParams = new URLSearchParams({ search: searchTerm });
     navigate(`?${searchParams.toString()}`);
   };
 
+  const debouncedUpdateSearchParams = useMemo(
+    () => debounce(updateSearchParams, 1000),
+    []
+  );
+
   const handleSearch = (event) => {
     const searchTerm = event.target.value;
     setSearchTerm(searchTerm);
-    updateSearchParams(searchTerm);
+    debouncedUpdateSearchParams(searchTerm);
   };
+
+  useEffect(() => {
+    return () => {
+      debouncedUpdateSearchParams.cancel();
+    };
+  }, [debouncedUpdateSearchParams]);
 
   const clearSearch = () => {
     setSearchTerm('');
+    setDebouncedSearchTerm('');
     updateSearchParams('');
   };
-
 
   const columns = useMemo(
     () => [
@@ -182,9 +178,9 @@ const Home = () => {
 
   const filteredResources = useMemo(() => {
     return Array.isArray(resources)
-      ? resources.filter(resource => filterResource(resource, searchTerm))
+      ? resources.filter(resource => filterResource(resource, debouncedSearchTerm))
       : [];
-  }, [resources, searchTerm]);
+  }, [resources, debouncedSearchTerm]);
 
   const categoriesWithResources = useMemo(() => {
     if (!categories || !filteredResources) return [];
@@ -213,7 +209,6 @@ const Home = () => {
       )}
       <h1 className="mt-4 mb-4 text-center display-4 fw-bold">Mental Health Resources</h1>
 
-
       <div className="input-group mb-4">
         <input
           type="text"
@@ -223,62 +218,59 @@ const Home = () => {
           onChange={handleSearch}
         />
         {searchTerm && (
-          <button className="btn btn-outline-secondary ms-1" type="button" onClick={clearSearch}>
+          <button className="btn btn-outline-secondary" type="button" onClick={clearSearch}>
             Clear
           </button>
         )}
       </div>
-
 
       {error && <div className="alert alert-danger">{error}</div>}
 
       {isLoading ? (
         <p>Loading resources...</p>
       ) : filteredResources.length === 0 ? (
-        <p className="text-center">No resources found.</p>) :
-        (
-          categoriesWithResources.map(category => {
-            const categoryResources = filteredResources.filter(resource =>
-              resource.category.toLowerCase() === category.name.toLowerCase()
-            );
+        <p className="text-center">No resources found.</p>
+      ) : (
+        categoriesWithResources.map(category => {
+          const categoryResources = filteredResources.filter(resource =>
+            resource.category.toLowerCase() === category.name.toLowerCase()
+          );
 
-            if (categoryResources.length === 0) return null;
+          if (categoryResources.length === 0) return null;
 
-            const categorySubCategories = subCategoriesWithResources
-              .filter(subCat => subCat.category.toLowerCase() === category.name.toLowerCase());
+          const categorySubCategories = subCategoriesWithResources
+            .filter(subCat => subCat.category.toLowerCase() === category.name.toLowerCase());
 
-            if (categorySubCategories.length === 0) return null;
+          if (categorySubCategories.length === 0) return null;
 
+          return (
+            <section key={category._id} id={category.name.toLowerCase().replace(/\s+/g, '-')}>
+              <h2 className="mt-5 mb-3 text-center display-4 fw-bold">{category.name}</h2>
+              {categorySubCategories.map(subCategory => {
+                const subCategoryResources = categoryResources.filter(resource =>
+                  resource.subCategory.toLowerCase() === subCategory.name.toLowerCase()
+                );
 
+                if (subCategoryResources.length === 0) return null;
 
-            return (
-              <section key={category._id} id={category.name.toLowerCase().replace(/\s+/g, '-')}>
-                <h2 className="mt-5 mb-3 text-center display-4 fw-bold">{category.name}</h2>
-                {categorySubCategories.map(subCategory => {
-                  const subCategoryResources = categoryResources.filter(resource =>
-                    resource.subCategory.toLowerCase() === subCategory.name.toLowerCase()
-                  );
+                const tableId = `${category.name}-${subCategory.name}`
+                  .toLowerCase()
+                  .replace(/\s+/g, '-');
 
-                  if (subCategoryResources.length === 0) return null;
-
-                  const tableId = `${category.name}-${subCategory.name}`
-                    .toLowerCase()
-                    .replace(/\s+/g, '-');
-
-                  return (
-                    <div id={tableId} key={subCategory._id} className="mb-4">
-                      <ResourceTable
-                        title={subCategory.name}
-                        columns={columns}
-                        data={subCategoryResources}
-                      />
-                    </div>
-                  );
-                })}
-              </section>
-            );
-          })
-        )}
+                return (
+                  <div id={tableId} key={subCategory._id} className="mb-4">
+                    <ResourceTable
+                      title={subCategory.name}
+                      columns={columns}
+                      data={subCategoryResources}
+                    />
+                  </div>
+                );
+              })}
+            </section>
+          );
+        })
+      )}
     </div>
   );
 };
