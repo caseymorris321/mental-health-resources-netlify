@@ -6,18 +6,6 @@ const CategorySchema = new Schema({
   order: { type: Number, default: 0, index: true },
 });
 
-// Custom middleware to handle duplicate category name validation
-CategorySchema.pre('save', async function(next) {
-  const category = this;
-  const existingCategory = await Category.findOne({ name: category.name });
-
-  if (existingCategory && existingCategory._id.toString() !== category._id.toString()) {
-    return next(new Error(`A category with the name "${category.name}" already exists.`));
-  }
-
-  next();
-});
-
 const Category = mongoose.model('Category', CategorySchema);
 
 const SubCategorySchema = new Schema({
@@ -27,18 +15,6 @@ const SubCategorySchema = new Schema({
     required: true,
   },
   order: { type: Number, default: 0, index: true }
-});
-
-// Custom middleware to handle duplicate subcategory name validation
-SubCategorySchema.pre('save', async function(next) {
-  const subCategory = this;
-  const existingSubCategory = await SubCategory.findOne({ name: subCategory.name, category: subCategory.category });
-
-  if (existingSubCategory && existingSubCategory._id.toString() !== subCategory._id.toString()) {
-    return next(new Error(`A subcategory with the name "${subCategory.name}" already exists in the "${subCategory.category}" category.`));
-  }
-
-  next();
 });
 
 const SubCategory = mongoose.model('SubCategory', SubCategorySchema);
@@ -57,7 +33,6 @@ const ResourceSchema = new Schema({
       message: props => `${props.value} is not a valid URL!`
     }
   },
-  
   category: { 
     type: String, 
     required: true,
@@ -70,14 +45,14 @@ const ResourceSchema = new Schema({
         const subCategory = await SubCategory.findOne({ name: v, category: this.category });
         return subCategory !== null;
       },
-      message: props => `${props.value} is not a valid subcategory!`
+      message: props => `${props.value} is not a valid subcategory for the "${this.category}" category!`
     }
   },
   contactInfo: { type: String },
   address: { type: String },
   availableHours: { type: String },
   tags: [{ type: String }],
-  order: { type: Number, default: 0 },
+  order: { type: Number, default: 0, index: true },
 }, { timestamps: true });
 
 // Custom middleware to handle duplicate resource name validation
