@@ -21,16 +21,24 @@ const CustomNavbar = () => {
               <span className="navbar-brand mb-0 d-none d-lg-inline">Resource Manager</span>
             </div>
           </Link>
-          <Navbar.Toggle aria-controls="navbar-nav" className="d-lg-none" />
-          <Navbar.Collapse id="navbar-nav" className="justify-content-end">
-            <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center">
+            <div className="d-none d-lg-flex align-items-center">
               <Link to="/admin" className='text-decoration-none me-3'>
                 <Profile />
               </Link>
               <LogoutButton />
             </div>
-          </Navbar.Collapse>
+            <Navbar.Toggle aria-controls="navbar-nav" className="d-lg-none" />
+          </div>
         </div>
+        <Navbar.Collapse id="navbar-nav" className="justify-content-end">
+          <div className="d-flex flex-column align-items-end d-lg-none">
+            <Link to="/admin" className='text-decoration-none mb-2'>
+              <Profile />
+            </Link>
+            <LogoutButton />
+          </div>
+        </Navbar.Collapse>
       </Container>
     </Navbar>
   );
