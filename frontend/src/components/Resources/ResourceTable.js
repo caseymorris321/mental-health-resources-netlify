@@ -125,24 +125,24 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
           </tbody>
         </table>
       </div>
-      <div className="d-flex flex-column align-items-start mb-1 d-lg-none">
-        <div className="mb-2">
-          Page <strong>{pageIndex + 1}</strong> of <strong>{pageOptions.length}</strong>
-        </div>
-        <select
-          className="form-select form-select-sm"
-          value={pageSize}
-          onChange={e => {
-            setPageSize(Number(e.target.value));
-          }}
-        >
-          {[10, 20, 30, 40, 50].map(size => (
-            <option key={size} value={size}>
-              Show {size}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="d-flex flex-column align-items-start mb-1">
+  <div className="mb-2">
+    Page <strong>{pageIndex + 1}</strong> of <strong>{pageOptions.length}</strong>
+  </div>
+  <select
+    className="form-select form-select-sm"
+    value={pageSize}
+    onChange={e => {
+      setPageSize(Number(e.target.value));
+    }}
+  >
+    {[10, 20, 30, 40, 50].map(size => (
+      <option key={size} value={size}>
+        Show {size}
+      </option>
+    ))}
+  </select>
+</div>
       <div className="d-flex justify-content-center mt-1 w-100">
         <button className="btn btn-outline-primary me-2" onClick={() => previousPage()} disabled={!canPreviousPage}>
           Previous
