@@ -71,6 +71,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
   return (
     <div className="d-flex flex-column align-items-center">
       <h3 className="text-center mb-3">{title}</h3>
+     
       <div className="table-responsive">
         <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6', tableLayout: 'fixed', width: '100%' }}>
           <thead className="table-light">
@@ -120,37 +121,33 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
           </tbody>
         </table>
       </div>
-      <div className="d-flex flex-column align-items-center mt-3">
-        <div className="d-flex justify-content-center mb-2">
-          <button className="btn btn-outline-primary me-2" onClick={() => previousPage()} disabled={!canPreviousPage}>
-            Previous
-          </button>
-          <button className="btn btn-outline-primary" onClick={() => nextPage()} disabled={!canNextPage}>
-            Next
-          </button>
+      <div className="d-flex flex-column align-items-start mb-1 d-lg-none">
+        <div className="mb-2">
+          Page <strong>{pageIndex + 1}</strong> of <strong>{pageOptions.length}</strong>
         </div>
-        <div className="d-flex align-items-center">
-          <span className="me-2">
-            Page{' '}
-            <strong className={pageIndex + 1 === pageOptions.length ? 'text-primary' : ''}>
-              {pageIndex + 1} of {pageOptions.length}
-            </strong>
-          </span>
-          <select
-            className="form-select form-select-sm"
-            value={pageSize}
-            onChange={e => {
-              setPageSize(Number(e.target.value));
-            }}
-          >
-            {[10, 20, 30, 40, 50].map(size => (
-              <option key={size} value={size}>
-                Show {size}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          className="form-select form-select-sm"
+          value={pageSize}
+          onChange={e => {
+            setPageSize(Number(e.target.value));
+          }}
+        >
+          {[10, 20, 30, 40, 50].map(size => (
+            <option key={size} value={size}>
+              Show {size}
+            </option>
+          ))}
+        </select>
       </div>
+      <div className="d-flex justify-content-center mt-1 w-100">
+        <button className="btn btn-outline-primary me-2" onClick={() => previousPage()} disabled={!canPreviousPage}>
+          Previous
+        </button>
+        <button className="btn btn-outline-primary" onClick={() => nextPage()} disabled={!canNextPage}>
+          Next
+        </button>
+      </div>
+     
     </div>
   );
 };
