@@ -334,7 +334,7 @@ const AdminDashboard = () => {
       } else {
         const errorData = await response.json();
         if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          setSubCategoryError('A subcategory with this name already exists.');
+          setSubCategoryError('A subcategory with this name already exists in this category.');
         } else {
           setSubCategoryError(errorData.message || 'Failed to create subcategory');
         }
