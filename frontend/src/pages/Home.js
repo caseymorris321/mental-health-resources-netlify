@@ -5,6 +5,81 @@ import TableOfContents from '../components/TableOfContents';
 import ResourceTable from '../components/Resources/ResourceTable';
 import { Link as RouterLink } from 'react-router-dom';
 
+// Welcome Screen Component
+const WelcomeScreen = ({ onClose }) => (
+  <div className="welcome-screen">
+    <h2>Welcome to Mental Health Resources</h2>
+    <p>This site provides a comprehensive list of mental health resources. Use the search bar to find specific resources, or browse through our categories.</p>
+    <button className="btn btn-primary" onClick={onClose}>Get Started</button>
+  </div>
+);
+
+// Quick Links Component
+const QuickLinks = ({ categories }) => (
+  <div className="quick-links">
+    <h3>Quick Links</h3>
+    <ul>
+      {categories.slice(0, 5).map(category => (
+        <li key={category._id}>
+          <a href={`#${category.name.toLowerCase().replace(/\s+/g, '-')}`}>{category.name}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+// Category Accordion Component
+const CategoryAccordion = ({ category, subCategories, resources, columns, searchTerm }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const hasMatch = resources.some(resource => 
+        Object.values(resource).some(value => 
+          value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+      setIsExpanded(hasMatch);
+    } else {
+      setIsExpanded(false);
+    }
+  }, [searchTerm, resources]);
+
+  return (
+    <div className="card mb-3">
+      <div 
+        className="card-header" 
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{ cursor: 'pointer' }}
+      >
+        <h2>{category.name}</h2>
+      </div>
+      {isExpanded && (
+        <div className="card-body">
+          {subCategories.map(subCategory => {
+            const subCategoryResources = resources.filter(resource =>
+              resource.subCategory.toLowerCase() === subCategory.name.toLowerCase()
+            );
+
+            if (subCategoryResources.length === 0) return null;
+
+            return (
+              <div key={subCategory._id} className="mb-4">
+                <h3>{subCategory.name}</h3>
+                <ResourceTable
+                  columns={columns}
+                  data={subCategoryResources}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Main Home Component
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -13,6 +88,7 @@ const Home = () => {
   const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const dataFetchedRef = useRef(false);
@@ -67,19 +143,6 @@ const Home = () => {
     fetchAllData();
   }, [location, isProduction, apiUrl]);
 
-  useLayoutEffect(() => {
-    if (location.pathname === '/' && !isLoading && resources.length > 0) {
-      if (location.state?.category && location.state?.subCategory) {
-        const categoryId = location.state.category.toLowerCase().replace(/\s+/g, '-');
-        const categoryElement = document.getElementById(categoryId);
-        if (categoryElement) {
-          categoryElement.scrollIntoView({ behavior: 'instant', block: 'start' });
-        }
-      }
-    }
-  }, [location, isLoading, resources]);
-
- 
   const updateSearchParams = useCallback((searchTerm) => {
     const searchParams = new URLSearchParams({ search: searchTerm });
     navigate(`?${searchParams.toString()}`);
@@ -95,12 +158,6 @@ const Home = () => {
     setSearchTerm(searchTerm);
     debouncedUpdateSearchParams(searchTerm);
   };
-
-  useEffect(() => {
-    return () => {
-      debouncedUpdateSearchParams.cancel();
-    };
-  }, [debouncedUpdateSearchParams]);
 
   const clearSearch = () => {
     setSearchTerm('');
@@ -137,7 +194,6 @@ const Home = () => {
         accessor: 'link',
         Cell: ({ cell: { value } }) => {
           if (!value) return 'N/A';
-
           let url;
           try {
             if (!/^https?:\/\//i.test(value)) {
@@ -147,7 +203,6 @@ const Home = () => {
           } catch (error) {
             return value;
           }
-
           return (
             <a href={url.href} target="_blank" rel="noopener noreferrer">
               {url.hostname}
@@ -202,18 +257,16 @@ const Home = () => {
 
   return (
     <div className="container">
-      {categoriesWithResources.length > 0 && subCategoriesWithResources.length > 0 && (
-        <TableOfContents
-          categories={categoriesWithResources}
-          subCategories={subCategoriesWithResources}
-        />
+      {showWelcome && (
+        <WelcomeScreen onClose={() => setShowWelcome(false)} />
       )}
+
       <h1 className="mt-4 mb-4 text-center display-4 fw-bold">Mental Health Resources</h1>
 
       <div className="input-group mb-4">
         <input
           type="text"
-          className="form-control"
+          className="form-control form-control-lg"
           placeholder="Search all resources..."
           value={searchTerm}
           onChange={handleSearch}
@@ -232,45 +285,27 @@ const Home = () => {
       ) : filteredResources.length === 0 ? (
         <p className="text-center">No resources found.</p>
       ) : (
-        categoriesWithResources.map(category => {
-          const categoryResources = filteredResources.filter(resource =>
-            resource.category.toLowerCase() === category.name.toLowerCase()
-          );
-
-          if (categoryResources.length === 0) return null;
-
-          const categorySubCategories = subCategoriesWithResources
-            .filter(subCat => subCat.category.toLowerCase() === category.name.toLowerCase());
-
-          if (categorySubCategories.length === 0) return null;
-
-          return (
-            <section key={category._id} id={category.name.toLowerCase().replace(/\s+/g, '-')}>
-              <h2 className="mt-5 mb-3 text-center display-4 fw-bold">{category.name}</h2>
-              {categorySubCategories.map(subCategory => {
-                const subCategoryResources = categoryResources.filter(resource =>
-                  resource.subCategory.toLowerCase() === subCategory.name.toLowerCase()
-                );
-
-                if (subCategoryResources.length === 0) return null;
-
-                const tableId = `${category.name}-${subCategory.name}`
-                  .toLowerCase()
-                  .replace(/\s+/g, '-');
-
-                return (
-                  <div id={tableId} key={subCategory._id} className="mb-4">
-                    <ResourceTable
-                      title={subCategory.name}
-                      columns={columns}
-                      data={subCategoryResources}
-                    />
-                  </div>
-                );
-              })}
-            </section>
-          );
-        })
+        <div className="row">
+          <div className="col-md-3">
+            <QuickLinks categories={categoriesWithResources} />
+          </div>
+          <div className="col-md-9">
+            {categoriesWithResources.map(category => (
+              <CategoryAccordion
+                key={category._id}
+                category={category}
+                subCategories={subCategoriesWithResources.filter(
+                  subCat => subCat.category.toLowerCase() === category.name.toLowerCase()
+                )}
+                resources={filteredResources.filter(
+                  resource => resource.category.toLowerCase() === category.name.toLowerCase()
+                )}
+                columns={columns}
+                searchTerm={debouncedSearchTerm}
+              />
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
