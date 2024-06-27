@@ -33,19 +33,21 @@ const ResourceSchema = new Schema({
       message: props => `${props.value} is not a valid URL!`
     }
   },
+  
   category: { 
     type: String, 
     required: true,
+    
   },
   subCategory: { 
     type: String, 
     required: true,
     validate: {
       validator: async function(v) {
-        const subCategory = await SubCategory.findOne({ name: v, category: this.category });
+        const subCategory = await SubCategory.findOne({ name: v });
         return subCategory !== null;
       },
-      message: props => `${props.value} is not a valid subcategory for the "${this.category}" category!`
+      message: props => `${props.value} is not a valid subcategory!`
     }
   },
   contactInfo: { type: String },
@@ -55,7 +57,6 @@ const ResourceSchema = new Schema({
   order: { type: Number, default: 0, index: true },
 }, { timestamps: true });
 
-// Custom middleware to handle duplicate resource name validation
 ResourceSchema.pre('save', async function(next) {
   const resource = this;
   const existingResource = await Resource.findOne({ name: resource.name, category: resource.category, subCategory: resource.subCategory });
@@ -70,3 +71,4 @@ ResourceSchema.pre('save', async function(next) {
 const Resource = mongoose.model('Resource', ResourceSchema);
 
 module.exports = { Resource, SubCategory, Category };
+
