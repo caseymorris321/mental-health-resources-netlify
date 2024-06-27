@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import TableOfContents from '../components/TableOfContents';
@@ -79,14 +79,15 @@ const Home = () => {
     }
   }, [location, isLoading, resources]);
 
-  const updateSearchParams = (searchTerm) => {
+ 
+  const updateSearchParams = useCallback((searchTerm) => {
     const searchParams = new URLSearchParams({ search: searchTerm });
     navigate(`?${searchParams.toString()}`);
-  };
+  }, [navigate]);
 
   const debouncedUpdateSearchParams = useMemo(
     () => debounce(updateSearchParams, 1000),
-    []
+    [updateSearchParams]
   );
 
   const handleSearch = (event) => {
