@@ -204,22 +204,39 @@ const AdminDashboard = () => {
     }
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `updateResource/${updatedResource._id}` : updatedResource._id), {
+      const response = await fetch(fetchUrl(isProduction ? `updateResource/${updatedResource._id}` : `${updatedResource._id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedResource),
+        body: JSON.stringify({
+          name: updatedResource.name,
+          description: updatedResource.description,
+          link: updatedResource.link,
+          category: updatedResource.category,
+          subCategory: updatedResource.subCategory,
+          contactInfo: updatedResource.contactInfo,
+          address: updatedResource.address,
+          availableHours: updatedResource.availableHours,
+          tags: updatedResource.tags.split(',').map(tag => tag.trim()),
+        }),
       });
       if (response.ok) {
-        fetchResources();
+        const data = await response.json();
+        setResources(prevResources => prevResources.map(resource => resource._id === data._id ? data : resource));
         setShowUpdateResourceModal(false);
       } else {
-        console.error('Failed to update resource');
+        const errorData = await response.json();
+        let errorMessage = 'An unexpected error occurred. Please try again.';
+        if (errorData.message.includes('duplicate key error')) {
+          errorMessage = 'A resource with this name already exists in this subcategory.';
+        }
+        setError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
+      setError('A resource with this name already exists in this subcategory.');
     }
   };
 

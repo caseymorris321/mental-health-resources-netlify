@@ -36,8 +36,7 @@ const ResourceSchema = new Schema({
     index: true,
     validate: {
       validator: async function (v) {
-        if (!this.isModified('subCategory')) return true;
-        const subCategory = await SubCategory.findOne({ name: v });
+        const subCategory = await SubCategory.findOne({ name: v, category: this.category });
         return subCategory !== null;
       },
       message: props => `${props.value} is not a valid subcategory!`
