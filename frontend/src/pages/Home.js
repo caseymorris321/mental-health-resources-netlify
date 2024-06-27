@@ -215,7 +215,7 @@ const Home = () => {
             <QuickLinks categories={categoriesWithResources} />
           </div>
           <div className="col-md-9">
-            {categoriesWithResources.map(category => (
+            {categoriesWithResources.map((category, index) => (
               <CategoryAccordion
                 key={category._id}
                 category={category}
@@ -227,6 +227,7 @@ const Home = () => {
                 )}
                 columns={columns}
                 searchTerm={debouncedSearchTerm}
+                isFirst={index === 0} 
               />
             ))}
           </div>

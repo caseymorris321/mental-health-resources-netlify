@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
-const CategoryAccordion = ({ category, subCategories, resources, columns, searchTerm }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const CategoryAccordion = ({ category, subCategories, resources, columns, searchTerm, isFirst }) => {
+  const [isExpanded, setIsExpanded] = useState(isFirst);
 
   useEffect(() => {
     if (searchTerm) {
@@ -13,9 +13,9 @@ const CategoryAccordion = ({ category, subCategories, resources, columns, search
       );
       setIsExpanded(hasMatch);
     } else {
-      setIsExpanded(false);
+      setIsExpanded(isFirst);
     }
-  }, [searchTerm, resources]);
+  }, [searchTerm, resources, isFirst]);
 
   return (
     <div className="card mb-3">
