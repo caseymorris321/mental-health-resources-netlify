@@ -36,7 +36,5 @@ exports.handler = async (event, context) => {
       statusCode: 400,
       body: JSON.stringify({ message: error.message })
     };
-  } finally {
-    await closeConnection();
-  }
+  } 
 };

@@ -57,7 +57,5 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: 'Internal server error', error: error.message })
     };
-  } finally {
-    await closeConnection();
-  }
+  } 
 };
