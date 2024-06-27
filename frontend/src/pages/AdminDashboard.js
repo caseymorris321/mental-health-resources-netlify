@@ -597,7 +597,7 @@ const AdminDashboard = () => {
                           .filter(resource => resource.category === category.name && resource.subCategory === subCategory.name)
                           .map(resource => (
                             <ListGroup.Item key={resource._id} className="d-flex justify-content-between align-items-center">
-                              <Link to={`/resources/${resource._id}`}>{resource.name}</Link>
+                              <Link to={`/resources/${resource._id}`} className='text-decoration-none'>{resource.name}</Link>
                               <div>
                                 <Button
                                   variant="outline-secondary"
