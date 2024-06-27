@@ -241,11 +241,18 @@ const AdminDashboard = () => {
         fetchCategories();
         setNewCategory('');
       } else {
-        const errorData = await response.json();
-        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+        let errorMessage = 'Failed to create category';
+        if (isProduction) {
+          const { error } = await response.json();
+          errorMessage = error.message || errorMessage;
+        } else {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        }
+        if (errorMessage.includes('duplicate key error')) {
           setCategoryError('A category with this name already exists.');
         } else {
-          setCategoryError(errorData.message || 'Failed to create category');
+          setCategoryError(errorMessage);
         }
       }
     } catch (error) {
@@ -332,11 +339,18 @@ const AdminDashboard = () => {
         fetchSubCategories();
         setNewSubCategory({ name: '', category: '' });
       } else {
-        const errorData = await response.json();
-        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+        let errorMessage = 'Failed to create subcategory';
+        if (isProduction) {
+          const { error } = await response.json();
+          errorMessage = error.message || errorMessage;
+        } else {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        }
+        if (errorMessage.includes('duplicate key error')) {
           setSubCategoryError('A subcategory with this name already exists in this category.');
         } else {
-          setSubCategoryError(errorData.message || 'Failed to create subcategory');
+          setSubCategoryError(errorMessage);
         }
       }
     } catch (error) {
