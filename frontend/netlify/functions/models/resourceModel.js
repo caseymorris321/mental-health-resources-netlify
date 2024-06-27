@@ -12,7 +12,7 @@ const SubCategorySchema = new Schema({
   order: { type: Number, default: 0, index: true }
 });
 
-SubCategorySchema.index({ name: 1, category: 1 }, { unique: true });
+
 
 const ResourceSchema = new Schema({
   name: { type: String, required: true, unique: true, trim: true },
