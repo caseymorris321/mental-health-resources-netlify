@@ -98,6 +98,7 @@ const Home = () => {
           <RouterLink
             to={`/resources/${row.original._id}`}
             state={{ category: row.original.category, subCategory: row.original.subCategory }}
+            className="text-decoration-none"
           >
             {row.original.name}
           </RouterLink>

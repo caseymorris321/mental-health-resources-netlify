@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { useTable, useGlobalFilter, useSortBy, usePagination } from 'react-table';
+import '../../index.css'
 
 const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
   const memoizedColumns = useMemo(() => columns, [columns]);
@@ -56,11 +57,22 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
     );
   }
 
+  const formatLink = (link) => {
+    if (!link) return '';
+    if (link.startsWith('http://') || link.startsWith('https://')) {
+      return link;
+    } else if (link.startsWith('www.')) {
+      return `https://${link}`;
+    } else {
+      return `https://www.${link}`;
+    }
+  };
+
   return (
     <div className="d-flex flex-column align-items-center">
       <h3 className="text-center mb-3">{title}</h3>
       <div className="table-responsive">
-        <table {...getTableProps()} className="table table-striped table-hover">
+        <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6' }}>
           <thead className="table-light">
             {headerGroups.map(headerGroup => {
               const { key, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps();
@@ -69,7 +81,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
                   {headerGroup.headers.map(column => {
                     const { key, ...restHeaderProps } = column.getHeaderProps(column.getSortByToggleProps());
                     return (
-                      <th key={key} {...restHeaderProps}>
+                      <th key={key} {...restHeaderProps} style={{ border: 'none' }}>
                         {column.render('Header')}
                         <span>
                           {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
@@ -82,6 +94,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
             })}
           </thead>
           <tbody {...getTableBodyProps()}>
+            <tr style={{ display: 'none' }}></tr>
             {page.map(row => {
               prepareRow(row);
               const { key, ...restRowProps } = row.getRowProps();
@@ -90,8 +103,14 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
                   {row.cells.map(cell => {
                     const { key, ...restCellProps } = cell.getCellProps();
                     return (
-                      <td key={key} {...restCellProps}>
-                        {cell.render('Cell')}
+                      <td key={key} {...restCellProps} className="align-middle" style={{ border: 'none' }}>
+                        {cell.column.id === 'link' ? (
+                          <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                            {cell.value}
+                          </a>
+                        ) : (
+                          cell.render('Cell')
+                        )}
                       </td>
                     );
                   })}
