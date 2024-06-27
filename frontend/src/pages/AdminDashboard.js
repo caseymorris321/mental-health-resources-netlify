@@ -241,23 +241,18 @@ const AdminDashboard = () => {
         fetchCategories();
         setNewCategory('');
       } else {
+        const errorData = await response.json();
         let errorMessage = 'Failed to create category';
-        if (isProduction) {
-          const { error } = await response.json();
-          errorMessage = error.message || errorMessage;
+        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+          errorMessage = 'A category with this name already exists.';
         } else {
-          const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         }
-        if (errorMessage.includes('duplicate key error')) {
-          setCategoryError('A category with this name already exists.');
-        } else {
-          setCategoryError(errorMessage);
-        }
+        setCategoryError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
-      setCategoryError('An unexpected error occurred. Please try again.');
+      setCategoryError('A category with this name already exists.');
     }
   };
 
@@ -286,15 +281,17 @@ const AdminDashboard = () => {
         setShowUpdateCategoryModal(false);
       } else {
         const errorData = await response.json();
+        let errorMessage = 'Failed to update category';
         if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          setCategoryError('A category with this name already exists.');
+          errorMessage = 'A category with this name already exists.';
         } else {
-          setCategoryError(errorData.message || 'Failed to update category');
+          errorMessage = errorData.message || errorMessage;
         }
+        setCategoryError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
-      setCategoryError('An unexpected error occurred. Please try again.');
+      setCategoryError('A category with this name already exists.');
     }
   };
 
@@ -339,23 +336,18 @@ const AdminDashboard = () => {
         fetchSubCategories();
         setNewSubCategory({ name: '', category: '' });
       } else {
+        const errorData = await response.json();
         let errorMessage = 'Failed to create subcategory';
-        if (isProduction) {
-          const { error } = await response.json();
-          errorMessage = error.message || errorMessage;
+        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+          errorMessage = 'A subcategory with this name already exists in this category.';
         } else {
-          const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         }
-        if (errorMessage.includes('duplicate key error')) {
-          setSubCategoryError('A subcategory with this name already exists in this category.');
-        } else {
-          setSubCategoryError(errorMessage);
-        }
+        setSubCategoryError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
-      setSubCategoryError('An unexpected error occurred. Please try again.');
+      setSubCategoryError('A subcategory with this name already exists in this category.');
     }
   };
 
@@ -384,15 +376,17 @@ const AdminDashboard = () => {
         setShowUpdateSubCategoryModal(false);
       } else {
         const errorData = await response.json();
+        let errorMessage = 'Failed to update subcategory';
         if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          setSubCategoryError('A subcategory with this name already exists in this category.');
+          errorMessage = 'A subcategory with this name already exists in this category.';
         } else {
-          setSubCategoryError(errorData.message || 'Failed to update subcategory');
+          errorMessage = errorData.message || errorMessage;
         }
+        setSubCategoryError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
-      setSubCategoryError('An unexpected error occurred. Please try again.');
+      setSubCategoryError('A subcategory with this name already exists in this category.');
     }
   };
 
