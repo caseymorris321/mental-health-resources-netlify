@@ -1,85 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { debounce } from 'lodash';
-import TableOfContents from '../components/TableOfContents';
-import ResourceTable from '../components/Resources/ResourceTable';
-import { Link as RouterLink } from 'react-router-dom';
+import WelcomeScreen from '../components/WelcomeScreen';
+import QuickLinks from '../components/QuickLinks';
+import CategoryAccordion from '../components/CategoryAccordion';
 
-// Welcome Screen Component
-const WelcomeScreen = ({ onClose }) => (
-  <div className="welcome-screen">
-    <h2>Welcome to Mental Health Resources</h2>
-    <p>This site provides a comprehensive list of mental health resources. Use the search bar to find specific resources, or browse through our categories.</p>
-    <button className="btn btn-primary" onClick={onClose}>Get Started</button>
-  </div>
-);
-
-// Quick Links Component
-const QuickLinks = ({ categories }) => (
-  <div className="quick-links">
-    <h3>Quick Links</h3>
-    <ul>
-      {categories.slice(0, 5).map(category => (
-        <li key={category._id}>
-          <a href={`#${category.name.toLowerCase().replace(/\s+/g, '-')}`}>{category.name}</a>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
-// Category Accordion Component
-const CategoryAccordion = ({ category, subCategories, resources, columns, searchTerm }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    if (searchTerm) {
-      const hasMatch = resources.some(resource => 
-        Object.values(resource).some(value => 
-          value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-      setIsExpanded(hasMatch);
-    } else {
-      setIsExpanded(false);
-    }
-  }, [searchTerm, resources]);
-
-  return (
-    <div className="card mb-3">
-      <div 
-        className="card-header" 
-        onClick={() => setIsExpanded(!isExpanded)}
-        style={{ cursor: 'pointer' }}
-      >
-        <h2>{category.name}</h2>
-      </div>
-      {isExpanded && (
-        <div className="card-body">
-          {subCategories.map(subCategory => {
-            const subCategoryResources = resources.filter(resource =>
-              resource.subCategory.toLowerCase() === subCategory.name.toLowerCase()
-            );
-
-            if (subCategoryResources.length === 0) return null;
-
-            return (
-              <div key={subCategory._id} className="mb-4">
-                <h3>{subCategory.name}</h3>
-                <ResourceTable
-                  columns={columns}
-                  data={subCategoryResources}
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Main Home Component
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
