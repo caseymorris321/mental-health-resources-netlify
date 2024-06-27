@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -31,9 +31,12 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
     }
   }, [initialData]);
 
-  const handleChange = (e) => {
-    setResource({ ...resource, [e.target.name]: e.target.value });
-  };
+  const handleChange = useCallback((e) => {
+    setResource((prevResource) => ({
+      ...prevResource,
+      [e.target.name]: e.target.value,
+    }));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,9 +55,15 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          ...resource,
-          tags: resource.tags.split(',').map(tag => tag.trim()),
-          link: resource.link ? resource.link.trim() : undefined,
+          name: resource.name,
+          description: resource.description,
+          link: resource.link,
+          category: resource.category,
+          subCategory: resource.subCategory,
+          contactInfo: resource.contactInfo,
+          address: resource.address,
+          availableHours: resource.availableHours,
+          tags: resource.tags.split(',').map(tag => tag.trim())
         }),
       });
 
