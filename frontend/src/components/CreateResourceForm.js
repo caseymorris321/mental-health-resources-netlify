@@ -42,7 +42,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         ? (isProduction ? `${apiUrl}/updateResource/${initialData._id}` : `${apiUrl}/api/resources/${initialData._id}`)
         : (isProduction ? `${apiUrl}/createResource` : `${apiUrl}/api/resources`);
       const method = initialData ? 'PUT' : 'POST';
-
+  
       const response = await fetch(fetchUrl, {
         method: method,
         headers: {
@@ -55,7 +55,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           link: resource.link ? resource.link.trim() : undefined,
         }),
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         console.log(initialData ? 'Resource updated:' : 'Resource created:', data);
@@ -77,13 +77,16 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         setTimeout(() => setMessage(null), 5000);
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${initialData ? 'update' : 'create'} resource`);
+        if (errorData.message && errorData.message.includes('duplicate key error')) {
+          throw new Error(`A resource with the name "${resource.name}" already exists in the "${resource.category}" category and "${resource.subCategory}" subcategory.`);
+        } else {
+          throw new Error(errorData.message || `Failed to ${initialData ? 'update' : 'create'} resource`);
+        }
       }
     } catch (error) {
       setMessage({ type: 'danger', text: error.message || `Failed to ${initialData ? 'update' : 'create'} resource. Please try again.` });
     }
   };
-
   return (
     <Form onSubmit={handleSubmit}>
       {message && <Alert variant={message.type}>{message.text}</Alert>}

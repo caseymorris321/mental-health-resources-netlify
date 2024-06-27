@@ -10,8 +10,8 @@ const Category = mongoose.model('Category', CategorySchema);
 
 const SubCategorySchema = new Schema({
   name: { type: String, required: true, unique: true },
-  category: {
-    type: String,
+  category: { 
+    type: String, 
     required: true,
   },
   order: { type: Number, default: 0, index: true }
@@ -22,28 +22,28 @@ const SubCategory = mongoose.model('SubCategory', SubCategorySchema);
 const ResourceSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
-  link: {
-    type: String,
+  link: { 
+    type: String, 
     required: false,
     validate: {
-      validator: function (v) {
+      validator: function(v) {
         if (!v) return true;
         return /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(v);
       },
       message: props => `${props.value} is not a valid URL!`
     }
   },
-
-  category: {
-    type: String,
+  
+  category: { 
+    type: String, 
     required: true,
-
+    
   },
-  subCategory: {
-    type: String,
+  subCategory: { 
+    type: String, 
     required: true,
     validate: {
-      validator: async function (v) {
+      validator: async function(v) {
         const subCategory = await SubCategory.findOne({ name: v });
         return subCategory !== null;
       },
@@ -57,22 +57,7 @@ const ResourceSchema = new Schema({
   order: { type: Number, default: 0, index: true },
 }, { timestamps: true });
 
-// Custom middleware to handle duplicate resource name validation
-ResourceSchema.pre('validate', async function (next) {
-  const resource = this;
-  if (!resource.isNew) {
-    const existingResource = await Resource.findById(resource._id);
-    if (existingResource && existingResource.subCategory !== resource.subCategory) {
-      const subCategory = await SubCategory.findOne({ name: resource.subCategory });
-      if (!subCategory) {
-        return next(new Error(`${resource.subCategory} is not a valid subcategory!`));
-      }
-    }
-  }
-  next();
-});
-
-ResourceSchema.pre('save', async function (next) {
+ResourceSchema.pre('save', async function(next) {
   const resource = this;
   const existingResource = await Resource.findOne({ name: resource.name, category: resource.category, subCategory: resource.subCategory });
 
