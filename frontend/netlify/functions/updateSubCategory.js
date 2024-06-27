@@ -14,9 +14,9 @@ exports.handler = async (event, context) => {
     const id = event.path.split('/').pop();
     const { name, oldName, category } = JSON.parse(event.body);
 
-    // Check for existing subcategory with the same name in the same category
+    // Check for existing subcategory with the same name ONLY in the SAME category
     const existingSubCategory = await SubCategory.findOne({ 
-      name: new RegExp(`^${name}$`, 'i'), // case-insensitive match
+      name: name,
       category: category,
       _id: { $ne: id } // Exclude the current subcategory
     });
@@ -33,6 +33,13 @@ exports.handler = async (event, context) => {
       { name, category },
       { new: true, runValidators: true }
     );
+
+    if (!updatedSubCategory) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Subcategory not found' })
+      };
+    }
 
     await Resource.updateMany(
       { subCategory: oldName, category: category },

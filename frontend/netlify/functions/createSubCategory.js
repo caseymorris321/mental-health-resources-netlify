@@ -13,9 +13,9 @@ exports.handler = async (event, context) => {
 
     const body = JSON.parse(event.body);
 
-    // Check for existing subcategory with the same name in the same category
+    // Check for existing subcategory with the same name ONLY in the SAME category
     const existingSubCategory = await SubCategory.findOne({ 
-      name: new RegExp(`^${body.name}$`, 'i'), // case-insensitive match
+      name: body.name,
       category: body.category 
     });
 
