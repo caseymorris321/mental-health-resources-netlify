@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCategory }) => {
   const { getAccessTokenSilently } = useAuth0();
-  const [error, setError] = useState(null);
   const [resource, setResource] = useState({
     name: '',
     description: '',
@@ -31,16 +30,12 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
     }
   }, [initialData]);
 
-  const handleChange = useCallback((e) => {
-    setResource((prevResource) => ({
-      ...prevResource,
-      [e.target.name]: e.target.value,
-    }));
-  }, []);
+  const handleChange = (e) => {
+    setResource({ ...resource, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Clear any previous errors
     try {
       const token = await getAccessTokenSilently();
       const fetchUrl = initialData
@@ -55,20 +50,15 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          name: resource.name,
-          description: resource.description,
-          link: resource.link,
-          category: resource.category,
-          subCategory: resource.subCategory,
-          contactInfo: resource.contactInfo,
-          address: resource.address,
-          availableHours: resource.availableHours,
-          tags: resource.tags.split(',').map(tag => tag.trim())
+          ...resource,
+          tags: resource.tags.split(',').map(tag => tag.trim()),
+          link: resource.link ? resource.link.trim() : undefined,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log(initialData ? 'Resource updated:' : 'Resource created:', data);
         setMessage({ type: 'success', text: initialData ? 'Resource updated successfully!' : 'Resource created successfully!' });
         onSubmit(data);
         if (!initialData) {
@@ -84,23 +74,18 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
             tags: ''
           });
         }
+        setTimeout(() => setMessage(null), 5000);
       } else {
         const errorData = await response.json();
-        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          setError('A resource with this name already exists in this subcategory.');
-        } else {
-          setError(errorData.message || `Failed to ${initialData ? 'update' : 'create'} resource`);
-        }
+        throw new Error(errorData.message || `Failed to ${initialData ? 'update' : 'create'} resource`);
       }
     } catch (error) {
-      console.error('Error:', error);
-      setError(`Failed to ${initialData ? 'update' : 'create'} resource. Please try again.`);
+      setMessage({ type: 'danger', text: error.message || `Failed to ${initialData ? 'update' : 'create'} resource. Please try again.` });
     }
   };
 
   return (
     <Form onSubmit={handleSubmit}>
-      {error && <Alert variant="danger">{error}</Alert>}
       {message && <Alert variant={message.type}>{message.text}</Alert>}
       <Form.Group>
         <Form.Label>Name</Form.Label>
