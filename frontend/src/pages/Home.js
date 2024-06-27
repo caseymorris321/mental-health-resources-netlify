@@ -196,7 +196,14 @@ const Home = () => {
 
   const handleAccordionToggle = (categoryId) => {
     setExpandedCategoryId(prevId => (prevId === categoryId ? null : categoryId));
+    setTimeout(() => {
+      const element = document.getElementById(`category-${categoryId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant' });
+      }
+    }, 100);
   };
+
 
   useEffect(() => {
     const { category, subCategory } = location.state || {};
