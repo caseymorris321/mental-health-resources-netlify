@@ -13,6 +13,22 @@ exports.handler = async (event, context) => {
     const id = event.path.split('/').pop();
     const body = JSON.parse(event.body);
 
+    // Check for existing resource with the same name, category, and subCategory
+    const existingResource = await Resource.findOne({ 
+      name: new RegExp(`^${body.name}$`, 'i'),
+      category: body.category, 
+      subCategory: body.subCategory,
+      _id: { $ne: id }
+    });
+
+    if (existingResource) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: `A resource with the name "${body.name}" already exists in the "${body.category}" category and "${body.subCategory}" subcategory.` })
+      };
+    }
+
+    // If no duplicate found, proceed with the update
     const resource = await Resource.findByIdAndUpdate(
       id,
       body,
