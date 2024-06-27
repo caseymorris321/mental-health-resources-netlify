@@ -286,7 +286,7 @@ const AdminDashboard = () => {
         setShowUpdateCategoryModal(false);
       } else {
         const errorData = await response.json();
-        let errorMessage = 'An unexpected error occurred. Please try again.';
+        let errorMessage = 'A category with this name already exists.';
         if (errorData.message.includes('duplicate key error')) {
           errorMessage = 'A category with this name already exists.';
         }
@@ -384,7 +384,7 @@ const AdminDashboard = () => {
         setShowUpdateSubCategoryModal(false);
       } else {
         const errorData = await response.json();
-        let errorMessage = 'An unexpected error occurred. Please try again.';
+        let errorMessage = 'A subcategory with this name already exists in this category.';
         if (errorData.message.includes('duplicate key error')) {
           errorMessage = 'A subcategory with this name already exists in this category.';
         }
