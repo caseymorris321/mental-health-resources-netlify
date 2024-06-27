@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
-const CategoryAccordion = ({ category, subCategories, resources, columns, searchTerm, isFirst }) => {
-  const [isExpanded, setIsExpanded] = useState(isFirst);
-
+const CategoryAccordion = ({ id, category, subCategories, resources, columns, searchTerm, isExpanded, onToggle }) => {
   useEffect(() => {
     if (searchTerm) {
       const hasMatch = resources.some(resource => 
@@ -11,17 +9,17 @@ const CategoryAccordion = ({ category, subCategories, resources, columns, search
           value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
-      setIsExpanded(hasMatch);
-    } else {
-      setIsExpanded(isFirst);
+      if (hasMatch && !isExpanded) {
+        onToggle();
+      }
     }
-  }, [searchTerm, resources, isFirst]);
+  }, [searchTerm, resources, isExpanded, onToggle]);
 
   return (
-    <div className="card mb-3">
+    <div id={id} className="card mb-3">
       <div 
         className="card-header" 
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={onToggle}
         style={{ cursor: 'pointer' }}
       >
         <h2>{category.name}</h2>

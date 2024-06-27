@@ -14,6 +14,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
   const dataFetchedRef = useRef(false);
@@ -180,6 +181,46 @@ const Home = () => {
     );
   }, [subCategories, filteredResources]);
 
+  const handleQuickLinkClick = useCallback((categoryId) => {
+    setExpandedCategoryIds(prevIds => [...prevIds, categoryId]);
+    setTimeout(() => {
+      const element = document.getElementById(`category-${categoryId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }, []);
+
+  const handleAccordionToggle = useCallback((categoryId) => {
+    setExpandedCategoryIds(prevIds =>
+      prevIds.includes(categoryId) ? prevIds.filter(id => id !== categoryId) : [...prevIds, categoryId]
+    );
+  }, []);
+
+  useEffect(() => {
+    if (categoriesWithResources.length > 0 && !searchTerm) {
+      setExpandedCategoryIds([categoriesWithResources[0]._id]);
+    }
+  }, [categoriesWithResources, searchTerm]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const matchingCategoryIds = categoriesWithResources
+        .filter(category =>
+          filteredResources.some(resource =>
+            resource.category.toLowerCase() === category.name.toLowerCase() &&
+            Object.values(resource).some(value =>
+              value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            )
+          )
+        )
+        .map(category => category._id);
+      setExpandedCategoryIds(matchingCategoryIds);
+    } else {
+      setExpandedCategoryIds([categoriesWithResources[0]?._id]);
+    }
+  }, [searchTerm, categoriesWithResources, filteredResources]);
+
   return (
     <div className="container">
       {showWelcome && (
@@ -212,12 +253,16 @@ const Home = () => {
       ) : (
         <div className="row">
           <div className="col-md-3">
-            <QuickLinks categories={categoriesWithResources} />
+            <QuickLinks
+              categories={categoriesWithResources}
+              onQuickLinkClick={handleQuickLinkClick}
+            />
           </div>
           <div className="col-md-9">
             {categoriesWithResources.map((category, index) => (
               <CategoryAccordion
                 key={category._id}
+                id={`category-${category._id}`}
                 category={category}
                 subCategories={subCategoriesWithResources.filter(
                   subCat => subCat.category.toLowerCase() === category.name.toLowerCase()
@@ -227,7 +272,8 @@ const Home = () => {
                 )}
                 columns={columns}
                 searchTerm={debouncedSearchTerm}
-                isFirst={index === 0} 
+                isExpanded={expandedCategoryIds.includes(category._id)}
+                onToggle={() => handleAccordionToggle(category._id)}
               />
             ))}
           </div>
