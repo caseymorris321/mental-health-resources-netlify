@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom';
 import { Navbar, Container } from 'react-bootstrap';
 import LogoutButton from './LogoutButton';
 import Profile from './Profile';
+import { useAuth0 } from '@auth0/auth0-react';
 
 const CustomNavbar = () => {
+  const { isAuthenticated } = useAuth0();
+
   return (
     <Navbar bg="light" expand="lg">
       <Container>
@@ -18,27 +21,33 @@ const CustomNavbar = () => {
                 width="50" 
                 height="50"
               />
-              <span className="navbar-brand mb-0 d-none d-lg-inline">Resource Manager</span>
+              <span className="navbar-brand mb-0">Resource Manager</span>
             </div>
           </Link>
-          <div className="d-flex align-items-center">
-            <div className="d-none d-lg-flex align-items-center">
-              <Link to="/admin" className='text-decoration-none me-3'>
+          {isAuthenticated && (
+            <Navbar.Toggle aria-controls="navbar-nav" className="d-lg-none" />
+          )}
+          <div className="d-none d-lg-flex align-items-center">
+            {isAuthenticated && (
+              <>
+                <Link to="/admin" className='text-decoration-none me-3'>
+                  <Profile />
+                </Link>
+                <LogoutButton />
+              </>
+            )}
+          </div>
+        </div>
+        {isAuthenticated && (
+          <Navbar.Collapse id="navbar-nav" className="justify-content-end">
+            <div className="d-flex flex-column align-items-end d-lg-none">
+              <Link to="/admin" className='text-decoration-none mb-2'>
                 <Profile />
               </Link>
               <LogoutButton />
             </div>
-            <Navbar.Toggle aria-controls="navbar-nav" className="d-lg-none" />
-          </div>
-        </div>
-        <Navbar.Collapse id="navbar-nav" className="justify-content-end">
-          <div className="d-flex flex-column align-items-end d-lg-none">
-            <Link to="/admin" className='text-decoration-none mb-2'>
-              <Profile />
-            </Link>
-            <LogoutButton />
-          </div>
-        </Navbar.Collapse>
+          </Navbar.Collapse>
+        )}
       </Container>
     </Navbar>
   );
