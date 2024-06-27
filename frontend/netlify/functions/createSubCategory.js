@@ -38,16 +38,10 @@ exports.handler = async (event, context) => {
       body: JSON.stringify(newSubCategory)
     };
   } catch (error) {
-    console.error('Error in createSubCategory:', error);
-    if (error.name === 'ValidationError') {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: 'Invalid subcategory data' })
-      };
-    }
+    console.error('Detailed error in createSubCategory:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Internal Server Error' })
+      body: JSON.stringify({ message: 'Internal Server Error', error: error.message, stack: error.stack })
     };
   } 
 };

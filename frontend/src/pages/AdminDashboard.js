@@ -323,7 +323,7 @@ const AdminDashboard = () => {
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
-    setSubCategoryError(null);
+    setSubCategoryError(null); // Clear any previous errors
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? 'createSubCategory' : 'subcategories'), {
@@ -340,11 +340,12 @@ const AdminDashboard = () => {
         setNewSubCategory({ name: '', category: '' });
       } else {
         const errorData = await response.json();
-        setSubCategoryError(errorData.message);
+        console.error('Full error response:', errorData);
+        setSubCategoryError(errorData.message || 'Failed to create subcategory');
       }
     } catch (error) {
       console.error('Error:', error);
-      setSubCategoryError('A subcategory with this name already exists.');
+      setSubCategoryError('An error occurred while creating the subcategory.');
     }
   };
 
