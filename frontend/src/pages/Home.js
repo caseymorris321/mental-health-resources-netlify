@@ -197,7 +197,7 @@ const Home = () => {
   const handleAccordionToggle = (categoryId) => {
     setExpandedCategoryId(prevId => (prevId === categoryId ? null : categoryId));
   };
-  
+
   useEffect(() => {
     const { category, subCategory } = location.state || {};
     if (category && subCategory) {
@@ -213,8 +213,11 @@ const Home = () => {
           }
         }, 100);
       }
+    } else if (categories.length > 0) {
+      setExpandedCategoryId(categories[0]._id);
     }
   }, [location.state, categories]);
+  
   useEffect(() => {
     if (categoriesWithResources.length > 0 && !searchTerm) {
       setExpandedCategoryIds([categoriesWithResources[0]._id]);
@@ -292,6 +295,7 @@ const Home = () => {
                 searchTerm={debouncedSearchTerm}
                 isExpanded={expandedCategoryId === category._id}
                 onToggle={() => handleAccordionToggle(category._id)}
+                expandedCategoryIds={expandedCategoryIds}
               />
             ))}
           </div>
