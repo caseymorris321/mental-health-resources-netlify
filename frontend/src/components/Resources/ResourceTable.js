@@ -71,7 +71,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
   return (
     <div className="d-flex flex-column align-items-center">
       <h3 className="text-center mb-3">{title}</h3>
-     
+
       <div className="table-responsive">
         <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6', tableLayout: 'fixed', width: '100%' }}>
           <thead className="table-light">
@@ -106,9 +106,13 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
                     return (
                       <td key={key} {...restCellProps} className="align-middle" style={{ border: 'none', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                         {cell.column.id === 'link' ? (
-                          <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                            {cell.value}
-                          </a>
+                          cell.value ? (
+                            <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                              {cell.value}
+                            </a>
+                          ) : (
+                            'N/A'
+                          )
                         ) : (
                           cell.render('Cell')
                         )}
@@ -147,7 +151,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
           Next
         </button>
       </div>
-     
+
     </div>
   );
 };
