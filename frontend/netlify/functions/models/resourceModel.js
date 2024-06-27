@@ -7,13 +7,13 @@ const CategorySchema = new Schema({
 });
 
 const SubCategorySchema = new Schema({
-  name: { type: String, required: true, unique: true, trim: true },
+  name: { type: String, required: true, unique: true, trim: true }, 
   category: { type: String, required: true, trim: true, index: true },
   order: { type: Number, default: 0, index: true }
 });
 
 const ResourceSchema = new Schema({
-  name: { type: String, required: true, trim: true },
+  name: { type: String, required: true, unique: true, trim: true }, 
   description: { type: String, required: true, trim: true },
   link: { 
     type: String, 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Button, Modal, Form, ListGroup } from 'react-bootstrap';
+import { Container, Button, Modal, Form, ListGroup, Alert } from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react';
 import CreateResourceForm from '../components/CreateResourceForm';
 import { Navigate, useLocation, Link } from 'react-router-dom';
@@ -22,6 +22,8 @@ const AdminDashboard = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState(() => ({ _id: '', name: '', oldName: '', category: '' }));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [categoryError, setCategoryError] = useState(null);
+  const [subCategoryError, setSubCategoryError] = useState(null);
   const location = useLocation();
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
@@ -223,6 +225,7 @@ const AdminDashboard = () => {
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
+    setCategoryError(null); // Clear any previous errors
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? 'createCategory' : 'categories'), {
@@ -238,10 +241,16 @@ const AdminDashboard = () => {
         fetchCategories();
         setNewCategory('');
       } else {
-        console.error('Failed to create category');
+        const errorData = await response.json();
+        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+          setCategoryError('A category with this name already exists.');
+        } else {
+          setCategoryError(errorData.message || 'Failed to create category');
+        }
       }
     } catch (error) {
       console.error('Error:', error);
+      setCategoryError('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -269,10 +278,16 @@ const AdminDashboard = () => {
         });
         setShowUpdateCategoryModal(false);
       } else {
-        console.error('Failed to update category');
+        const errorData = await response.json();
+        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+          setCategoryError('A category with this name already exists.');
+        } else {
+          setCategoryError(errorData.message || 'Failed to update category');
+        }
       }
     } catch (error) {
       console.error('Error:', error);
+      setCategoryError('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -301,6 +316,7 @@ const AdminDashboard = () => {
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
+    setSubCategoryError(null); // Clear any previous errors
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? 'createSubCategory' : 'subcategories'), {
@@ -316,10 +332,16 @@ const AdminDashboard = () => {
         fetchSubCategories();
         setNewSubCategory({ name: '', category: '' });
       } else {
-        console.error('Failed to create subcategory');
+        const errorData = await response.json();
+        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+          setSubCategoryError('A subcategory with this name already exists.');
+        } else {
+          setSubCategoryError(errorData.message || 'Failed to create subcategory');
+        }
       }
     } catch (error) {
       console.error('Error:', error);
+      setSubCategoryError('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -347,10 +369,16 @@ const AdminDashboard = () => {
         });
         setShowUpdateSubCategoryModal(false);
       } else {
-        console.error('Failed to update subcategory');
+        const errorData = await response.json();
+        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
+          setSubCategoryError('A subcategory with this name already exists in this category.');
+        } else {
+          setSubCategoryError(errorData.message || 'Failed to update subcategory');
+        }
       }
     } catch (error) {
       console.error('Error:', error);
+      setSubCategoryError('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -688,11 +716,15 @@ const AdminDashboard = () => {
         </Modal.Body>
       </Modal>
 
-      <Modal show={showCategoryModal} onHide={() => setShowCategoryModal(false)}>
+      <Modal show={showCategoryModal} onHide={() => {
+        setShowCategoryModal(false);
+        setCategoryError(null); // Clear error when closing modal
+      }}>
         <Modal.Header closeButton>
           <Modal.Title>Add New Category</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {categoryError && <Alert variant="danger">{categoryError}</Alert>}
           <Form onSubmit={handleAddCategory}>
             <Form.Group>
               <Form.Label>Name</Form.Label>
@@ -710,11 +742,15 @@ const AdminDashboard = () => {
         </Modal.Body>
       </Modal>
 
-      <Modal show={showUpdateCategoryModal} onHide={() => setShowUpdateCategoryModal(false)}>
+      <Modal show={showUpdateCategoryModal} onHide={() => {
+        setShowUpdateCategoryModal(false);
+        setCategoryError(null);
+      }}>
         <Modal.Header closeButton>
           <Modal.Title>Update Category</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {categoryError && <Alert variant="danger">{categoryError}</Alert>}
           {selectedCategory && (
             <Form onSubmit={(e) => {
               e.preventDefault();
@@ -737,11 +773,15 @@ const AdminDashboard = () => {
         </Modal.Body>
       </Modal>
 
-      <Modal show={showSubCategoryModal} onHide={() => setShowSubCategoryModal(false)}>
+      <Modal show={showSubCategoryModal} onHide={() => {
+        setShowSubCategoryModal(false);
+        setSubCategoryError(null); // Clear error when closing modal
+      }}>
         <Modal.Header closeButton>
           <Modal.Title>Add New Subcategory for {newSubCategory.category}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {subCategoryError && <Alert variant="danger">{subCategoryError}</Alert>}
           <Form onSubmit={handleAddSubCategory}>
             <Form.Group>
               <Form.Label>Name</Form.Label>
@@ -759,11 +799,15 @@ const AdminDashboard = () => {
         </Modal.Body>
       </Modal>
 
-      <Modal show={showUpdateSubCategoryModal} onHide={() => setShowUpdateSubCategoryModal(false)}>
+      <Modal show={showUpdateSubCategoryModal} onHide={() => {
+        setShowUpdateSubCategoryModal(false);
+        setSubCategoryError(null);
+      }}>
         <Modal.Header closeButton>
           <Modal.Title>Update Subcategory</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {subCategoryError && <Alert variant="danger">{subCategoryError}</Alert>}
           {selectedSubCategory && (
             <Form onSubmit={(e) => {
               e.preventDefault();
