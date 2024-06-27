@@ -15,6 +15,7 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
   };
 
   const formatLink = (link) => {
+    if (!link) return '';
     if (link.startsWith('http://') || link.startsWith('https://')) {
       return link;
     } else if (link.startsWith('www.')) {

@@ -72,7 +72,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
     <div className="d-flex flex-column align-items-center">
       <h3 className="text-center mb-3">{title}</h3>
       <div className="table-responsive">
-        <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6' }}>
+        <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6', tableLayout: 'fixed', width: '100%' }}>
           <thead className="table-light">
             {headerGroups.map(headerGroup => {
               const { key, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps();
@@ -81,7 +81,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
                   {headerGroup.headers.map(column => {
                     const { key, ...restHeaderProps } = column.getHeaderProps(column.getSortByToggleProps());
                     return (
-                      <th key={key} {...restHeaderProps} style={{ border: 'none' }}>
+                      <th key={key} {...restHeaderProps} style={{ border: 'none', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                         {column.render('Header')}
                         <span>
                           {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
@@ -103,7 +103,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
                   {row.cells.map(cell => {
                     const { key, ...restCellProps } = cell.getCellProps();
                     return (
-                      <td key={key} {...restCellProps} className="align-middle" style={{ border: 'none' }}>
+                      <td key={key} {...restCellProps} className="align-middle" style={{ border: 'none', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                         {cell.column.id === 'link' ? (
                           <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                             {cell.value}
@@ -120,8 +120,8 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
           </tbody>
         </table>
       </div>
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <div className="me-3">
+      <div className="d-flex flex-column align-items-center mt-3">
+        <div className="d-flex justify-content-center mb-2">
           <button className="btn btn-outline-primary me-2" onClick={() => previousPage()} disabled={!canPreviousPage}>
             Previous
           </button>
@@ -129,25 +129,27 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
             Next
           </button>
         </div>
-        <span className="me-3">
-          Page{' '}
-          <strong className={pageIndex + 1 === pageOptions.length ? 'text-primary' : ''}>
-            {pageIndex + 1} of {pageOptions.length}
-          </strong>
-        </span>
-        <select
-          className="form-select w-auto"
-          value={pageSize}
-          onChange={e => {
-            setPageSize(Number(e.target.value));
-          }}
-        >
-          {[10, 20, 30, 40, 50].map(size => (
-            <option key={size} value={size}>
-              Show {size}
-            </option>
-          ))}
-        </select>
+        <div className="d-flex align-items-center">
+          <span className="me-2">
+            Page{' '}
+            <strong className={pageIndex + 1 === pageOptions.length ? 'text-primary' : ''}>
+              {pageIndex + 1} of {pageOptions.length}
+            </strong>
+          </span>
+          <select
+            className="form-select form-select-sm"
+            value={pageSize}
+            onChange={e => {
+              setPageSize(Number(e.target.value));
+            }}
+          >
+            {[10, 20, 30, 40, 50].map(size => (
+              <option key={size} value={size}>
+                Show {size}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );
