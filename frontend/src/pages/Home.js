@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import TableOfContents from '../components/TableOfContents';
 import ResourceTable from '../components/Resources/ResourceTable';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,10 +12,17 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const dataFetchedRef = useRef(false);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const searchTermFromQuery = searchParams.get('search') || '';
+    setSearchTerm(searchTermFromQuery);
+  }, [location.search]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -86,9 +94,22 @@ const Home = () => {
   }, [location, isLoading, resources]);
 
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
+  const updateSearchParams = (searchTerm) => {
+    const searchParams = new URLSearchParams({ search: searchTerm });
+    navigate(`?${searchParams.toString()}`);
   };
+
+  const handleSearch = (event) => {
+    const searchTerm = event.target.value;
+    setSearchTerm(searchTerm);
+    updateSearchParams(searchTerm);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    updateSearchParams('');
+  };
+
 
   const columns = useMemo(
     () => [
@@ -192,7 +213,8 @@ const Home = () => {
       )}
       <h1 className="mt-4 mb-4 text-center display-4 fw-bold">Mental Health Resources</h1>
 
-      <div className="mb-4">
+
+      <div className="input-group mb-4">
         <input
           type="text"
           className="form-control"
@@ -200,7 +222,13 @@ const Home = () => {
           value={searchTerm}
           onChange={handleSearch}
         />
+        {searchTerm && (
+          <button className="btn btn-outline-secondary ms-1" type="button" onClick={clearSearch}>
+            Clear
+          </button>
+        )}
       </div>
+
 
       {error && <div className="alert alert-danger">{error}</div>}
 

@@ -125,7 +125,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
           </tbody>
         </table>
       </div>
-      <div className="d-flex flex-column align-items-start mb-1">
+      <div className="d-flex flex-column align-items-center mb-1">
   <div className="mb-2">
     Page <strong>{pageIndex + 1}</strong> of <strong>{pageOptions.length}</strong>
   </div>
