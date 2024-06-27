@@ -241,14 +241,19 @@ const AdminDashboard = () => {
         fetchCategories();
         setNewCategory('');
       } else {
-        const errorData = await response.json();
         let errorMessage = 'Failed to create category';
-        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          errorMessage = 'A category with this name already exists.';
+        if (isProduction) {
+          const { error } = await response.json();
+          errorMessage = error.message || errorMessage;
         } else {
+          const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         }
-        setCategoryError(errorMessage);
+        if (errorMessage.includes('duplicate key error')) {
+          setCategoryError('A category with this name already exists.');
+        } else {
+          setCategoryError(errorMessage);
+        }
       }
     } catch (error) {
       console.error('Error:', error);
@@ -281,13 +286,11 @@ const AdminDashboard = () => {
         setShowUpdateCategoryModal(false);
       } else {
         const errorData = await response.json();
-        let errorMessage = 'Failed to update category';
         if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          errorMessage = 'A category with this name already exists.';
+          setCategoryError('A category with this name already exists.');
         } else {
-          errorMessage = errorData.message || errorMessage;
+          setCategoryError(errorData.message || 'Failed to update category');
         }
-        setCategoryError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -336,14 +339,19 @@ const AdminDashboard = () => {
         fetchSubCategories();
         setNewSubCategory({ name: '', category: '' });
       } else {
-        const errorData = await response.json();
         let errorMessage = 'Failed to create subcategory';
-        if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          errorMessage = 'A subcategory with this name already exists in this category.';
+        if (isProduction) {
+          const { error } = await response.json();
+          errorMessage = error.message || errorMessage;
         } else {
+          const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         }
-        setSubCategoryError(errorMessage);
+        if (errorMessage.includes('duplicate key error')) {
+          setSubCategoryError('A subcategory with this name already exists in this category.');
+        } else {
+          setSubCategoryError(errorMessage);
+        }
       }
     } catch (error) {
       console.error('Error:', error);
@@ -376,13 +384,11 @@ const AdminDashboard = () => {
         setShowUpdateSubCategoryModal(false);
       } else {
         const errorData = await response.json();
-        let errorMessage = 'Failed to update subcategory';
         if (response.status === 409 || errorData.message.includes('duplicate key error')) {
-          errorMessage = 'A subcategory with this name already exists in this category.';
+          setSubCategoryError('A subcategory with this name already exists in this category.');
         } else {
-          errorMessage = errorData.message || errorMessage;
+          setSubCategoryError(errorData.message || 'Failed to update subcategory');
         }
-        setSubCategoryError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
