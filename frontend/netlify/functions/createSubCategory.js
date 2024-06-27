@@ -12,6 +12,16 @@ exports.handler = async (event, context) => {
     await getConnection();
 
     const body = JSON.parse(event.body);
+
+    // Check for existing subcategory with the same name in the same category
+    const existingSubCategory = await SubCategory.findOne({ name: body.name, category: body.category });
+    if (existingSubCategory) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'A subcategory with this name already exists in this category.' })
+      };
+    }
+
     const maxOrderSubCategory = await SubCategory.findOne({ category: body.category }).sort('-order');
     const newOrder = maxOrderSubCategory ? maxOrderSubCategory.order + 1 : 0;
     const subCategory = new SubCategory({

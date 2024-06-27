@@ -14,6 +14,20 @@ exports.handler = async (event, context) => {
     const id = event.path.split('/').pop();
     const { name, oldName, category } = JSON.parse(event.body);
 
+    // Check for existing subcategory with the same name in the same category
+    const existingSubCategory = await SubCategory.findOne({ 
+      name: name, 
+      category: category,
+      _id: { $ne: id } // Exclude the current subcategory
+    });
+
+    if (existingSubCategory) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'A subcategory with this name already exists in this category.' })
+      };
+    }
+
     const updatedSubCategory = await SubCategory.findByIdAndUpdate(
       id,
       { name, category },
