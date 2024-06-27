@@ -18,6 +18,7 @@ const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dataFetchedRef = useRef(false);
+  const [expandedCategoryId, setExpandedCategoryId] = useState(null);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
@@ -68,6 +69,8 @@ const Home = () => {
 
     fetchAllData();
   }, [location, isProduction, apiUrl]);
+
+
 
   const updateSearchParams = useCallback((searchTerm) => {
     const searchParams = new URLSearchParams({ search: searchTerm });
@@ -191,12 +194,27 @@ const Home = () => {
     }, 100);
   }, []);
 
-  const handleAccordionToggle = useCallback((categoryId) => {
-    setExpandedCategoryIds(prevIds =>
-      prevIds.includes(categoryId) ? prevIds.filter(id => id !== categoryId) : [...prevIds, categoryId]
-    );
-  }, []);
-
+  const handleAccordionToggle = (categoryId) => {
+    setExpandedCategoryId(prevId => (prevId === categoryId ? null : categoryId));
+  };
+  
+  useEffect(() => {
+    const { category, subCategory } = location.state || {};
+    if (category && subCategory) {
+      const categoryId = categories.find(
+        cat => cat.name.toLowerCase() === category.toLowerCase()
+      )?._id;
+      if (categoryId) {
+        setExpandedCategoryId(categoryId);
+        setTimeout(() => {
+          const element = document.getElementById(`category-${categoryId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'instant' });
+          }
+        }, 100);
+      }
+    }
+  }, [location.state, categories]);
   useEffect(() => {
     if (categoriesWithResources.length > 0 && !searchTerm) {
       setExpandedCategoryIds([categoriesWithResources[0]._id]);
@@ -272,7 +290,7 @@ const Home = () => {
                 )}
                 columns={columns}
                 searchTerm={debouncedSearchTerm}
-                isExpanded={expandedCategoryIds.includes(category._id)}
+                isExpanded={expandedCategoryId === category._id}
                 onToggle={() => handleAccordionToggle(category._id)}
               />
             ))}
