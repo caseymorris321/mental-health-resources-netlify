@@ -231,7 +231,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const { category, subCategory } = location.state || {};
+    const { category } = location.state || {};
     if (category && categories.length > 0) {
       const categoryObj = categories.find(
         cat => cat.name.toLowerCase() === category.toLowerCase()
