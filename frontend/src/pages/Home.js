@@ -203,8 +203,9 @@ const Home = () => {
     );
   }, [subCategories, filteredResources]);
 
-   const handleQuickLinkClick = (categoryId) => {
-    setExpandedCategoryIds(prev => [...prev, categoryId]);
+  const handleQuickLinkClick = (categoryId) => {
+    setExpandedCategoryId(categoryId);
+    setExpandedCategoryIds([categoryId]);
     setTimeout(() => {
       const element = document.getElementById(`category-${categoryId}`);
       if (element) {
