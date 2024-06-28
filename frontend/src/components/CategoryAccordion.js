@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
 const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle }) => {
