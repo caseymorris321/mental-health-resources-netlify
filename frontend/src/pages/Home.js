@@ -17,7 +17,6 @@ const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dataFetchedRef = useRef(false);
-  const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
