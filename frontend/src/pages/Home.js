@@ -24,13 +24,6 @@ const Home = () => {
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const searchTermFromQuery = searchParams.get('search') || '';
-    setSearchTerm(searchTermFromQuery);
-    setDebouncedSearchTerm(searchTermFromQuery);
-  }, [location.search]);
-
-  useEffect(() => {
     const fetchAllData = async () => {
       if (location.pathname === '/' && !dataFetchedRef.current) {
         setIsLoading(true);
@@ -70,12 +63,27 @@ const Home = () => {
     fetchAllData();
   }, [location, isProduction, apiUrl]);
 
-
-
   const updateSearchParams = useCallback((searchTerm) => {
     const searchParams = new URLSearchParams({ search: searchTerm });
     navigate(`?${searchParams.toString()}`);
   }, [navigate]);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const searchTermFromQuery = searchParams.get('search') || '';
+    setSearchTerm(searchTermFromQuery);
+    setDebouncedSearchTerm(searchTermFromQuery);
+  }, [location.search]);
+
+  useEffect(() => {
+    const clearSearchOnRefresh = () => {
+      setSearchTerm('');
+      setDebouncedSearchTerm('');
+      updateSearchParams('');
+    };
+  
+    clearSearchOnRefresh();
+  }, [updateSearchParams]);
 
   const debouncedUpdateSearchParams = useMemo(
     () => debounce(updateSearchParams, 1000),
