@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
-const CategoryAccordion = ({ id, category, subCategories, resources, columns, searchTerm, isExpanded, onToggle }) => {
+const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle }) => {
   return (
     <div id={id} className="card mb-3">
-      <div
-        className="card-header"
+      <div 
+        className="card-header" 
         onClick={onToggle}
         style={{ cursor: 'pointer' }}
       >

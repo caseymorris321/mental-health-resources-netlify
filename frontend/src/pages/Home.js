@@ -17,6 +17,7 @@ const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dataFetchedRef = useRef(false);
+  const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
@@ -183,31 +184,31 @@ const Home = () => {
     );
   }, [subCategories, filteredResources]);
 
-  const handleQuickLinkClick = (categoryId) => {
-    setExpandedCategoryIds([categoryId]);
+   const handleQuickLinkClick = (categoryId) => {
+    setExpandedCategoryIds(prev => [...prev, categoryId]);
     setTimeout(() => {
       const element = document.getElementById(`category-${categoryId}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({ behavior: 'instant' });
       }
-    }, 0);
+    }, 100);
   };
-  
 
   const handleAccordionToggle = (categoryId) => {
-    setExpandedCategoryIds(prevExpandedCategoryIds => {
-      if (prevExpandedCategoryIds.includes(categoryId)) {
-        return prevExpandedCategoryIds.filter(id => id !== categoryId);
+    setExpandedCategoryId(prevId => prevId === categoryId ? null : categoryId);
+    setExpandedCategoryIds(prev => {
+      if (prev.includes(categoryId)) {
+        return prev.filter(id => id !== categoryId);
       } else {
-        setTimeout(() => {
-          const element = document.getElementById(`category-${categoryId}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 0);
         return [categoryId];
       }
     });
+    setTimeout(() => {
+      const element = document.getElementById(`category-${categoryId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant' });
+      }
+    }, 100);
   };
 
   useEffect(() => {
@@ -217,7 +218,7 @@ const Home = () => {
         cat => cat.name.toLowerCase() === category.toLowerCase()
       )?._id;
       if (categoryId) {
-        setExpandedCategoryIds([categoryId]);
+        setExpandedCategoryId(categoryId);
         setTimeout(() => {
           const element = document.getElementById(`category-${categoryId}`);
           if (element) {
@@ -226,7 +227,7 @@ const Home = () => {
         }, 100);
       }
     } else if (categories.length > 0) {
-      setExpandedCategoryIds([categories[0]._id]);
+      setExpandedCategoryId(categories[0]._id);
     }
   }, [location.state, categories]);
 
@@ -248,9 +249,10 @@ const Home = () => {
           )
         )
         .map(category => category._id);
-      setExpandedCategoryIds(matchingCategoryIds);
-    } else if (categoriesWithResources.length > 0) {
-      setExpandedCategoryIds([categoriesWithResources[0]._id]);
+      setExpandedCategoryIds(prevExpandedCategoryIds => [
+        ...prevExpandedCategoryIds,
+        ...matchingCategoryIds.filter(id => !prevExpandedCategoryIds.includes(id))
+      ]);
     }
   }, [searchTerm, categoriesWithResources, filteredResources]);
 
@@ -304,8 +306,7 @@ const Home = () => {
                   resource => resource.category.toLowerCase() === category.name.toLowerCase()
                 )}
                 columns={columns}
-                searchTerm={debouncedSearchTerm}
-                isExpanded={expandedCategoryIds.includes(category._id)}
+                isExpanded={expandedCategoryId === category._id || expandedCategoryIds.includes(category._id)}
                 onToggle={() => handleAccordionToggle(category._id)}
               />
             ))}
