@@ -14,11 +14,11 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
   const dataFetchedRef = useRef(false);
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
@@ -185,22 +185,30 @@ const Home = () => {
   }, [subCategories, filteredResources]);
 
   const handleQuickLinkClick = (categoryId) => {
-    setExpandedCategoryId(categoryId);
+    setExpandedCategoryIds([categoryId]);
     setTimeout(() => {
       const element = document.getElementById(`category-${categoryId}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'instant' });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 100);
+    }, 0);
   };
+  
+
   const handleAccordionToggle = (categoryId) => {
-    setExpandedCategoryId(prevId => (prevId === categoryId ? null : categoryId));
-    setTimeout(() => {
-      const element = document.getElementById(`category-${categoryId}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant' });
+    setExpandedCategoryIds(prevExpandedCategoryIds => {
+      if (prevExpandedCategoryIds.includes(categoryId)) {
+        return prevExpandedCategoryIds.filter(id => id !== categoryId);
+      } else {
+        setTimeout(() => {
+          const element = document.getElementById(`category-${categoryId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 0);
+        return [categoryId];
       }
-    }, 100);
+    });
   };
 
   useEffect(() => {
@@ -210,7 +218,7 @@ const Home = () => {
         cat => cat.name.toLowerCase() === category.toLowerCase()
       )?._id;
       if (categoryId) {
-        setExpandedCategoryId(categoryId);
+        setExpandedCategoryIds([categoryId]);
         setTimeout(() => {
           const element = document.getElementById(`category-${categoryId}`);
           if (element) {
@@ -219,10 +227,10 @@ const Home = () => {
         }, 100);
       }
     } else if (categories.length > 0) {
-      setExpandedCategoryId(categories[0]._id);
+      setExpandedCategoryIds([categories[0]._id]);
     }
   }, [location.state, categories]);
-  
+
   useEffect(() => {
     if (categoriesWithResources.length > 0 && !searchTerm) {
       setExpandedCategoryIds([categoriesWithResources[0]._id]);
@@ -242,8 +250,8 @@ const Home = () => {
         )
         .map(category => category._id);
       setExpandedCategoryIds(matchingCategoryIds);
-    } else {
-      setExpandedCategoryIds([categoriesWithResources[0]?._id]);
+    } else if (categoriesWithResources.length > 0) {
+      setExpandedCategoryIds([categoriesWithResources[0]._id]);
     }
   }, [searchTerm, categoriesWithResources, filteredResources]);
 
@@ -298,9 +306,8 @@ const Home = () => {
                 )}
                 columns={columns}
                 searchTerm={debouncedSearchTerm}
-                isExpanded={expandedCategoryId === category._id}
+                isExpanded={expandedCategoryIds.includes(category._id)}
                 onToggle={() => handleAccordionToggle(category._id)}
-                expandedCategoryIds={expandedCategoryIds}
               />
             ))}
           </div>

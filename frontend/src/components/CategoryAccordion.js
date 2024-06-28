@@ -1,24 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
 const CategoryAccordion = ({ id, category, subCategories, resources, columns, searchTerm, isExpanded, onToggle }) => {
-  useEffect(() => {
-    if (searchTerm) {
-      const hasMatch = resources.some(resource => 
-        Object.values(resource).some(value => 
-          value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-      if (hasMatch && !isExpanded) {
-        onToggle();
-      }
-    }
-  }, [searchTerm, resources, isExpanded, onToggle]);
-
   return (
     <div id={id} className="card mb-3">
-      <div 
-        className="card-header" 
+      <div
+        className="card-header"
         onClick={onToggle}
         style={{ cursor: 'pointer' }}
       >
