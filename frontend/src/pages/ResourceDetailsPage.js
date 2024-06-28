@@ -129,7 +129,6 @@ const ResourceDetailsPage = () => {
     return <div>Error: {error}</div>;
   }
 
-
   return (
     <div className="container">
       <h2>Resource Details</h2>

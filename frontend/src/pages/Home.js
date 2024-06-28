@@ -19,9 +19,18 @@ const Home = () => {
   const dataFetchedRef = useRef(false);
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
+  const isReturningFromResource = useRef(false);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const searchTermFromQuery = searchParams.get('search') || '';
+    setSearchTerm(searchTermFromQuery);
+    setDebouncedSearchTerm(searchTermFromQuery);
+  }, [location.search]);
+
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -63,27 +72,12 @@ const Home = () => {
     fetchAllData();
   }, [location, isProduction, apiUrl]);
 
+
+
   const updateSearchParams = useCallback((searchTerm) => {
     const searchParams = new URLSearchParams({ search: searchTerm });
     navigate(`?${searchParams.toString()}`);
   }, [navigate]);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const searchTermFromQuery = searchParams.get('search') || '';
-    setSearchTerm(searchTermFromQuery);
-    setDebouncedSearchTerm(searchTermFromQuery);
-  }, [location.search]);
-
-  useEffect(() => {
-    const clearSearchOnRefresh = () => {
-      setSearchTerm('');
-      setDebouncedSearchTerm('');
-      updateSearchParams('');
-    };
-  
-    clearSearchOnRefresh();
-  }, [updateSearchParams]);
 
   const debouncedUpdateSearchParams = useMemo(
     () => debounce(updateSearchParams, 1000),
@@ -100,6 +94,23 @@ const Home = () => {
     setSearchTerm('');
     setDebouncedSearchTerm('');
     updateSearchParams('');
+  
+    // Keep accordions open for categories that have resources
+    const categoriesToKeepOpen = categoriesWithResources
+      .filter(category => 
+        filteredResources.some(resource => 
+          resource.category.toLowerCase() === category.name.toLowerCase()
+        )
+      )
+      .map(category => category._id);
+  
+    setExpandedCategoryIds(categoriesToKeepOpen);
+  
+    if (categoriesToKeepOpen.length > 0) {
+      setExpandedCategoryId(categoriesToKeepOpen[0]);
+    } else {
+      setExpandedCategoryId(null);
+    }
   };
 
   const columns = useMemo(
@@ -221,29 +232,34 @@ const Home = () => {
 
   useEffect(() => {
     const { category, subCategory } = location.state || {};
-    if (category && subCategory) {
-      const categoryId = categories.find(
+    if (category && categories.length > 0) {
+      const categoryObj = categories.find(
         cat => cat.name.toLowerCase() === category.toLowerCase()
-      )?._id;
-      if (categoryId) {
-        setExpandedCategoryId(categoryId);
+      );
+      if (categoryObj) {
+        setExpandedCategoryId(categoryObj._id);
+        setExpandedCategoryIds([categoryObj._id]);
         setTimeout(() => {
-          const element = document.getElementById(`category-${categoryId}`);
+          const element = document.getElementById(`category-${categoryObj._id}`);
           if (element) {
             element.scrollIntoView({ behavior: 'instant' });
           }
         }, 100);
+      } else {
+        setExpandedCategoryId(null);
+        setExpandedCategoryIds([]);
       }
-    } else if (categories.length > 0) {
+      isReturningFromResource.current = true;
+    } else if (isReturningFromResource.current) {
+      setExpandedCategoryId(null);
+      setExpandedCategoryIds([]);
+      isReturningFromResource.current = false;
+    } else if (categories.length > 0 && !isReturningFromResource.current) {
+      // Open the first accordion by default when not returning from a resource
       setExpandedCategoryId(categories[0]._id);
+      setExpandedCategoryIds([categories[0]._id]);
     }
   }, [location.state, categories]);
-
-  useEffect(() => {
-    if (categoriesWithResources.length > 0 && !searchTerm) {
-      setExpandedCategoryIds([categoriesWithResources[0]._id]);
-    }
-  }, [categoriesWithResources, searchTerm]);
 
   useEffect(() => {
     if (searchTerm) {
