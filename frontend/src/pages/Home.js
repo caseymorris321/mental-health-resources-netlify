@@ -94,18 +94,18 @@ const Home = () => {
     setSearchTerm('');
     setDebouncedSearchTerm('');
     updateSearchParams('');
-  
+
     // Keep accordions open for categories that have resources
     const categoriesToKeepOpen = categoriesWithResources
-      .filter(category => 
-        filteredResources.some(resource => 
+      .filter(category =>
+        filteredResources.some(resource =>
           resource.category.toLowerCase() === category.name.toLowerCase()
         )
       )
       .map(category => category._id);
-  
+
     setExpandedCategoryIds(categoriesToKeepOpen);
-  
+
     if (categoriesToKeepOpen.length > 0) {
       setExpandedCategoryId(categoriesToKeepOpen[0]);
     } else {
@@ -274,10 +274,19 @@ const Home = () => {
           )
         )
         .map(category => category._id);
-      setExpandedCategoryIds(prevExpandedCategoryIds => [
-        ...prevExpandedCategoryIds,
-        ...matchingCategoryIds.filter(id => !prevExpandedCategoryIds.includes(id))
-      ]);
+
+      if (matchingCategoryIds.length > 0) {
+        setExpandedCategoryIds(matchingCategoryIds);
+        setExpandedCategoryId(matchingCategoryIds[0]);
+      } else if (categoriesWithResources.length > 0) {
+        // If no matches, show the first accordion
+        setExpandedCategoryIds([categoriesWithResources[0]._id]);
+        setExpandedCategoryId(categoriesWithResources[0]._id);
+      }
+    } else if (categoriesWithResources.length > 0) {
+      // When search is cleared, show the first accordion
+      setExpandedCategoryIds([categoriesWithResources[0]._id]);
+      setExpandedCategoryId(categoriesWithResources[0]._id);
     }
   }, [searchTerm, categoriesWithResources, filteredResources]);
 
