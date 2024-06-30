@@ -94,9 +94,32 @@ const Home = () => {
     setSearchTerm('');
     setDebouncedSearchTerm('');
     updateSearchParams('');
-
-
+  
+    // Check if there were any search results
+    if (filteredResources.length > 0) {
+      // If there were search results, keep those categories open
+      const categoriesToKeepOpen = categoriesWithResources.map(category => category._id);
+      setExpandedCategoryIds(categoriesToKeepOpen);
+      setExpandedCategoryId(categoriesToKeepOpen[0] || null);
+    } else {
+      // If no search results were found, open only the first accordion
+      if (categories.length > 0) {
+        setExpandedCategoryIds([categories[0]._id]);
+        setExpandedCategoryId(categories[0]._id);
+      } else {
+        setExpandedCategoryIds([]);
+        setExpandedCategoryId(null);
+      }
+    }
   };
+
+  useEffect(() => {
+    if (!searchTerm && categories.length > 0 && expandedCategoryIds.length === 0) {
+      // If there's no search term and no expanded categories, open the first one
+      setExpandedCategoryIds([categories[0]._id]);
+      setExpandedCategoryId(categories[0]._id);
+    }
+  }, [searchTerm, categories, expandedCategoryIds]);
 
   const columns = useMemo(
     () => [
@@ -258,24 +281,21 @@ const Home = () => {
       const matchingCategoryIds = categoriesWithResources
         .filter(category =>
           filteredResources.some(resource =>
-            resource.category.toLowerCase() === category.name.toLowerCase() &&
-            Object.values(resource).some(value =>
-              value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-            )
+            resource.category.toLowerCase() === category.name.toLowerCase()
           )
         )
         .map(category => category._id);
-
+  
       if (matchingCategoryIds.length > 0) {
         setExpandedCategoryIds(matchingCategoryIds);
         setExpandedCategoryId(matchingCategoryIds[0]);
-      } else if (categoriesWithResources.length > 0) {
+      } else {
         // If no matches, show only the first accordion
-        setExpandedCategoryIds([categoriesWithResources[0]._id]);
-        setExpandedCategoryId(categoriesWithResources[0]._id);
+        setExpandedCategoryIds(categoriesWithResources.length > 0 ? [categoriesWithResources[0]._id] : []);
+        setExpandedCategoryId(categoriesWithResources.length > 0 ? categoriesWithResources[0]._id : null);
       }
     }
-    // Remove the else condition that was setting the first accordion when search is cleared
+    // No else clause, so clearing the search won't affect the accordions here
   }, [searchTerm, categoriesWithResources, filteredResources]);
 
   return (
