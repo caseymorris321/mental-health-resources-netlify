@@ -95,22 +95,7 @@ const Home = () => {
     setDebouncedSearchTerm('');
     updateSearchParams('');
 
-    // Keep accordions open for categories that have resources
-    const categoriesToKeepOpen = categoriesWithResources
-      .filter(category =>
-        filteredResources.some(resource =>
-          resource.category.toLowerCase() === category.name.toLowerCase()
-        )
-      )
-      .map(category => category._id);
 
-    setExpandedCategoryIds(categoriesToKeepOpen);
-
-    if (categoriesToKeepOpen.length > 0) {
-      setExpandedCategoryId(categoriesToKeepOpen[0]);
-    } else {
-      setExpandedCategoryId(null);
-    }
   };
 
   const columns = useMemo(
@@ -232,7 +217,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const { category } = location.state || {};
+    const { category, subCategory, scrollToSubCategory } = location.state || {};
     if (category && categories.length > 0) {
       const categoryObj = categories.find(
         cat => cat.name.toLowerCase() === category.toLowerCase()
@@ -241,9 +226,16 @@ const Home = () => {
         setExpandedCategoryId(categoryObj._id);
         setExpandedCategoryIds([categoryObj._id]);
         setTimeout(() => {
-          const element = document.getElementById(`category-${categoryObj._id}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'instant' });
+          if (scrollToSubCategory && subCategory) {
+            const subCategoryElement = document.getElementById(`subcategory-${subCategory.replace(/\s+/g, '-').toLowerCase()}`);
+            if (subCategoryElement) {
+              subCategoryElement.scrollIntoView({ behavior: 'instant' });
+            }
+          } else {
+            const element = document.getElementById(`category-${categoryObj._id}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'instant' });
+            }
           }
         }, 100);
       } else {
@@ -256,7 +248,6 @@ const Home = () => {
       setExpandedCategoryIds([]);
       isReturningFromResource.current = false;
     } else if (categories.length > 0 && !isReturningFromResource.current) {
-      // Open the first accordion by default when not returning from a resource
       setExpandedCategoryId(categories[0]._id);
       setExpandedCategoryIds([categories[0]._id]);
     }
@@ -279,15 +270,12 @@ const Home = () => {
         setExpandedCategoryIds(matchingCategoryIds);
         setExpandedCategoryId(matchingCategoryIds[0]);
       } else if (categoriesWithResources.length > 0) {
-        // If no matches, show the first accordion
+        // If no matches, show only the first accordion
         setExpandedCategoryIds([categoriesWithResources[0]._id]);
         setExpandedCategoryId(categoriesWithResources[0]._id);
       }
-    } else if (categoriesWithResources.length > 0) {
-      // When search is cleared, show the first accordion
-      setExpandedCategoryIds([categoriesWithResources[0]._id]);
-      setExpandedCategoryId(categoriesWithResources[0]._id);
     }
+    // Remove the else condition that was setting the first accordion when search is cleared
   }, [searchTerm, categoriesWithResources, filteredResources]);
 
   return (

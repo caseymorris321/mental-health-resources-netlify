@@ -4,8 +4,8 @@ import ResourceTable from './Resources/ResourceTable';
 const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle }) => {
   return (
     <div id={id} className="card mb-3">
-      <div 
-        className="card-header" 
+      <div
+        className="card-header"
         onClick={onToggle}
         style={{ cursor: 'pointer' }}
       >
@@ -21,7 +21,7 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
             if (subCategoryResources.length === 0) return null;
 
             return (
-              <div key={subCategory._id} className="mb-4">
+              <div key={subCategory._id} className="mb-4" id={`subcategory-${subCategory.name.replace(/\s+/g, '-').toLowerCase()}`}>
                 <h3>{subCategory.name}</h3>
                 <ResourceTable
                   columns={columns}

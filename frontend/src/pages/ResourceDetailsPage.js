@@ -72,7 +72,8 @@ const ResourceDetailsPage = () => {
     navigate('/', {
       state: {
         category: resource.category,
-        subCategory: resource.subCategory
+        subCategory: resource.subCategory,
+        scrollToSubCategory: true
       }
     });
   };
