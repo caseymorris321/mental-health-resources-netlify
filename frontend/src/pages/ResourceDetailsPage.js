@@ -130,6 +130,11 @@ const ResourceDetailsPage = () => {
     return <div>Error: {error}</div>;
   }
 
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
   return (
     <div className="container">
       <h2>Resource Details</h2>
@@ -156,6 +161,11 @@ const ResourceDetailsPage = () => {
                 />
               </Modal.Body>
             </Modal>
+          )}
+          {resource.updatedAt && (
+            <p className="text-muted mt-4">
+              This page was last edited on {formatDate(resource.updatedAt)}
+            </p>
           )}
         </>
       ) : (
