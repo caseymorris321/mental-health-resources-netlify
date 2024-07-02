@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes, useNavigate, useLocation } from 'react-ro
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import AccessDenied from './pages/AccessDenied';
+import { LoadingProvider } from './context/LoadingContext';
+import Loading from './components/Loading/Loading';
 
 // Pages
 import Home from './pages/Home';
@@ -42,6 +44,7 @@ function AppContent() {
   return (
     <div className="App">
       <Navbar />
+      <Loading />
       <div className="container mt-4">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -74,8 +77,10 @@ function App() {
           );
         }}
       >
+       <LoadingProvider> 
         <ErrorHandler />
         <AppContent />
+      </LoadingProvider>
       </Auth0Provider>
     </BrowserRouter>
   );

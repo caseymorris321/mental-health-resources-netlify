@@ -163,7 +163,7 @@ const ResourceDetailsPage = () => {
             </Modal>
           )}
           {resource.updatedAt && (
-            <p className="text-muted mt-4">
+            <p className="text-muted mt-4 small">
               This page was last edited on {formatDate(resource.updatedAt)}
             </p>
           )}
