@@ -324,7 +324,7 @@ const Home = () => {
       {error && <div className="alert alert-danger">{error}</div>}
 
       {isLoading ? (
-        <p>Loading resources...</p>
+        <p className='flash-loading'>Loading resources...</p>
       ) : filteredResources.length === 0 ? (
         <p className="text-center">No resources found.</p>
       ) : (
