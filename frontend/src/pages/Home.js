@@ -114,13 +114,13 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    if (!searchTerm && categories.length > 0 && expandedCategoryIds.length === 0) {
-      // If there's no search term and no expanded categories, open the first one
-      setExpandedCategoryIds([categories[0]._id]);
-      setExpandedCategoryId(categories[0]._id);
-    }
-  }, [searchTerm, categories, expandedCategoryIds]);
+  // useEffect(() => {
+  //   if (!searchTerm && categories.length > 0 && expandedCategoryIds.length === 0) {
+  //     // If there's no search term and no expanded categories, open the first one
+  //     setExpandedCategoryIds([categories[0]._id]);
+  //     setExpandedCategoryId(categories[0]._id);
+  //   }
+  // }, [searchTerm, categories, expandedCategoryIds]);
 
   const columns = useMemo(
     () => [
@@ -278,7 +278,7 @@ const Home = () => {
   }, [location.state, categories]);
 
   useEffect(() => {
-    if (searchTerm) {
+    if (debouncedSearchTerm) {
       const matchingCategoryIds = categoriesWithResources
         .filter(category =>
           filteredResources.some(resource =>
@@ -291,13 +291,18 @@ const Home = () => {
         setExpandedCategoryIds(matchingCategoryIds);
         setExpandedCategoryId(matchingCategoryIds[0]);
       } else {
-        // If no matches, show only the first accordion
-        setExpandedCategoryIds(categoriesWithResources.length > 0 ? [categoriesWithResources[0]._id] : []);
-        setExpandedCategoryId(categoriesWithResources.length > 0 ? categoriesWithResources[0]._id : null);
+        // If no matches, keep the last opened accordion or close all accordions
+        const lastOpenedCategoryId = expandedCategoryIds[expandedCategoryIds.length - 1];
+        if (lastOpenedCategoryId) {
+          setExpandedCategoryIds([lastOpenedCategoryId]);
+          setExpandedCategoryId(lastOpenedCategoryId);
+        } else {
+          setExpandedCategoryIds([]);
+          setExpandedCategoryId(null);
+        }
       }
     }
-    // No else clause, so clearing the search won't affect the accordions here
-  }, [searchTerm, categoriesWithResources, filteredResources]);
+  }, [debouncedSearchTerm, categoriesWithResources, filteredResources, expandedCategoryIds]);
 
   return (
     <div className="container">

@@ -9,7 +9,7 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
         onClick={onToggle}
         style={{ cursor: 'pointer' }}
       >
-        <h2>{category.name}</h2>
+        <h2 className='text-center'>{category.name}</h2>
       </div>
       {isExpanded && (
         <div className="card-body">
@@ -22,7 +22,7 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
 
             return (
               <div key={subCategory._id} className="mb-4" id={`subcategory-${subCategory.name.replace(/\s+/g, '-').toLowerCase()}`}>
-                <h3>{subCategory.name}</h3>
+                <h3 className='text-center'>{subCategory.name}</h3>
                 <ResourceTable
                   columns={columns}
                   data={subCategoryResources}

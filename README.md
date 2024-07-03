@@ -63,3 +63,7 @@ The Mental Health Resource Manager App is a web application designed to provide 
 - Prepare application for deployment
 - Host the web app
 - Write comprehensive documentation
+
+
+## Credits
+Favicon: [Wellness icons created by Nadiinko - Flaticon](https://www.flaticon.com/free-icons/wellness)
