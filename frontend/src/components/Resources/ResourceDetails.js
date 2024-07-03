@@ -27,7 +27,7 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
   };
 
   return (
-    <Card className="mt-4 mb-3">
+    <Card className="mt-4 mb-1">
       <Card.Body>
         {showAdminControls && (
           <div className="d-flex justify-content-end mb-2">
