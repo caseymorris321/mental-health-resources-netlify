@@ -157,7 +157,7 @@ const AdminDashboard = () => {
   }, [isAuthenticated, fetchAllData, location]);
 
   if (authLoading) {
-    return <div>Loading...</div>;
+    return <div className="flashing-loading">Loading...</div>;
   }
 
   if (!isAuthenticated) {

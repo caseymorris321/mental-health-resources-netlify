@@ -6,7 +6,7 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
   const [isUpdating, setIsUpdating] = useState(false);
 
   if (!resource) {
-    return <div>Loading...</div>;
+    return <div className="flashing-loading">Loading...</div>;
   }
 
   const handleUpdate = (updatedResource) => {
