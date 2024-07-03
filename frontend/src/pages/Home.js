@@ -21,6 +21,7 @@ const Home = () => {
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
   const isReturningFromResource = useRef(false);
+  const [lastOpenedCategoryId, setLastOpenedCategoryId] = useState(null);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
@@ -96,22 +97,9 @@ const Home = () => {
     setDebouncedSearchTerm('');
     updateSearchParams('');
   
-    // Check if there were any search results
-    if (filteredResources.length > 0) {
-      // If there were search results, keep those categories open
-      const categoriesToKeepOpen = categoriesWithResources.map(category => category._id);
-      setExpandedCategoryIds(categoriesToKeepOpen);
-      setExpandedCategoryId(categoriesToKeepOpen[0] || null);
-    } else {
-      // If no search results were found, open only the first accordion
-      if (categories.length > 0) {
-        setExpandedCategoryIds([categories[0]._id]);
-        setExpandedCategoryId(categories[0]._id);
-      } else {
-        setExpandedCategoryIds([]);
-        setExpandedCategoryId(null);
-      }
-    }
+    // Keep the currently expanded accordions open
+    setExpandedCategoryIds(expandedCategoryIds);
+    setExpandedCategoryId(expandedCategoryId);
   };
 
   // useEffect(() => {
@@ -276,7 +264,7 @@ const Home = () => {
       setExpandedCategoryIds([categories[0]._id]);
     }
   }, [location.state, categories]);
-
+  
   useEffect(() => {
     if (debouncedSearchTerm) {
       const matchingCategoryIds = categoriesWithResources
@@ -291,18 +279,12 @@ const Home = () => {
         setExpandedCategoryIds(matchingCategoryIds);
         setExpandedCategoryId(matchingCategoryIds[0]);
       } else {
-        // If no matches, keep the last opened accordion or close all accordions
-        const lastOpenedCategoryId = expandedCategoryIds[expandedCategoryIds.length - 1];
-        if (lastOpenedCategoryId) {
-          setExpandedCategoryIds([lastOpenedCategoryId]);
-          setExpandedCategoryId(lastOpenedCategoryId);
-        } else {
-          setExpandedCategoryIds([]);
-          setExpandedCategoryId(null);
-        }
+        // If no matches, keep the last opened accordions
+        setExpandedCategoryIds(expandedCategoryIds);
+        setExpandedCategoryId(expandedCategoryId);
       }
     }
-  }, [debouncedSearchTerm, categoriesWithResources, filteredResources, expandedCategoryIds]);
+  }, [debouncedSearchTerm, categoriesWithResources, filteredResources, expandedCategoryIds, expandedCategoryId]);
 
   return (
     <div className="container">
