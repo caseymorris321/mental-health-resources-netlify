@@ -4,6 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ResourceDetails from '../components/Resources/ResourceDetails';
 import { Button, Modal } from 'react-bootstrap';
 import CreateResourceForm from '../components/CreateResourceForm';
+import '../loading.css';
 
 const ResourceDetailsPage = () => {
   const { id } = useParams();
@@ -169,7 +170,7 @@ const ResourceDetailsPage = () => {
           )}
         </>
       ) : (
-        <p>Loading resource...</p>
+        <p className="loading-text">Loading resource...</p>
       )}
       <Button variant="primary" onClick={handleGoBack} className="mb-3">
         Back to Resources

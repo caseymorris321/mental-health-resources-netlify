@@ -166,7 +166,7 @@ const AdminDashboard = () => {
   }
 
   if (isLoading) {
-    return <div>Loading resources...</div>;
+    return <div className="loading-text">Loading resources...</div>;
   }
 
   if (error) {
