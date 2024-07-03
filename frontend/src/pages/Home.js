@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import WelcomeScreen from '../components/WelcomeScreen';
 import QuickLinks from '../components/QuickLinks';
 import CategoryAccordion from '../components/CategoryAccordion';
+import '../loading.css';
 
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -324,7 +325,7 @@ const Home = () => {
       {error && <div className="alert alert-danger">{error}</div>}
 
       {isLoading ? (
-        <p className='flash-loading'>Loading resources...</p>
+        <p className='loading-text'>Loading resources...</p>
       ) : filteredResources.length === 0 ? (
         <p className="text-center">No resources found.</p>
       ) : (

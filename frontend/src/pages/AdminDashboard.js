@@ -3,6 +3,7 @@ import { Container, Button, Modal, Form, ListGroup, Alert } from 'react-bootstra
 import { useAuth0 } from '@auth0/auth0-react';
 import CreateResourceForm from '../components/CreateResourceForm';
 import { Navigate, useLocation, Link } from 'react-router-dom';
+import '../loading.css'
 
 const AdminDashboard = () => {
   const { user, getAccessTokenSilently, isAuthenticated, isLoading: authLoading } = useAuth0();
@@ -157,7 +158,7 @@ const AdminDashboard = () => {
   }, [isAuthenticated, fetchAllData, location]);
 
   if (authLoading) {
-    return <div className="flashing-loading">Loading...</div>;
+    return <div className="loading-text">Loading...</div>;
   }
 
   if (!isAuthenticated) {

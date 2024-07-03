@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { useTable, useGlobalFilter, useSortBy, usePagination } from 'react-table';
-import '../../index.css'
+import '../../index.css';
+import '../../loading.css';
 
 const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
   const memoizedColumns = useMemo(() => columns, [columns]);
@@ -42,7 +43,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
       <div className="d-flex flex-column align-items-center">
         <h3 className="text-center mb-3">{title}</h3>
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden flash-loading">Loading...</span>
+          <span className="visually-hidden loading-text">Loading...</span>
         </div>
       </div>
     );

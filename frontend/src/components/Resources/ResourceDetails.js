@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Button, Card } from 'react-bootstrap';
 import CreateResourceForm from '../CreateResourceForm';
+import '../../loading.css';
 
 const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   if (!resource) {
-    return <div className="flashing-loading">Loading...</div>;
+    return <div className="loading-text">Loading...</div>;
   }
 
   const handleUpdate = (updatedResource) => {

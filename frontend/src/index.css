@@ -27,19 +27,6 @@ table, p {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
-.flash-loading {
-  animation: fade 2s ease-in-out infinite;
-}
-
-@keyframes fade {
-  0%, 100% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
 @media (max-width: 991px) {
   .navbar-collapse {
     position: relative;
