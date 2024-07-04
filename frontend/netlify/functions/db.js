@@ -17,11 +17,6 @@ const getConnection = async () => {
   return connection;
 };
 
-const closeConnection = async () => {
-  if (connection) {
-    await connection.disconnect();
-    connection = null;
-  }
-};
 
-module.exports = { getConnection, closeConnection };
+
+module.exports = { getConnection };

@@ -21,6 +21,7 @@ const Home = () => {
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
   const isReturningFromResource = useRef(false);
+  const [initialTableStates, setInitialTableStates] = useState({});
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
@@ -61,6 +62,10 @@ const Home = () => {
           } else {
             throw new Error('One or more requests failed');
           }
+          const tableState = location.state?.tableState;
+          if (tableState) {
+            localStorage.setItem('tableState', JSON.stringify(tableState));
+          }
         } catch (error) {
           console.error('Error fetching data:', error);
           setError('Failed to load data');
@@ -95,7 +100,7 @@ const Home = () => {
     setSearchTerm('');
     setDebouncedSearchTerm('');
     updateSearchParams('');
-  
+
     // Keep the currently expanded accordions open
     setExpandedCategoryIds(expandedCategoryIds);
     setExpandedCategoryId(expandedCategoryId);
@@ -263,7 +268,7 @@ const Home = () => {
       setExpandedCategoryIds([categories[0]._id]);
     }
   }, [location.state, categories]);
-  
+
   useEffect(() => {
     if (debouncedSearchTerm) {
       const matchingCategoryIds = categoriesWithResources
@@ -273,7 +278,7 @@ const Home = () => {
           )
         )
         .map(category => category._id);
-  
+
       if (matchingCategoryIds.length > 0) {
         setExpandedCategoryIds(matchingCategoryIds);
         setExpandedCategoryId(matchingCategoryIds[0]);
@@ -284,6 +289,11 @@ const Home = () => {
       }
     }
   }, [debouncedSearchTerm, categoriesWithResources, filteredResources, expandedCategoryIds, expandedCategoryId]);
+
+  useEffect(() => {
+    const savedStates = JSON.parse(localStorage.getItem('tableStates') || '{}');
+    setInitialTableStates(savedStates);
+  }, []);
 
   return (
     <div className="container">
@@ -337,6 +347,7 @@ const Home = () => {
                 columns={columns}
                 isExpanded={expandedCategoryId === category._id || expandedCategoryIds.includes(category._id)}
                 onToggle={() => handleAccordionToggle(category._id)}
+                initialTableState={initialTableStates}
               />
             ))}
           </div>

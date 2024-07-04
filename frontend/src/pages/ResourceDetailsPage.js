@@ -70,12 +70,18 @@ const ResourceDetailsPage = () => {
   }, [fetchResource, fetchCategories, fetchSubCategories, isAuthenticated]);
 
   const handleGoBack = () => {
+    const tableState = JSON.parse(localStorage.getItem('tableState')) || {};
+    tableState[resource.subCategory] = {
+      pageIndex: parseInt(localStorage.getItem('currentPageIndex')) || 0,
+      pageSize: parseInt(localStorage.getItem('currentPageSize')) || 10,
+    };
     navigate('/', {
       state: {
         category: resource.category,
         subCategory: resource.subCategory,
-        scrollToSubCategory: true
-      }
+        scrollToSubCategory: true,
+        tableState,
+      },
     });
   };
 

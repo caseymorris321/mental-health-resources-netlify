@@ -1,4 +1,4 @@
-const { getConnection, closeConnection } = require('./db');
+const { getConnection } = require('./db');
 const { Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {

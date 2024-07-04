@@ -3,7 +3,7 @@ import { useTable, useGlobalFilter, useSortBy, usePagination } from 'react-table
 import '../../index.css';
 import '../../loading.css';
 
-const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
+const ResourceTable = ({ title, data, columns, globalFilter, isLoading, initialTableState, tableStateKey }) => {
   const memoizedColumns = useMemo(() => columns, [columns]);
   const memoizedData = useMemo(() => data, [data]);
 
@@ -21,11 +21,12 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
     canPreviousPage,
     pageOptions,
     setPageSize,
+    gotoPage,
   } = useTable(
     {
       columns: memoizedColumns,
       data: memoizedData,
-      initialState: { pageSize: 10 },
+      initialState: { pageSize: 10, ...initialTableState },
     },
     useGlobalFilter,
     useSortBy,
@@ -37,6 +38,25 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
   useEffect(() => {
     setGlobalFilter(globalFilter);
   }, [globalFilter, setGlobalFilter]);
+
+  useEffect(() => {
+    localStorage.setItem('tableState', JSON.stringify({ pageIndex, pageSize }));
+  }, [pageIndex, pageSize]);
+
+  useEffect(() => {
+    if (initialTableState) {
+      gotoPage(initialTableState.pageIndex);
+      setPageSize(initialTableState.pageSize);
+    }
+  }, [initialTableState, gotoPage, setPageSize]);
+
+  useEffect(() => {
+    if (tableStateKey) {
+      const allTableStates = JSON.parse(localStorage.getItem('tableStates') || '{}');
+      allTableStates[tableStateKey] = { pageIndex, pageSize };
+      localStorage.setItem('tableStates', JSON.stringify(allTableStates));
+    }
+  }, [pageIndex, pageSize, tableStateKey]);
 
   if (isLoading) {
     return (
@@ -127,23 +147,23 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
         </table>
       </div>
       <div className="d-flex flex-column align-items-center mb-1">
-  <div className="mb-2">
-    Page <strong>{pageIndex + 1}</strong> of <strong>{pageOptions.length}</strong>
-  </div>
-  <select
-    className="form-select form-select-sm"
-    value={pageSize}
-    onChange={e => {
-      setPageSize(Number(e.target.value));
-    }}
-  >
-    {[10, 20, 30, 40, 50].map(size => (
-      <option key={size} value={size}>
-        Show {size}
-      </option>
-    ))}
-  </select>
-</div>
+        <div className="mb-2">
+          Page <strong>{pageIndex + 1}</strong> of <strong>{pageOptions.length}</strong>
+        </div>
+        <select
+          className="form-select form-select-sm"
+          value={pageSize}
+          onChange={e => {
+            setPageSize(Number(e.target.value));
+          }}
+        >
+          {[10, 20, 30, 40, 50].map(size => (
+            <option key={size} value={size}>
+              Show {size}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="d-flex justify-content-center mt-1 w-100">
         <button className="btn btn-outline-primary me-2" onClick={() => previousPage()} disabled={!canPreviousPage}>
           Previous
@@ -152,7 +172,6 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
           Next
         </button>
       </div>
-
     </div>
   );
 };
