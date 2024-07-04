@@ -15,13 +15,13 @@ const CustomNavbar = () => {
           <Link to="/" className="text-decoration-none">
             <div className="d-flex align-items-center">
               <img 
-                src="https://via.placeholder.com/50" 
+                src="/logo192.png" 
                 className="rounded-circle me-3" 
                 alt="logo" 
                 width="50" 
                 height="50"
               />
-              <span className="navbar-brand mb-0">Resource Manager</span>
+              <span className="navbar-brand mb-0">Lotus Resource Manager</span>
             </div>
           </Link>
           {isAuthenticated && (
