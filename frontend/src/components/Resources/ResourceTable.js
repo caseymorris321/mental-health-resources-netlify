@@ -3,9 +3,11 @@ import { useTable, useGlobalFilter, useSortBy, usePagination } from 'react-table
 import '../../index.css';
 import '../../loading.css';
 
-const ResourceTable = ({ title, data, columns, globalFilter, isLoading, initialTableState, tableStateKey }) => {
+const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId }) => {
   const memoizedColumns = useMemo(() => columns, [columns]);
   const memoizedData = useMemo(() => data, [data]);
+
+  const savedState = JSON.parse(localStorage.getItem(`tableState_${tableId}`)) || {};
 
   const {
     getTableProps,
@@ -21,12 +23,11 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, initialT
     canPreviousPage,
     pageOptions,
     setPageSize,
-    gotoPage,
   } = useTable(
     {
       columns: memoizedColumns,
       data: memoizedData,
-      initialState: { pageSize: 10, ...initialTableState },
+      initialState: { pageSize: 10, ...savedState },
     },
     useGlobalFilter,
     useSortBy,
@@ -40,23 +41,8 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, initialT
   }, [globalFilter, setGlobalFilter]);
 
   useEffect(() => {
-    localStorage.setItem('tableState', JSON.stringify({ pageIndex, pageSize }));
-  }, [pageIndex, pageSize]);
-
-  useEffect(() => {
-    if (initialTableState) {
-      gotoPage(initialTableState.pageIndex);
-      setPageSize(initialTableState.pageSize);
-    }
-  }, [initialTableState, gotoPage, setPageSize]);
-
-  useEffect(() => {
-    if (tableStateKey) {
-      const allTableStates = JSON.parse(localStorage.getItem('tableStates') || '{}');
-      allTableStates[tableStateKey] = { pageIndex, pageSize };
-      localStorage.setItem('tableStates', JSON.stringify(allTableStates));
-    }
-  }, [pageIndex, pageSize, tableStateKey]);
+    localStorage.setItem(`tableState_${tableId}`, JSON.stringify({ pageIndex, pageSize }));
+  }, [pageIndex, pageSize, tableId]);
 
   if (isLoading) {
     return (
@@ -104,11 +90,11 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, initialT
                     const { key, ...restHeaderProps } = column.getHeaderProps(column.getSortByToggleProps());
                     return (
                       <th key={key} {...restHeaderProps} className="text-nowrap" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)' }}>
-                      {column.render('Header')}
-                      <span>
-                        {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-                      </span>
-                    </th>
+                        {column.render('Header')}
+                        <span>
+                          {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                        </span>
+                      </th>
                     );
                   })}
                 </tr>
@@ -126,18 +112,18 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, initialT
                     const { key, ...restCellProps } = cell.getCellProps();
                     return (
                       <td key={key} {...restCellProps} className="align-middle text-nowrap" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)' }}>
-                      {cell.column.id === 'link' ? (
-                        cell.value ? (
-                          <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                            {cell.value}
-                          </a>
+                        {cell.column.id === 'link' ? (
+                          cell.value ? (
+                            <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                              {cell.value}
+                            </a>
+                          ) : (
+                            'N/A'
+                          )
                         ) : (
-                          'N/A'
-                        )
-                      ) : (
-                        cell.render('Cell')
-                      )}
-                    </td>
+                          cell.render('Cell')
+                        )}
+                      </td>
                     );
                   })}
                 </tr>

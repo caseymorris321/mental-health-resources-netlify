@@ -1,7 +1,7 @@
 import React from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
-const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle, initialTableState }) => {
+const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle }) => {
   return (
     <div id={id} className="card mb-3">
       <div
@@ -20,7 +20,7 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
 
             if (subCategoryResources.length === 0) return null;
 
-            const tableStateKey = `${category.name}-${subCategory.name}`;
+            const tableId = `${category.name}-${subCategory.name}`.replace(/\s+/g, '-').toLowerCase();
 
             return (
               <div key={subCategory._id} className="mb-4" id={`subcategory-${subCategory.name.replace(/\s+/g, '-').toLowerCase()}`}>
@@ -28,8 +28,7 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
                 <ResourceTable
                   columns={columns}
                   data={subCategoryResources}
-                  initialTableState={initialTableState && initialTableState[tableStateKey]}
-                  tableStateKey={tableStateKey}
+                  tableId={tableId}
                 />
               </div>
             );
