@@ -21,7 +21,6 @@ const Home = () => {
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
   const isReturningFromResource = useRef(false);
-  const [lastOpenedCategoryId, setLastOpenedCategoryId] = useState(null);
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
