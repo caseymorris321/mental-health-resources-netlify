@@ -83,12 +83,12 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
                   {headerGroup.headers.map(column => {
                     const { key, ...restHeaderProps } = column.getHeaderProps(column.getSortByToggleProps());
                     return (
-                      <th key={key} {...restHeaderProps} style={{ border: 'none', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                        {column.render('Header')}
-                        <span>
-                          {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-                        </span>
-                      </th>
+                      <th key={key} {...restHeaderProps} className="text-nowrap" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)' }}>
+                      {column.render('Header')}
+                      <span>
+                        {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                      </span>
+                    </th>
                     );
                   })}
                 </tr>
@@ -105,19 +105,19 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading }) => {
                   {row.cells.map(cell => {
                     const { key, ...restCellProps } = cell.getCellProps();
                     return (
-                      <td key={key} {...restCellProps} className="align-middle" style={{ border: 'none', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                        {cell.column.id === 'link' ? (
-                          cell.value ? (
-                            <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                              {cell.value}
-                            </a>
-                          ) : (
-                            'N/A'
-                          )
+                      <td key={key} {...restCellProps} className="align-middle text-nowrap" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)' }}>
+                      {cell.column.id === 'link' ? (
+                        cell.value ? (
+                          <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                            {cell.value}
+                          </a>
                         ) : (
-                          cell.render('Cell')
-                        )}
-                      </td>
+                          'N/A'
+                        )
+                      ) : (
+                        cell.render('Cell')
+                      )}
+                    </td>
                     );
                   })}
                 </tr>
