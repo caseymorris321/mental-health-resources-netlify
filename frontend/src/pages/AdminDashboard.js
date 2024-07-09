@@ -477,42 +477,51 @@ const AdminDashboard = () => {
 // };
 
 const onDragEnd = async (result) => {
-  if (!result.destination) {
-    return;
-  }
+  if (!result.destination) return;
 
-  const sourceIndex = result.source.index;
-  const destIndex = result.destination.index;
+  const { source, destination } = result;
 
-  if (sourceIndex === destIndex) {
-    return;
-  }
+  if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
-  const updatedResources = Array.from(resources);
-  const [reorderedItem] = updatedResources.splice(sourceIndex, 1);
-  updatedResources.splice(destIndex, 0, reorderedItem);
+  const newResources = Array.from(resources);
+  const movedResource = newResources.find(r => r._id === result.draggableId);
+  if (!movedResource) return;
 
-  setResources(updatedResources);
+  newResources.splice(newResources.indexOf(movedResource), 1);
+
+  const [newCategory, newSubCategory] = destination.droppableId.split('-');
+
+  movedResource.category = newCategory;
+  movedResource.subCategory = newSubCategory;
+
+  newResources.splice(destination.index, 0, movedResource);
+
+  setResources(newResources);
 
   try {
     const token = await getAccessTokenSilently();
-    await fetch(fetchUrl(isProduction ? 'updateResourceOrder' : 'updateOrder'), {
+    const response = await fetch(fetchUrl(isProduction ? `updateResourceOrder/${movedResource._id}` : `${movedResource._id}/updateOrder`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ 
-        resourceId: reorderedItem._id, 
-        newIndex: destIndex,
-        newCategory: updatedResources[destIndex].category,
-        newSubCategory: updatedResources[destIndex].subCategory
+        newIndex: destination.index,
+        newCategory,
+        newSubCategory
       }),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to update resource order');
+    }
   } catch (error) {
     console.error('Failed to update resource order:', error);
+    fetchResources(); // Revert to the server state if the update fails
   }
 };
+
 
   
 

@@ -11,35 +11,39 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const { resourceId, newIndex, newCategory, newSubCategory } = JSON.parse(event.body);
+    const pathParts = event.path.split('/');
+    const resourceId = pathParts[pathParts.length - 2];
+    const { newIndex, newCategory, newSubCategory } = JSON.parse(event.body);
 
     const resource = await Resource.findById(resourceId);
     if (!resource) {
       return { statusCode: 404, body: JSON.stringify({ message: 'Resource not found' }) };
     }
 
-    // Update category and subcategory if changed
+    // Update category and subcategory
     resource.category = newCategory;
     resource.subCategory = newSubCategory;
 
-    // Update orders
+    // Update orders of other resources
     await Resource.updateMany(
       { 
         category: newCategory, 
         subCategory: newSubCategory, 
-        order: { $gte: newIndex } 
+        order: { $gte: newIndex },
+        _id: { $ne: resourceId }
       },
       { $inc: { order: 1 } }
     );
 
+    // Set the new order for the moved resource
     resource.order = newIndex;
     await resource.save();
 
-    // Normalize orders
-    const allResources = await Resource.find().sort('category subCategory order');
-    for (let i = 0; i < allResources.length; i++) {
-      allResources[i].order = i;
-      await allResources[i].save();
+    // Normalize orders within the category and subcategory
+    const resourcesInSubCategory = await Resource.find({ category: newCategory, subCategory: newSubCategory }).sort('order');
+    for (let i = 0; i < resourcesInSubCategory.length; i++) {
+      resourcesInSubCategory[i].order = i;
+      await resourcesInSubCategory[i].save();
     }
 
     return {
