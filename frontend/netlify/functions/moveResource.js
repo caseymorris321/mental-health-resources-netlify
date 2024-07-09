@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { Resource, SubCategory } = require('./models/resourceModel');
+const { Resource, SubCategory, Category } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -20,62 +20,57 @@ exports.handler = async (event, context) => {
       return { statusCode: 404, body: JSON.stringify({ message: 'Resource not found' }) };
     }
 
-    const subCategories = await SubCategory.find({ category: resource.category }).sort('order');
-    const currentSubCategoryIndex = subCategories.findIndex(sc => sc.name === resource.subCategory);
+    const categories = await Category.find().sort('order');
+    const currentCategoryIndex = categories.findIndex(c => c.name === resource.category);
     
-    let newSubCategory;
-    if (direction === 'up' && currentSubCategoryIndex > 0) {
-      newSubCategory = subCategories[currentSubCategoryIndex - 1].name;
-    } else if (direction === 'down' && currentSubCategoryIndex < subCategories.length - 1) {
-      newSubCategory = subCategories[currentSubCategoryIndex + 1].name;
-    }
+    let newCategory = resource.category;
+    let newSubCategory = resource.subCategory;
 
-    if (newSubCategory) {
-      // Moving to a different subcategory
-      resource.subCategory = newSubCategory;
-      const maxOrderInNewSubCategory = await Resource.findOne({ category: resource.category, subCategory: newSubCategory })
-        .sort('-order')
-        .select('order');
-      resource.order = (maxOrderInNewSubCategory?.order || -1) + 1;
+    if (direction === 'up' && currentCategoryIndex > 0) {
+      newCategory = categories[currentCategoryIndex - 1].name;
+      const subCategories = await SubCategory.find({ category: newCategory }).sort('-order');
+      newSubCategory = subCategories[0].name;
+    } else if (direction === 'down' && currentCategoryIndex < categories.length - 1) {
+      newCategory = categories[currentCategoryIndex + 1].name;
+      const subCategories = await SubCategory.find({ category: newCategory }).sort('order');
+      newSubCategory = subCategories[0].name;
     } else {
-      // Moving within the same subcategory
-      const operator = direction === 'up' ? '$lt' : '$gt';
-      const sort = direction === 'up' ? -1 : 1;
-
-      const adjacentResource = await Resource.findOne({
-        category: resource.category,
-        subCategory: resource.subCategory,
-        order: { [operator]: resource.order }
-      }).sort({ order: sort });
-
-      if (adjacentResource) {
-        const tempOrder = resource.order;
-        resource.order = adjacentResource.order;
-        adjacentResource.order = tempOrder;
-        await adjacentResource.save();
+      // Moving within the same category
+      const subCategories = await SubCategory.find({ category: resource.category }).sort('order');
+      const currentSubCategoryIndex = subCategories.findIndex(sc => sc.name === resource.subCategory);
+      
+      if (direction === 'up' && currentSubCategoryIndex > 0) {
+        newSubCategory = subCategories[currentSubCategoryIndex - 1].name;
+      } else if (direction === 'down' && currentSubCategoryIndex < subCategories.length - 1) {
+        newSubCategory = subCategories[currentSubCategoryIndex + 1].name;
       }
     }
 
+    // Update resource category and subcategory
+    resource.category = newCategory;
+    resource.subCategory = newSubCategory;
+
+    // Set new order
+    const maxOrderInNewSubCategory = await Resource.findOne({ category: newCategory, subCategory: newSubCategory })
+      .sort('-order')
+      .select('order');
+    resource.order = (maxOrderInNewSubCategory?.order || -1) + 1;
+
     await resource.save();
 
-    // Normalize orders
+    // Normalize orders in the new subcategory
     const allResources = await Resource.find({
-      category: resource.category,
-      subCategory: resource.subCategory
+      category: newCategory,
+      subCategory: newSubCategory
     }).sort('order');
     for (let i = 0; i < allResources.length; i++) {
       allResources[i].order = i;
       await allResources[i].save();
     }
 
-    const updatedResources = await Resource.find({
-      category: resource.category,
-      subCategory: resource.subCategory
-    }).sort('order');
-
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedResources)
+      body: JSON.stringify(resource)
     };
   } catch (error) {
     console.error('Error in moveResource:', error);

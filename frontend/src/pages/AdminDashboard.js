@@ -448,56 +448,33 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleMoveResource = async (resourceId, direction) => {
-    try {
-      const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}/${direction}` : `${resourceId}/move/${direction}`), {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+ const handleMoveResource = async (resourceId, direction) => {
+  try {
+    const token = await getAccessTokenSilently();
+    const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}/${direction}` : `${resourceId}/move/${direction}`), {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      const updatedResource = await response.json();
+      setResources(prevResources => {
+        const newResources = prevResources.filter(r => r._id !== resourceId);
+        const insertIndex = direction === 'up' 
+          ? newResources.findIndex(r => r.category === updatedResource.category && r.subCategory === updatedResource.subCategory)
+          : newResources.findIndex(r => r.category === updatedResource.category && r.subCategory === updatedResource.subCategory) + 1;
+        newResources.splice(insertIndex, 0, updatedResource);
+        return newResources;
       });
-      if (response.ok) {
-        const updatedResources = await response.json();
-        setResources(prevResources => {
-          // Find the index of the moved resource
-          const movedResourceIndex = prevResources.findIndex(r => r._id === resourceId);
-          if (movedResourceIndex === -1) return prevResources;
-  
-          const movedResource = prevResources[movedResourceIndex];
-          const newResources = [...prevResources];
-  
-          // Remove the moved resource from its original position
-          newResources.splice(movedResourceIndex, 1);
-  
-          // Find the new position
-          let newIndex;
-          if (direction === 'up') {
-            newIndex = movedResourceIndex - 1;
-            if (newIndex < 0 || newResources[newIndex].subCategory !== movedResource.subCategory) {
-              // Move to the end of the previous subcategory
-              newIndex = newResources.findIndex(r => r.subCategory === updatedResources[0].subCategory) - 1;
-            }
-          } else {
-            newIndex = movedResourceIndex;
-            if (newIndex >= newResources.length || newResources[newIndex].subCategory !== movedResource.subCategory) {
-              // Move to the start of the next subcategory
-              newIndex = newResources.findIndex(r => r.subCategory === updatedResources[0].subCategory);
-            }
-          }
-  
-          // Insert the moved resource at its new position
-          newResources.splice(newIndex, 0, {...movedResource, ...updatedResources[0]});
-  
-          return newResources;
-        });
-      } else {
-        console.error('Failed to move resource');
-      }
-    } catch (error) {
-      console.error('Error:', error);
+    } else {
+      console.error('Failed to move resource');
     }
-  };
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
   
 
   return (
