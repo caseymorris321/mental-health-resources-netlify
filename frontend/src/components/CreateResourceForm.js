@@ -31,7 +31,17 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
   }, [initialData]);
 
   const handleChange = (e) => {
-    setResource({ ...resource, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setResource({ ...resource, [name]: value });
+    
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -42,7 +52,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         ? (isProduction ? `${apiUrl}/updateResource/${initialData._id}` : `${apiUrl}/api/resources/${initialData._id}`)
         : (isProduction ? `${apiUrl}/createResource` : `${apiUrl}/api/resources`);
       const method = initialData ? 'PUT' : 'POST';
-
+ 
       const response = await fetch(fetchUrl, {
         method: method,
         headers: {
@@ -55,7 +65,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           link: resource.link ? resource.link.trim() : undefined,
         }),
       });
-
+ 
       if (response.ok) {
         const data = await response.json();
         console.log(initialData ? 'Resource updated:' : 'Resource created:', data);
@@ -99,6 +109,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           name="name"
           value={resource.name}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           required
           autoFocus={isCreate}
         />
@@ -110,6 +121,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           name="description"
           value={resource.description}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           required
         />
       </Form.Group>
@@ -121,6 +133,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           name="link"
           value={resource.link}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           placeholder="e.g., www.example.com or leave empty"
         />
       </Form.Group>
@@ -152,6 +165,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           name="contactInfo"
           value={resource.contactInfo}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
         />
       </Form.Group>
       <Form.Group>
@@ -162,6 +176,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           name="address"
           value={resource.address}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
         />
       </Form.Group>
       <Form.Group>
@@ -172,6 +187,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           name="availableHours"
           value={resource.availableHours}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
         />
       </Form.Group>
       <Form.Group>
@@ -182,6 +198,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           name="tags"
           value={resource.tags}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
         />
       </Form.Group>
       <Button variant="primary" type="submit" className='mt-2'>
@@ -189,7 +206,6 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
       </Button>
     </Form>
   );
-
 };
 
 export default CreateResourceForm;
