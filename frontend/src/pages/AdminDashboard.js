@@ -517,26 +517,26 @@ const AdminDashboard = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
+          body: JSON.stringify({ 
             newIndex: destination.index,
             newCategory: destination.droppableId
           }),
         });
-
+  
         if (!response.ok) {
           throw new Error('Failed to update subcategory order');
         }
-
+  
         const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories);
-
+  
       } catch (error) {
         console.error('Failed to update subcategory order:', error);
-        fetchSubCategories(); // Revert to the server state if the update fails
+        fetchSubCategories();
       }
     } else if (type === 'resource') {
       const [destCategory, destSubCategory] = destination.droppableId.split('-');
-
+  
       try {
         const token = await getAccessTokenSilently();
         const response = await fetch(fetchUrl(isProduction ? `updateResourceOrder/${draggableId}` : `${draggableId}/updateOrder`), {
@@ -545,23 +545,23 @@ const AdminDashboard = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
+          body: JSON.stringify({ 
             newIndex: destination.index,
             newCategory: destCategory,
             newSubCategory: destSubCategory
           }),
         });
-
+  
         if (!response.ok) {
           throw new Error('Failed to update resource order');
         }
-
+  
         const updatedResources = await response.json();
         setResources(updatedResources);
-
+  
       } catch (error) {
         console.error('Failed to update resource order:', error);
-        fetchResources(); // Revert to the server state if the update fails
+        fetchResources();
       }
     }
   };
