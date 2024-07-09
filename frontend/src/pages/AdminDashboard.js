@@ -440,7 +440,7 @@ const AdminDashboard = () => {
           const updatedSubCategories = await response.json();
           setSubCategories(updatedSubCategories);
           // We might need to fetch all subcategories again to ensure the state is fully updated
-  
+          fetchSubCategories();
         } else {
           console.error('Failed to move subcategory');
         }
@@ -461,7 +461,7 @@ const AdminDashboard = () => {
         if (response.ok) {
           const updatedResources = await response.json();
           setResources(updatedResources);
-
+          fetchResources();
         } else {
           console.error('Failed to move resource');
         }

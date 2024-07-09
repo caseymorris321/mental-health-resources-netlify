@@ -1,4 +1,4 @@
-const { getConnection } = require('./db');
+const { getConnection, closeConnection } = require('./db');
 const { Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
@@ -7,107 +7,71 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     const pathParts = event.path.split('/');
-    const resourceId = pathParts[pathParts.length - 2];
-    const { newIndex, newCategory, newSubCategory } = JSON.parse(event.body);
+    const id = pathParts[pathParts.length - 2];
+    const direction = pathParts[pathParts.length - 1];
 
-    const resource = await Resource.findById(resourceId);
+    const resource = await Resource.findById(id);
     if (!resource) {
-      return { statusCode: 404, body: JSON.stringify({ message: 'Resource not found' }) };
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Resource not found' })
+      };
     }
 
-    const oldOrder = resource.order;
-    const oldCategory = resource.category;
-    const oldSubCategory = resource.subCategory;
+    const operator = direction === 'up' ? '$lt' : '$gt';
+    const sort = direction === 'up' ? -1 : 1;
 
-    // Update category and subcategory
-    resource.category = newCategory;
-    resource.subCategory = newSubCategory;
+    const adjacentResource = await Resource.findOne({
+      category: resource.category,
+      subCategory: resource.subCategory,
+      order: { [operator]: resource.order }
+    }).sort({ order: sort });
 
-    if (newCategory === oldCategory && newSubCategory === oldSubCategory) {
-      // Moving within the same subcategory
-      if (newIndex > oldOrder) {
-        // Moving down
-        await Resource.updateMany(
-          { 
-            category: newCategory, 
-            subCategory: newSubCategory, 
-            order: { $gt: oldOrder, $lte: newIndex },
-            _id: { $ne: resourceId }
-          },
-          { $inc: { order: -1 } }
-        );
-      } else if (newIndex < oldOrder) {
-        // Moving up
-        await Resource.updateMany(
-          { 
-            category: newCategory, 
-            subCategory: newSubCategory, 
-            order: { $gte: newIndex, $lt: oldOrder },
-            _id: { $ne: resourceId }
-          },
-          { $inc: { order: 1 } }
-        );
-      }
+    if (adjacentResource) {
+      const tempOrder = resource.order;
+      resource.order = adjacentResource.order;
+      adjacentResource.order = tempOrder;
+
+      await Promise.all([resource.save(), adjacentResource.save()]);
     } else {
-      // Moving to a different subcategory
-      await Resource.updateMany(
-        { 
-          category: newCategory, 
-          subCategory: newSubCategory, 
-          order: { $gte: newIndex },
-          _id: { $ne: resourceId }
-        },
-        { $inc: { order: 1 } }
-      );
-
-      // Adjust orders in the old subcategory
-      await Resource.updateMany(
-        {
-          category: oldCategory,
-          subCategory: oldSubCategory,
-          order: { $gt: oldOrder }
-        },
-        { $inc: { order: -1 } }
-      );
-    }
-
-    // Set the new order for the moved resource
-    resource.order = newIndex;
-    await resource.save();
-
-    // Normalize orders within the new subcategory
-    const resourcesInNewSubCategory = await Resource.find({ category: newCategory, subCategory: newSubCategory }).sort('order');
-    for (let i = 0; i < resourcesInNewSubCategory.length; i++) {
-      resourcesInNewSubCategory[i].order = i;
-      await resourcesInNewSubCategory[i].save();
-    }
-
-    // If the subcategory has changed, normalize orders in the old subcategory
-    if (oldCategory !== newCategory || oldSubCategory !== newSubCategory) {
-      const resourcesInOldSubCategory = await Resource.find({ category: oldCategory, subCategory: oldSubCategory }).sort('order');
-      for (let i = 0; i < resourcesInOldSubCategory.length; i++) {
-        resourcesInOldSubCategory[i].order = i;
-        await resourcesInOldSubCategory[i].save();
+      const extremeResource = await Resource.findOne({
+        category: resource.category,
+        subCategory: resource.subCategory
+      }).sort({ order: direction === 'up' ? 1 : -1 });
+      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
+        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
+        await resource.save();
       }
     }
 
-    // Fetch all resources to return updated state
-    const allResources = await Resource.find().sort('category subCategory order');
+    const allResources = await Resource.find({
+      category: resource.category,
+      subCategory: resource.subCategory
+    }).sort('order');
+    for (let i = 0; i < allResources.length; i++) {
+      allResources[i].order = i;
+      await allResources[i].save();
+    }
 
+    const updatedResources = await Resource.find({
+      category: resource.category,
+      subCategory: resource.subCategory
+    }).sort('order');
+    // console.log('Sending updated resources:', updatedResources);
     return {
       statusCode: 200,
-      body: JSON.stringify(allResources)
+      body: JSON.stringify(updatedResources)
     };
   } catch (error) {
     console.error('Error in moveResource:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: error.message, stack: error.stack })
+      body: JSON.stringify({ message: error.message })
     };
-  }
+  } 
 };
