@@ -449,7 +449,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleMoveResource = async (resourceId, newIndex) => {
+  const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
       const token = await getAccessTokenSilently();
       const endpoint = isProduction ? `moveResource` : `resources/move`;
@@ -459,12 +459,11 @@ const AdminDashboard = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ resourceId, newIndex }),
+        body: JSON.stringify({ resourceId, newIndex, newCategory, newSubCategory }),
       });
       if (response.ok) {
         const updatedResources = await response.json();
         setResources(updatedResources);
-        fetchResources();
       } else {
         console.error('Failed to move resource');
       }
@@ -514,8 +513,15 @@ const AdminDashboard = () => {
         console.error('Failed to move subcategory:', error);
       }
     } else if (type === 'resource') {
+      const [destCategory, destSubCategory] = destination.droppableId.split('-');
+      
       try {
-        await handleMoveResource(draggableId, destination.index);
+        await handleMoveResource(
+          draggableId, 
+          destination.index,
+          destCategory,
+          destSubCategory
+        );
       } catch (error) {
         console.error('Failed to move resource:', error);
       }
