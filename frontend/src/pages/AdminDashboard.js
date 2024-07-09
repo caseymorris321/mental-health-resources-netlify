@@ -527,6 +527,7 @@ const AdminDashboard = () => {
         console.error('Failed to move resource:', error);
       }
     }
+
   };
 
   return (
