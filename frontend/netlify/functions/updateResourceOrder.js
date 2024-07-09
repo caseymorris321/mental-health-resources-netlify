@@ -7,19 +7,12 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     const pathParts = event.path.split('/');
     const resourceId = pathParts[pathParts.length - 2];
-
-    console.log('Extracted resourceId:', resourceId);
-
-    if (!resourceId || resourceId === 'undefined') {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Invalid resource ID' }) };
-    }
-
     const { newIndex, newCategory, newSubCategory } = JSON.parse(event.body);
 
     const resource = await Resource.findById(resourceId);
@@ -27,6 +20,7 @@ exports.handler = async (event, context) => {
       return { statusCode: 404, body: JSON.stringify({ message: 'Resource not found' }) };
     }
 
+    const oldOrder = resource.order;
     const oldCategory = resource.category;
     const oldSubCategory = resource.subCategory;
 
@@ -34,16 +28,53 @@ exports.handler = async (event, context) => {
     resource.category = newCategory;
     resource.subCategory = newSubCategory;
 
-    // Update orders of other resources
-    await Resource.updateMany(
-      { 
-        category: newCategory, 
-        subCategory: newSubCategory, 
-        order: { $gte: newIndex },
-        _id: { $ne: resourceId }
-      },
-      { $inc: { order: 1 } }
-    );
+    if (newCategory === oldCategory && newSubCategory === oldSubCategory) {
+      // Moving within the same category and subcategory
+      if (newIndex > oldOrder) {
+        // Moving down
+        await Resource.updateMany(
+          { 
+            category: newCategory, 
+            subCategory: newSubCategory, 
+            order: { $gt: oldOrder, $lte: newIndex },
+            _id: { $ne: resourceId }
+          },
+          { $inc: { order: -1 } }
+        );
+      } else if (newIndex < oldOrder) {
+        // Moving up
+        await Resource.updateMany(
+          { 
+            category: newCategory, 
+            subCategory: newSubCategory, 
+            order: { $gte: newIndex, $lt: oldOrder },
+            _id: { $ne: resourceId }
+          },
+          { $inc: { order: 1 } }
+        );
+      }
+    } else {
+      // Moving to a different category or subcategory
+      await Resource.updateMany(
+        { 
+          category: newCategory, 
+          subCategory: newSubCategory, 
+          order: { $gte: newIndex },
+          _id: { $ne: resourceId }
+        },
+        { $inc: { order: 1 } }
+      );
+
+      // Adjust orders in the old category/subcategory
+      await Resource.updateMany(
+        {
+          category: oldCategory,
+          subCategory: oldSubCategory,
+          order: { $gt: oldOrder }
+        },
+        { $inc: { order: -1 } }
+      );
+    }
 
     // Set the new order for the moved resource
     resource.order = newIndex;

@@ -530,6 +530,7 @@ const onDragEnd = async (result) => {
     fetchResources(); // Revert to the server state if the update fails
   }
 };
+
   
 return (
   <Container className="mt-5">
