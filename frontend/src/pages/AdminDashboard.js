@@ -500,14 +500,13 @@ const onDragEnd = async (result) => {
 
   try {
     const token = await getAccessTokenSilently();
-    const response = await fetch(fetchUrl(isProduction ? `updateResourceOrder/${movedResource._id}` : `${movedResource._id}/updateOrder`), {
+    const response = await fetch(fetchUrl(isProduction ? `updateResourceOrder/${movedResource._id}/${destination.index}` : `${movedResource._id}/move/${destination.index}`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ 
-        newIndex: destination.index,
         newCategory,
         newSubCategory
       }),
@@ -516,15 +515,22 @@ const onDragEnd = async (result) => {
     if (!response.ok) {
       throw new Error('Failed to update resource order');
     }
+
+    const updatedResources = await response.json();
+    setResources(prevResources => {
+      return prevResources.map(resource => 
+        (resource.category === newCategory && resource.subCategory === newSubCategory) 
+          ? updatedResources.find(updated => updated._id === resource._id) || resource 
+          : resource
+      );
+    });
+
   } catch (error) {
     console.error('Failed to update resource order:', error);
     fetchResources(); // Revert to the server state if the update fails
   }
 };
-
-
   
-
 return (
   <Container className="mt-5">
     <h1 className='text-center'>Admin Dashboard</h1>
