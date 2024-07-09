@@ -42,7 +42,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         ? (isProduction ? `${apiUrl}/updateResource/${initialData._id}` : `${apiUrl}/api/resources/${initialData._id}`)
         : (isProduction ? `${apiUrl}/createResource` : `${apiUrl}/api/resources`);
       const method = initialData ? 'PUT' : 'POST';
-  
+
       const response = await fetch(fetchUrl, {
         method: method,
         headers: {
@@ -55,7 +55,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           link: resource.link ? resource.link.trim() : undefined,
         }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log(initialData ? 'Resource updated:' : 'Resource created:', data);
@@ -87,13 +87,15 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
       setMessage({ type: 'danger', text: error.message || `Failed to ${initialData ? 'update' : 'create'} resource. Please try again.` });
     }
   };
+
   return (
     <Form onSubmit={handleSubmit}>
       {message && <Alert variant={message.type}>{message.text}</Alert>}
       <Form.Group>
         <Form.Label>Name</Form.Label>
-        <Form.Control
-          type="text"
+        <textarea
+          className="form-control"
+          rows="1"
           name="name"
           value={resource.name}
           onChange={handleChange}
@@ -103,11 +105,24 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
       </Form.Group>
       <Form.Group>
         <Form.Label>Description</Form.Label>
-        <Form.Control as="textarea" name="description" value={resource.description} onChange={handleChange} required />
+        <textarea
+          className="form-control"
+          name="description"
+          value={resource.description}
+          onChange={handleChange}
+          required
+        />
       </Form.Group>
       <Form.Group>
         <Form.Label>Link</Form.Label>
-        <Form.Control type="text" name="link" value={resource.link} onChange={handleChange} placeholder="e.g., www.example.com or leave empty" />
+        <textarea
+          className="form-control"
+          rows="1"
+          name="link"
+          value={resource.link}
+          onChange={handleChange}
+          placeholder="e.g., www.example.com or leave empty"
+        />
       </Form.Group>
       <Form.Group>
         <Form.Label>Category</Form.Label>
@@ -131,25 +146,50 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
       </Form.Group>
       <Form.Group>
         <Form.Label>Contact Info</Form.Label>
-        <Form.Control type="text" name="contactInfo" value={resource.contactInfo} onChange={handleChange} />
+        <textarea
+          className="form-control"
+          rows="1"
+          name="contactInfo"
+          value={resource.contactInfo}
+          onChange={handleChange}
+        />
       </Form.Group>
       <Form.Group>
         <Form.Label>Address</Form.Label>
-        <Form.Control type="text" name="address" value={resource.address} onChange={handleChange} />
+        <textarea
+          className="form-control"
+          rows="1"
+          name="address"
+          value={resource.address}
+          onChange={handleChange}
+        />
       </Form.Group>
       <Form.Group>
         <Form.Label>Available Hours</Form.Label>
-        <Form.Control type="text" name="availableHours" value={resource.availableHours} onChange={handleChange} />
+        <textarea
+          className="form-control"
+          rows="1"
+          name="availableHours"
+          value={resource.availableHours}
+          onChange={handleChange}
+        />
       </Form.Group>
       <Form.Group>
         <Form.Label>Tags (comma-separated)</Form.Label>
-        <Form.Control type="text" name="tags" value={resource.tags} onChange={handleChange} />
+        <textarea
+          className="form-control"
+          rows="1"
+          name="tags"
+          value={resource.tags}
+          onChange={handleChange}
+        />
       </Form.Group>
       <Button variant="primary" type="submit" className='mt-2'>
         {initialData ? 'Update Resource' : 'Create Resource'}
       </Button>
     </Form>
   );
+
 };
 
 export default CreateResourceForm;
