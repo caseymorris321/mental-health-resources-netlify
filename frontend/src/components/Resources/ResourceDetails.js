@@ -48,16 +48,48 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
         ) : (
           <>
             <Card.Title>{resource.name}</Card.Title>
-            <Card.Text><strong>Description:</strong> {resource.description}</Card.Text>
+            <Card.Text>
+              <strong>Description:</strong><br />
+              {resource.description.split('\n').map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+            </Card.Text>
             <Card.Text>
               <strong>Link:</strong>{' '}
               <a href={formatLink(resource.link)} target="_blank" rel="noopener noreferrer">
                 {resource.link}
               </a>
             </Card.Text>
-            <Card.Text><strong>Contact Info:</strong> {resource.contactInfo}</Card.Text>
-            <Card.Text><strong>Address:</strong> {resource.address}</Card.Text>
-            <Card.Text><strong>Available Hours:</strong> {resource.availableHours}</Card.Text>
+            <Card.Text>
+              <strong>Contact Info:</strong><br />
+              {resource.contactInfo.split('\n').map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+            </Card.Text>
+            <Card.Text>
+              <strong>Address:</strong><br />
+              {resource.address.split('\n').map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+            </Card.Text>
+            <Card.Text>
+              <strong>Available Hours:</strong><br />
+              {resource.availableHours.split('\n').map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+            </Card.Text>
             <Card.Text><strong>Tags:</strong> {resource.tags.join(', ')}</Card.Text>
           </>
         )}
