@@ -21,21 +21,30 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
 
   const [message, setMessage] = useState(null);
 
+    // Automatically adjust textarea height when typing
+  const adjustTextareaHeight = (element) => {
+    element.style.height = 'auto';
+    element.style.height = `${element.scrollHeight}px`;
+  };
+
   useEffect(() => {
     if (initialData) {
       setResource({
         ...initialData,
         tags: initialData.tags ? initialData.tags.join(', ') : '',
       });
+      
+      // Adjust height of textareas
+      setTimeout(() => {
+        document.querySelectorAll('textarea').forEach(adjustTextareaHeight);
+      }, 0);
     }
   }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setResource({ ...resource, [name]: value });
-    
-    e.target.style.height = 'auto';
-    e.target.style.height = `${e.target.scrollHeight}px`;
+    adjustTextareaHeight(e.target);
   };
 
   const handleSubmit = async (e) => {
@@ -99,12 +108,13 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         <Form.Label>Name</Form.Label>
         <textarea
           className="form-control"
-          rows="1"
           name="name"
           value={resource.name}
           onChange={handleChange}
           required
           autoFocus={isCreate}
+          style={{ overflow: 'hidden', resize: 'none' }}
+          ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
       <Form.Group>
@@ -115,17 +125,20 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           value={resource.description}
           onChange={handleChange}
           required
+          style={{ overflow: 'hidden', resize: 'none' }}
+          ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
       <Form.Group>
         <Form.Label>Link</Form.Label>
         <textarea
           className="form-control"
-          rows="1"
           name="link"
           value={resource.link}
           onChange={handleChange}
           placeholder="e.g., www.example.com or leave empty"
+          style={{ overflow: 'hidden', resize: 'none' }}
+          ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
       <Form.Group>
@@ -152,40 +165,44 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         <Form.Label>Contact Info</Form.Label>
         <textarea
           className="form-control"
-          rows="1"
           name="contactInfo"
           value={resource.contactInfo}
           onChange={handleChange}
+          style={{ overflow: 'hidden', resize: 'none' }}
+          ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
       <Form.Group>
         <Form.Label>Address</Form.Label>
         <textarea
           className="form-control"
-          rows="1"
           name="address"
           value={resource.address}
           onChange={handleChange}
+          style={{ overflow: 'hidden', resize: 'none' }}
+          ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
       <Form.Group>
         <Form.Label>Available Hours</Form.Label>
         <textarea
           className="form-control"
-          rows="1"
           name="availableHours"
           value={resource.availableHours}
           onChange={handleChange}
+          style={{ overflow: 'hidden', resize: 'none' }}
+          ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
       <Form.Group>
         <Form.Label>Tags (comma-separated)</Form.Label>
         <textarea
           className="form-control"
-          rows="1"
           name="tags"
           value={resource.tags}
           onChange={handleChange}
+          style={{ overflow: 'hidden', resize: 'none' }}
+          ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
       <Button variant="primary" type="submit" className='mt-2'>
