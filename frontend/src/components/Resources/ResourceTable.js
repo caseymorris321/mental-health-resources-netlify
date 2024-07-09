@@ -80,7 +80,8 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
       <h3 className="text-center mb-3">{title}</h3>
 
       <div className="table-responsive">
-        <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6', tableLayout: 'fixed', width: '100%' }}>
+      <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6' }}>
+
           <thead className="table-light">
             {headerGroups.map(headerGroup => {
               const { key, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps();
@@ -102,35 +103,45 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
             })}
           </thead>
           <tbody {...getTableBodyProps()}>
-            <tr style={{ display: 'none' }}></tr>
-            {page.map(row => {
-              prepareRow(row);
-              const { key, ...restRowProps } = row.getRowProps();
-              return (
-                <tr key={key} {...restRowProps}>
-                  {row.cells.map(cell => {
-                    const { key, ...restCellProps } = cell.getCellProps();
-                    return (
-                      <td key={key} {...restCellProps} className="align-middle text-nowrap" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)' }}>
-                        {cell.column.id === 'link' ? (
-                          cell.value ? (
-                            <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                              {cell.value}
-                            </a>
-                          ) : (
-                            'N/A'
-                          )
-                        ) : (
-                          cell.render('Cell')
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <tr style={{ display: 'none' }}></tr>
+    {page.map(row => {
+      prepareRow(row);
+      const { key, ...restRowProps } = row.getRowProps();
+      return (
+        <tr key={key} {...restRowProps}>
+          {row.cells.map(cell => {
+            const { key, ...restCellProps } = cell.getCellProps();
+            return (
+              <td 
+                key={key} 
+                {...restCellProps} 
+                className="align-middle" 
+                style={{ 
+                  border: 'none', 
+                  fontSize: 'clamp(12px, 2vw, 16px)',
+                  wordWrap: 'break-word',
+                  whiteSpace: 'normal'
+                }}
+              >
+                {cell.column.id === 'link' ? (
+                  cell.value ? (
+                    <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                      {cell.value}
+                    </a>
+                  ) : (
+                    'N/A'
+                  )
+                ) : (
+                  cell.render('Cell')
+                )}
+              </td>
+            );
+          })}
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
       </div>
       <div className="d-flex flex-column align-items-center mb-1">
         <div className="mb-2">
