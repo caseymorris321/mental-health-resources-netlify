@@ -406,75 +406,75 @@ const AdminDashboard = () => {
     }
   };
 
-  //   const handleMoveCategory = async (categoryId, direction) => {
-  //     try {
-  //       const token = await getAccessTokenSilently();
-  //       const response = await fetch(fetchUrl(isProduction ? `moveCategory/${categoryId}/${direction}` : `categories/${categoryId}/move/${direction}`), {
-  //         method: 'PUT',
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-  //       if (response.ok) {
-  //         const updatedCategories = await response.json();
-  //         // console.log('Updated categories:', updatedCategories);
-  //         setCategories(updatedCategories);
-  //       } else {
-  //         console.error('Failed to move category');
-  //       }
-  //     } catch (error) {
-  //       console.error('Error:', error);
-  //     }
-  //   };
+    // const handleMoveCategory = async (categoryId, direction) => {
+    //   try {
+    //     const token = await getAccessTokenSilently();
+    //     const response = await fetch(fetchUrl(isProduction ? `moveCategory/${categoryId}/${direction}` : `categories/${categoryId}/move/${direction}`), {
+    //       method: 'PUT',
+    //       headers: {
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //     });
+    //     if (response.ok) {
+    //       const updatedCategories = await response.json();
+    //       // console.log('Updated categories:', updatedCategories);
+    //       setCategories(updatedCategories);
+    //     } else {
+    //       console.error('Failed to move category');
+    //     }
+    //   } catch (error) {
+    //     console.error('Error:', error);
+    //   }
+    // };
 
-  //   const handleMoveSubCategory = async (subCategoryId, direction) => {
-  //     try {
-  //       const token = await getAccessTokenSilently();
-  //       const response = await fetch(fetchUrl(isProduction ? `moveSubCategory/${subCategoryId}/${direction}` : `subcategories/${subCategoryId}/move/${direction}`), {
-  //         method: 'PUT',
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-  //       if (response.ok) {
-  //         const updatedSubCategories = await response.json();
-  //         setSubCategories(updatedSubCategories);
-  //         // We might need to fetch all subcategories again to ensure the state is fully updated
-  //         fetchSubCategories();
-  //       } else {
-  //         console.error('Failed to move subcategory');
-  //       }
-  //     } catch (error) {
-  //       console.error('Error:', error);
-  //     }
-  //   };
+    const handleMoveSubCategory = async (subCategoryId, direction) => {
+      try {
+        const token = await getAccessTokenSilently();
+        const response = await fetch(fetchUrl(isProduction ? `moveSubCategory/${subCategoryId}/${direction}` : `subcategories/${subCategoryId}/move/${direction}`), {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const updatedSubCategories = await response.json();
+          setSubCategories(updatedSubCategories);
+          // We might need to fetch all subcategories again to ensure the state is fully updated
+          fetchSubCategories();
+        } else {
+          console.error('Failed to move subcategory');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
 
-  //  const handleMoveResource = async (resourceId, direction) => {
-  //   try {
-  //     const token = await getAccessTokenSilently();
-  //     const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}/${direction}` : `${resourceId}/move/${direction}`), {
-  //       method: 'PUT',
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     if (response.ok) {
-  //       const updatedResource = await response.json();
-  //       setResources(prevResources => {
-  //         const newResources = prevResources.filter(r => r._id !== resourceId);
-  //         const insertIndex = direction === 'up' 
-  //           ? newResources.findIndex(r => r.category === updatedResource.category && r.subCategory === updatedResource.subCategory)
-  //           : newResources.findIndex(r => r.category === updatedResource.category && r.subCategory === updatedResource.subCategory) + 1;
-  //         newResources.splice(insertIndex, 0, updatedResource);
-  //         return newResources;
-  //       });
-  //     } else {
-  //       console.error('Failed to move resource');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //   }
-  // };
+   const handleMoveResource = async (resourceId, direction) => {
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}/${direction}` : `${resourceId}/move/${direction}`), {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const updatedResource = await response.json();
+        setResources(prevResources => {
+          const newResources = prevResources.filter(r => r._id !== resourceId);
+          const insertIndex = direction === 'up' 
+            ? newResources.findIndex(r => r.category === updatedResource.category && r.subCategory === updatedResource.subCategory)
+            : newResources.findIndex(r => r.category === updatedResource.category && r.subCategory === updatedResource.subCategory) + 1;
+          newResources.splice(insertIndex, 0, updatedResource);
+          return newResources;
+        });
+      } else {
+        console.error('Failed to move resource');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   const onDragEnd = async (result) => {
     if (!result.destination) return;
@@ -509,59 +509,18 @@ const AdminDashboard = () => {
         fetchCategories();
       }
     } else if (type === 'subcategory') {
+      const direction = destination.index > source.index ? 'down' : 'up';
       try {
-        const token = await getAccessTokenSilently();
-        const response = await fetch(fetchUrl(isProduction ? `updateSubcategoryOrder/${draggableId}` : `subcategories/${draggableId}/updateOrder`), {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ 
-            newIndex: destination.index,
-            newCategory: destination.droppableId
-          }),
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to update subcategory order');
-        }
-  
-        const updatedSubCategories = await response.json();
-        setSubCategories(updatedSubCategories);
-  
+        await handleMoveSubCategory(draggableId, direction);
       } catch (error) {
-        console.error('Failed to update subcategory order:', error);
-        fetchSubCategories();
+        console.error('Failed to move subcategory:', error);
       }
     } else if (type === 'resource') {
-      const [destCategory, destSubCategory] = destination.droppableId.split('-');
-  
+      const direction = destination.index > source.index ? 'down' : 'up';
       try {
-        const token = await getAccessTokenSilently();
-        const response = await fetch(fetchUrl(isProduction ? `updateResourceOrder/${draggableId}` : `${draggableId}/updateOrder`), {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ 
-            newIndex: destination.index,
-            newCategory: destCategory,
-            newSubCategory: destSubCategory
-          }),
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to update resource order');
-        }
-  
-        const updatedResources = await response.json();
-        setResources(updatedResources);
-  
+        await handleMoveResource(draggableId, direction);
       } catch (error) {
-        console.error('Failed to update resource order:', error);
-        fetchResources();
+        console.error('Failed to move resource:', error);
       }
     }
   };
