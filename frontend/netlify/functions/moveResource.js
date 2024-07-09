@@ -15,32 +15,40 @@ exports.handler = async (event, context) => {
     const id = pathParts[pathParts.length - 2];
     const direction = pathParts[pathParts.length - 1];
 
-    const { newCategory, newSubCategory } = JSON.parse(event.body);
-
     const resource = await Resource.findById(id);
     if (!resource) {
-      return { statusCode: 404, body: JSON.stringify({ message: 'Resource not found' }) };
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Resource not found' })
+      };
     }
 
-    const oldCategory = resource.category;
-    const oldSubCategory = resource.subCategory;
+    const operator = direction === 'up' ? '$lt' : '$gt';
+    const sort = direction === 'up' ? -1 : 1;
 
-    // Update category and subcategory if provided
-    if (newCategory && newSubCategory) {
-      resource.category = newCategory;
-      resource.subCategory = newSubCategory;
-    }
-
-    // Find the new position for the resource
-    const lastResource = await Resource.findOne({
+    const adjacentResource = await Resource.findOne({
       category: resource.category,
-      subCategory: resource.subCategory
-    }).sort('-order');
+      subCategory: resource.subCategory,
+      order: { [operator]: resource.order }
+    }).sort({ order: sort });
 
-    resource.order = lastResource ? lastResource.order + 1 : 0;
-    await resource.save();
+    if (adjacentResource) {
+      const tempOrder = resource.order;
+      resource.order = adjacentResource.order;
+      adjacentResource.order = tempOrder;
 
-    // Reorder resources in the new category/subcategory
+      await Promise.all([resource.save(), adjacentResource.save()]);
+    } else {
+      const extremeResource = await Resource.findOne({
+        category: resource.category,
+        subCategory: resource.subCategory
+      }).sort({ order: direction === 'up' ? 1 : -1 });
+      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
+        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
+        await resource.save();
+      }
+    }
+
     const allResources = await Resource.find({
       category: resource.category,
       subCategory: resource.subCategory
@@ -50,22 +58,20 @@ exports.handler = async (event, context) => {
       await allResources[i].save();
     }
 
-    // Reorder resources in the old category/subcategory if it changed
-    if (oldCategory !== resource.category || oldSubCategory !== resource.subCategory) {
-      const oldResources = await Resource.find({
-        category: oldCategory,
-        subCategory: oldSubCategory
-      }).sort('order');
-      for (let i = 0; i < oldResources.length; i++) {
-        oldResources[i].order = i;
-        await oldResources[i].save();
-      }
-    }
+    const updatedResources = await Resource.find({
+      category: resource.category,
+      subCategory: resource.subCategory
+    }).sort('order');
 
-    const updatedResources = await Resource.find().sort('category subCategory order');
-    return { statusCode: 200, body: JSON.stringify(updatedResources) };
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updatedResources)
+    };
   } catch (error) {
     console.error('Error in moveResource:', error);
-    return { statusCode: 500, body: JSON.stringify({ message: error.message }) };
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: error.message })
+    };
   }
 };
