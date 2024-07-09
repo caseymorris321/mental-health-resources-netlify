@@ -1,5 +1,5 @@
-const { getConnection, closeConnection } = require('./db');
-const { Resource } = require('./models/resourceModel');
+const { getConnection } = require('./db');
+const { Resource, SubCategory } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
@@ -17,38 +17,48 @@ exports.handler = async (event, context) => {
 
     const resource = await Resource.findById(id);
     if (!resource) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Resource not found' })
-      };
+      return { statusCode: 404, body: JSON.stringify({ message: 'Resource not found' }) };
     }
 
-    const operator = direction === 'up' ? '$lt' : '$gt';
-    const sort = direction === 'up' ? -1 : 1;
+    const subCategories = await SubCategory.find({ category: resource.category }).sort('order');
+    const currentSubCategoryIndex = subCategories.findIndex(sc => sc.name === resource.subCategory);
+    
+    let newSubCategory;
+    if (direction === 'up' && currentSubCategoryIndex > 0) {
+      newSubCategory = subCategories[currentSubCategoryIndex - 1].name;
+    } else if (direction === 'down' && currentSubCategoryIndex < subCategories.length - 1) {
+      newSubCategory = subCategories[currentSubCategoryIndex + 1].name;
+    }
 
-    const adjacentResource = await Resource.findOne({
-      category: resource.category,
-      subCategory: resource.subCategory,
-      order: { [operator]: resource.order }
-    }).sort({ order: sort });
-
-    if (adjacentResource) {
-      const tempOrder = resource.order;
-      resource.order = adjacentResource.order;
-      adjacentResource.order = tempOrder;
-
-      await Promise.all([resource.save(), adjacentResource.save()]);
+    if (newSubCategory) {
+      // Moving to a different subcategory
+      resource.subCategory = newSubCategory;
+      const maxOrderInNewSubCategory = await Resource.findOne({ category: resource.category, subCategory: newSubCategory })
+        .sort('-order')
+        .select('order');
+      resource.order = (maxOrderInNewSubCategory?.order || -1) + 1;
     } else {
-      const extremeResource = await Resource.findOne({
+      // Moving within the same subcategory
+      const operator = direction === 'up' ? '$lt' : '$gt';
+      const sort = direction === 'up' ? -1 : 1;
+
+      const adjacentResource = await Resource.findOne({
         category: resource.category,
-        subCategory: resource.subCategory
-      }).sort({ order: direction === 'up' ? 1 : -1 });
-      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
-        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
-        await resource.save();
+        subCategory: resource.subCategory,
+        order: { [operator]: resource.order }
+      }).sort({ order: sort });
+
+      if (adjacentResource) {
+        const tempOrder = resource.order;
+        resource.order = adjacentResource.order;
+        adjacentResource.order = tempOrder;
+        await adjacentResource.save();
       }
     }
 
+    await resource.save();
+
+    // Normalize orders
     const allResources = await Resource.find({
       category: resource.category,
       subCategory: resource.subCategory
@@ -62,7 +72,7 @@ exports.handler = async (event, context) => {
       category: resource.category,
       subCategory: resource.subCategory
     }).sort('order');
-    // console.log('Sending updated resources:', updatedResources);
+
     return {
       statusCode: 200,
       body: JSON.stringify(updatedResources)
@@ -73,5 +83,5 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })
     };
-  } 
+  }
 };

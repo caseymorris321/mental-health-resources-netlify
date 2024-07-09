@@ -437,8 +437,9 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
-        // console.log('Updated subcategories:', updatedSubCategories);
         setSubCategories(updatedSubCategories);
+        // We might need to fetch all subcategories again to ensure the state is fully updated
+        fetchSubCategories();
       } else {
         console.error('Failed to move subcategory');
       }
@@ -458,8 +459,38 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const updatedResources = await response.json();
-        // console.log('Updated resources:', updatedResources);
-        setResources(updatedResources);
+        setResources(prevResources => {
+          // Find the index of the moved resource
+          const movedResourceIndex = prevResources.findIndex(r => r._id === resourceId);
+          if (movedResourceIndex === -1) return prevResources;
+  
+          const movedResource = prevResources[movedResourceIndex];
+          const newResources = [...prevResources];
+  
+          // Remove the moved resource from its original position
+          newResources.splice(movedResourceIndex, 1);
+  
+          // Find the new position
+          let newIndex;
+          if (direction === 'up') {
+            newIndex = movedResourceIndex - 1;
+            if (newIndex < 0 || newResources[newIndex].subCategory !== movedResource.subCategory) {
+              // Move to the end of the previous subcategory
+              newIndex = newResources.findIndex(r => r.subCategory === updatedResources[0].subCategory) - 1;
+            }
+          } else {
+            newIndex = movedResourceIndex;
+            if (newIndex >= newResources.length || newResources[newIndex].subCategory !== movedResource.subCategory) {
+              // Move to the start of the next subcategory
+              newIndex = newResources.findIndex(r => r.subCategory === updatedResources[0].subCategory);
+            }
+          }
+  
+          // Insert the moved resource at its new position
+          newResources.splice(newIndex, 0, {...movedResource, ...updatedResources[0]});
+  
+          return newResources;
+        });
       } else {
         console.error('Failed to move resource');
       }
@@ -467,6 +498,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
   return (
     <Container className="mt-5">
