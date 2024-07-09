@@ -449,20 +449,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleMoveResource = async (resourceId, direction, newCategory, newSubCategory) => {
+  const handleMoveResource = async (resourceId, direction) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}` : `${resourceId}/move`), {
+      const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}/${direction}` : `${resourceId}/move/${direction}`), {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ direction, newCategory, newSubCategory }),
       });
       if (response.ok) {
         const updatedResources = await response.json();
         setResources(updatedResources);
+        // We might need to fetch all resources again to ensure the state is fully updated
+        fetchResources();
       } else {
         console.error('Failed to move resource');
       }
@@ -470,6 +470,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
 
   const onDragEnd = async (result) => {
@@ -512,22 +513,13 @@ const AdminDashboard = () => {
         console.error('Failed to move subcategory:', error);
       }
     } else if (type === 'resource') {
-      const [sourceCategory, sourceSubCategory] = source.droppableId.split('-');
-      const [destCategory, destSubCategory] = destination.droppableId.split('-');
       const direction = destination.index > source.index ? 'down' : 'up';
-
       try {
-        await handleMoveResource(
-          draggableId,
-          direction,
-          sourceCategory !== destCategory ? destCategory : undefined,
-          sourceSubCategory !== destSubCategory ? destSubCategory : undefined
-        );
+        await handleMoveResource(draggableId, direction);
       } catch (error) {
         console.error('Failed to move resource:', error);
       }
-    }
-
+    }    
   };
 
   return (
