@@ -11,11 +11,9 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const pathParts = event.path.split('/');
-    const id = pathParts[pathParts.length - 2];
-    const { newIndex } = JSON.parse(event.body);
+    const { resourceId, newIndex } = JSON.parse(event.body);
 
-    const resource = await Resource.findById(id);
+    const resource = await Resource.findById(resourceId);
     if (!resource) {
       return {
         statusCode: 404,

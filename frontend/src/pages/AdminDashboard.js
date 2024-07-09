@@ -452,24 +452,18 @@ const AdminDashboard = () => {
   const handleMoveResource = async (resourceId, newIndex) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `moveResource/${resourceId}` : `${resourceId}/move`), {
+      const endpoint = isProduction ? `moveResource` : `resources/move`;
+      const response = await fetch(fetchUrl(endpoint), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ newIndex }),
+        body: JSON.stringify({ resourceId, newIndex }),
       });
       if (response.ok) {
         const updatedResources = await response.json();
-        setResources(prevResources => {
-          const newResources = [...prevResources];
-          const categoryIndex = newResources.findIndex(r => r._id === resourceId);
-          if (categoryIndex !== -1) {
-            newResources[categoryIndex] = updatedResources.find(r => r._id === resourceId);
-          }
-          return newResources;
-        });
+        setResources(updatedResources);
         fetchResources();
       } else {
         console.error('Failed to move resource');
@@ -477,7 +471,7 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error:', error);
     }
-  };  
+  };
 
 
   const onDragEnd = async (result) => {
