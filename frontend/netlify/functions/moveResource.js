@@ -1,4 +1,4 @@
-const { getConnection, closeConnection } = require('./db');
+const { getConnection } = require('./db');
 const { Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
@@ -7,13 +7,13 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     const pathParts = event.path.split('/');
     const id = pathParts[pathParts.length - 2];
-    const direction = pathParts[pathParts.length - 1];
+    const { newIndex, newCategory, newSubCategory } = JSON.parse(event.body);
 
     const resource = await Resource.findById(id);
     if (!resource) {
@@ -23,49 +23,44 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const operator = direction === 'up' ? '$lt' : '$gt';
-    const sort = direction === 'up' ? -1 : 1;
+    const oldCategory = resource.category;
+    const oldSubCategory = resource.subCategory;
 
-    const adjacentResource = await Resource.findOne({
-      category: resource.category,
-      subCategory: resource.subCategory,
-      order: { [operator]: resource.order }
-    }).sort({ order: sort });
+    // Update resource's category and subcategory
+    resource.category = newCategory;
+    resource.subCategory = newSubCategory;
 
-    if (adjacentResource) {
-      const tempOrder = resource.order;
-      resource.order = adjacentResource.order;
-      adjacentResource.order = tempOrder;
+    // Update orders in the new subcategory
+    await Resource.updateMany(
+      { category: newCategory, subCategory: newSubCategory, order: { $gte: newIndex } },
+      { $inc: { order: 1 } }
+    );
 
-      await Promise.all([resource.save(), adjacentResource.save()]);
-    } else {
-      const extremeResource = await Resource.findOne({
-        category: resource.category,
-        subCategory: resource.subCategory
-      }).sort({ order: direction === 'up' ? 1 : -1 });
-      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
-        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
-        await resource.save();
+    resource.order = newIndex;
+    await resource.save();
+
+    // Normalize orders in the new subcategory
+    const resourcesInNewSubCategory = await Resource.find({ category: newCategory, subCategory: newSubCategory }).sort('order');
+    for (let i = 0; i < resourcesInNewSubCategory.length; i++) {
+      resourcesInNewSubCategory[i].order = i;
+      await resourcesInNewSubCategory[i].save();
+    }
+
+    // Normalize orders in the old subcategory if it's different
+    if (oldCategory !== newCategory || oldSubCategory !== newSubCategory) {
+      const resourcesInOldSubCategory = await Resource.find({ category: oldCategory, subCategory: oldSubCategory }).sort('order');
+      for (let i = 0; i < resourcesInOldSubCategory.length; i++) {
+        resourcesInOldSubCategory[i].order = i;
+        await resourcesInOldSubCategory[i].save();
       }
     }
 
-    const allResources = await Resource.find({
-      category: resource.category,
-      subCategory: resource.subCategory
-    }).sort('order');
-    for (let i = 0; i < allResources.length; i++) {
-      allResources[i].order = i;
-      await allResources[i].save();
-    }
+    // Fetch all resources to return updated state
+    const allResources = await Resource.find().sort('category subCategory order');
 
-    const updatedResources = await Resource.find({
-      category: resource.category,
-      subCategory: resource.subCategory
-    }).sort('order');
-    // console.log('Sending updated resources:', updatedResources);
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedResources)
+      body: JSON.stringify(allResources)
     };
   } catch (error) {
     console.error('Error in moveResource:', error);
@@ -73,5 +68,5 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: error.message })
     };
-  } 
+  }
 };
