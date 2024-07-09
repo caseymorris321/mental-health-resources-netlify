@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
 
     const pathParts = event.path.split('/');
     const id = pathParts[pathParts.length - 2];
-    const { newIndex, newCategory, newSubCategory } = JSON.parse(event.body);
+    const { direction, newCategory, newSubCategory } = JSON.parse(event.body);
 
     const resource = await Resource.findById(id);
     if (!resource) {
@@ -26,41 +26,64 @@ exports.handler = async (event, context) => {
     const oldCategory = resource.category;
     const oldSubCategory = resource.subCategory;
 
-    // Update resource's category and subcategory
-    resource.category = newCategory;
-    resource.subCategory = newSubCategory;
-
-    // Update orders in the new subcategory
-    await Resource.updateMany(
-      { category: newCategory, subCategory: newSubCategory, order: { $gte: newIndex } },
-      { $inc: { order: 1 } }
-    );
-
-    resource.order = newIndex;
-    await resource.save();
-
-    // Normalize orders in the new subcategory
-    const resourcesInNewSubCategory = await Resource.find({ category: newCategory, subCategory: newSubCategory }).sort('order');
-    for (let i = 0; i < resourcesInNewSubCategory.length; i++) {
-      resourcesInNewSubCategory[i].order = i;
-      await resourcesInNewSubCategory[i].save();
+    // If newCategory and newSubCategory are provided, update them
+    if (newCategory && newSubCategory) {
+      resource.category = newCategory;
+      resource.subCategory = newSubCategory;
     }
 
-    // Normalize orders in the old subcategory if it's different
-    if (oldCategory !== newCategory || oldSubCategory !== newSubCategory) {
-      const resourcesInOldSubCategory = await Resource.find({ category: oldCategory, subCategory: oldSubCategory }).sort('order');
-      for (let i = 0; i < resourcesInOldSubCategory.length; i++) {
-        resourcesInOldSubCategory[i].order = i;
-        await resourcesInOldSubCategory[i].save();
+    const operator = direction === 'up' ? '$lt' : '$gt';
+    const sort = direction === 'up' ? -1 : 1;
+
+    const adjacentResource = await Resource.findOne({
+      category: resource.category,
+      subCategory: resource.subCategory,
+      order: { [operator]: resource.order }
+    }).sort({ order: sort });
+
+    if (adjacentResource) {
+      const tempOrder = resource.order;
+      resource.order = adjacentResource.order;
+      adjacentResource.order = tempOrder;
+
+      await Promise.all([resource.save(), adjacentResource.save()]);
+    } else {
+      const extremeResource = await Resource.findOne({
+        category: resource.category,
+        subCategory: resource.subCategory
+      }).sort({ order: direction === 'up' ? 1 : -1 });
+      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
+        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
+        await resource.save();
       }
     }
 
-    // Fetch all resources to return updated state
-    const allResources = await Resource.find().sort('category subCategory order');
+    // Normalize orders in the new subcategory
+    const allResources = await Resource.find({
+      category: resource.category,
+      subCategory: resource.subCategory
+    }).sort('order');
+    for (let i = 0; i < allResources.length; i++) {
+      allResources[i].order = i;
+      await allResources[i].save();
+    }
 
+    // If the category or subcategory has changed, normalize orders in the old subcategory
+    if (oldCategory !== resource.category || oldSubCategory !== resource.subCategory) {
+      const oldSubcategoryResources = await Resource.find({
+        category: oldCategory,
+        subCategory: oldSubCategory
+      }).sort('order');
+      for (let i = 0; i < oldSubcategoryResources.length; i++) {
+        oldSubcategoryResources[i].order = i;
+        await oldSubcategoryResources[i].save();
+      }
+    }
+
+    const updatedResources = await Resource.find().sort('category subCategory order');
     return {
       statusCode: 200,
-      body: JSON.stringify(allResources)
+      body: JSON.stringify(updatedResources)
     };
   } catch (error) {
     console.error('Error in moveResource:', error);
