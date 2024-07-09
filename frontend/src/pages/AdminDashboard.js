@@ -479,7 +479,7 @@ const AdminDashboard = () => {
   const onDragEnd = async (result) => {
     if (!result.destination) return;
 
-    const { source, destination, type } = result;
+    const { source, destination, type, draggableId } = result;
 
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
@@ -510,58 +510,68 @@ const AdminDashboard = () => {
       }
     } else if (type === 'subcategory') {
       const newSubCategories = Array.from(subCategories);
-      const [reorderedItem] = newSubCategories.splice(source.index, 1);
-      newSubCategories.splice(destination.index, 0, reorderedItem);
+      const [movedSubCategory] = newSubCategories.splice(source.index, 1);
+      newSubCategories.splice(destination.index, 0, movedSubCategory);
 
       setSubCategories(newSubCategories);
 
       try {
         const token = await getAccessTokenSilently();
-        const response = await fetch(fetchUrl(isProduction ? `moveSubCategory/${reorderedItem._id}/${destination.index > source.index ? 'down' : 'up'}` : `subcategories/${reorderedItem._id}/move/${destination.index > source.index ? 'down' : 'up'}`), {
+        const response = await fetch(fetchUrl(isProduction ? `updateSubcategoryOrder/${draggableId}` : `subcategories/${draggableId}/updateOrder`), {
           method: 'PUT',
           headers: {
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({
+            newIndex: destination.index,
+            newCategory: destination.droppableId
+          }),
         });
-        if (response.ok) {
-          const updatedSubCategories = await response.json();
-          setSubCategories(updatedSubCategories);
-        } else {
+
+        if (!response.ok) {
           throw new Error('Failed to update subcategory order');
         }
+
+        const updatedSubCategories = await response.json();
+        setSubCategories(updatedSubCategories);
+
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Failed to update subcategory order:', error);
         fetchSubCategories();
       }
-    } else {
-      const newResources = Array.from(resources);
-      const [reorderedItem] = newResources.splice(source.index, 1);
-      newResources.splice(destination.index, 0, reorderedItem);
-
-      setResources(newResources);
+    } else if (type === 'resource') {
+      const [destCategory, destSubCategory] = destination.droppableId.split('-');
 
       try {
         const token = await getAccessTokenSilently();
-        const response = await fetch(fetchUrl(isProduction ? `moveResource/${reorderedItem._id}/${destination.index > source.index ? 'down' : 'up'}` : `${reorderedItem._id}/move/${destination.index > source.index ? 'down' : 'up'}`), {
+        const response = await fetch(fetchUrl(isProduction ? `updateResourceOrder/${draggableId}` : `${draggableId}/updateOrder`), {
           method: 'PUT',
           headers: {
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({
+            newIndex: destination.index,
+            newCategory: destCategory,
+            newSubCategory: destSubCategory
+          }),
         });
-        if (response.ok) {
-          const updatedResource = await response.json();
-          setResources(prevResources => prevResources.map(resource =>
-            resource._id === updatedResource._id ? updatedResource : resource
-          ));
-        } else {
+
+        if (!response.ok) {
           throw new Error('Failed to update resource order');
         }
+
+        const updatedResources = await response.json();
+        setResources(updatedResources);
+
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Failed to update resource order:', error);
         fetchResources();
       }
     }
   };
+
 
 
 

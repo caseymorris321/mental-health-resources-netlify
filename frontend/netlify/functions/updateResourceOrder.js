@@ -29,7 +29,7 @@ exports.handler = async (event, context) => {
     resource.subCategory = newSubCategory;
 
     if (newCategory === oldCategory && newSubCategory === oldSubCategory) {
-      // Moving within the same category and subcategory
+      // Moving within the same subcategory
       if (newIndex > oldOrder) {
         // Moving down
         await Resource.updateMany(
@@ -54,7 +54,7 @@ exports.handler = async (event, context) => {
         );
       }
     } else {
-      // Moving to a different category or subcategory
+      // Moving to a different subcategory
       await Resource.updateMany(
         { 
           category: newCategory, 
@@ -65,7 +65,7 @@ exports.handler = async (event, context) => {
         { $inc: { order: 1 } }
       );
 
-      // Adjust orders in the old category/subcategory
+      // Adjust orders in the old subcategory
       await Resource.updateMany(
         {
           category: oldCategory,
@@ -80,14 +80,14 @@ exports.handler = async (event, context) => {
     resource.order = newIndex;
     await resource.save();
 
-    // Normalize orders within the new category and subcategory
+    // Normalize orders within the new subcategory
     const resourcesInNewSubCategory = await Resource.find({ category: newCategory, subCategory: newSubCategory }).sort('order');
     for (let i = 0; i < resourcesInNewSubCategory.length; i++) {
       resourcesInNewSubCategory[i].order = i;
       await resourcesInNewSubCategory[i].save();
     }
 
-    // If the category or subcategory has changed, normalize orders in the old category and subcategory
+    // If the subcategory has changed, normalize orders in the old subcategory
     if (oldCategory !== newCategory || oldSubCategory !== newSubCategory) {
       const resourcesInOldSubCategory = await Resource.find({ category: oldCategory, subCategory: oldSubCategory }).sort('order');
       for (let i = 0; i < resourcesInOldSubCategory.length; i++) {
@@ -96,14 +96,12 @@ exports.handler = async (event, context) => {
       }
     }
 
-    const updatedResources = await Resource.find({
-      category: newCategory,
-      subCategory: newSubCategory
-    }).sort('order');
+    // Fetch all resources to return updated state
+    const allResources = await Resource.find().sort('category subCategory order');
 
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedResources)
+      body: JSON.stringify(allResources)
     };
   } catch (error) {
     console.error('Error in updateResourceOrder:', error);
