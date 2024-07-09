@@ -461,7 +461,6 @@ const AdminDashboard = () => {
       if (response.ok) {
         const updatedResources = await response.json();
         setResources(updatedResources);
-        // We might need to fetch all resources again to ensure the state is fully updated
         fetchResources();
       } else {
         console.error('Failed to move resource');
