@@ -509,12 +509,6 @@ const AdminDashboard = () => {
         fetchCategories();
       }
     } else if (type === 'subcategory') {
-      const newSubCategories = Array.from(subCategories);
-      const [movedSubCategory] = newSubCategories.splice(source.index, 1);
-      newSubCategories.splice(destination.index, 0, movedSubCategory);
-
-      setSubCategories(newSubCategories);
-
       try {
         const token = await getAccessTokenSilently();
         const response = await fetch(fetchUrl(isProduction ? `updateSubcategoryOrder/${draggableId}` : `subcategories/${draggableId}/updateOrder`), {
@@ -538,7 +532,7 @@ const AdminDashboard = () => {
 
       } catch (error) {
         console.error('Failed to update subcategory order:', error);
-        fetchSubCategories();
+        fetchSubCategories(); // Revert to the server state if the update fails
       }
     } else if (type === 'resource') {
       const [destCategory, destSubCategory] = destination.droppableId.split('-');
@@ -567,13 +561,10 @@ const AdminDashboard = () => {
 
       } catch (error) {
         console.error('Failed to update resource order:', error);
-        fetchResources();
+        fetchResources(); // Revert to the server state if the update fails
       }
     }
   };
-
-
-
 
   return (
     <Container className="mt-5">
