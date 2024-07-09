@@ -3,6 +3,7 @@ import { Container, Button, Modal, Form, ListGroup, Alert } from 'react-bootstra
 import { useAuth0 } from '@auth0/auth0-react';
 import CreateResourceForm from '../components/CreateResourceForm';
 import { Navigate, useLocation, Link } from 'react-router-dom';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import '../loading.css'
 
 const AdminDashboard = () => {
@@ -475,28 +476,67 @@ const AdminDashboard = () => {
   }
 };
 
+const onDragEnd = async (result) => {
+  if (!result.destination) {
+    return;
+  }
+
+  const sourceIndex = result.source.index;
+  const destIndex = result.destination.index;
+
+  if (sourceIndex === destIndex) {
+    return;
+  }
+
+  const updatedResources = Array.from(resources);
+  const [reorderedItem] = updatedResources.splice(sourceIndex, 1);
+  updatedResources.splice(destIndex, 0, reorderedItem);
+
+  setResources(updatedResources);
+
+  try {
+    const token = await getAccessTokenSilently();
+    await fetch(fetchUrl(isProduction ? 'updateResourceOrder' : 'updateOrder'), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        resourceId: reorderedItem._id, 
+        newIndex: destIndex,
+        newCategory: updatedResources[destIndex].category,
+        newSubCategory: updatedResources[destIndex].subCategory
+      }),
+    });
+  } catch (error) {
+    console.error('Failed to update resource order:', error);
+  }
+};
+
   
 
-  return (
-    <Container className="mt-5">
-      <h1 className='text-center'>Admin Dashboard</h1>
-      <div className='text-center'>{user && <p>Welcome, {user.name}</p>}</div>
-      <div className='text-center'>
-        <div className="row g-2 justify-content-center">
-          <div className="col-12 col-sm-auto">
-            <Button
-              variant="success"
-              onClick={() => setShowCategoryModal(true)}
-              className="w-100"
-            >
-              <i className="fas fa-plus me-1"></i>
-              <span>Create Category</span>
-            </Button>
-          </div>
+return (
+  <Container className="mt-5">
+    <h1 className='text-center'>Admin Dashboard</h1>
+    <div className='text-center'>{user && <p>Welcome, {user.name}</p>}</div>
+    <div className='text-center'>
+      <div className="row g-2 justify-content-center">
+        <div className="col-12 col-sm-auto">
+          <Button
+            variant="success"
+            onClick={() => setShowCategoryModal(true)}
+            className="w-100"
+          >
+            <i className="fas fa-plus me-1"></i>
+            <span>Create Category</span>
+          </Button>
         </div>
       </div>
+    </div>
 
-      <h2 className="mt-5 text-center">Resource Management</h2>
+    <h2 className="mt-5 text-center">Resource Management</h2>
+    <DragDropContext onDragEnd={onDragEnd}>
       <div className="mt-4">
         {categories.map((category) => (
           <div key={category._id} className="card mb-4">
@@ -518,22 +558,6 @@ const AdminDashboard = () => {
                   </Button>
                 </div>
                 <div className="mt-2 mt-md-0">
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleMoveCategory(category._id, 'up')}
-                  >
-                    <i className="fas fa-arrow-up"></i>
-                  </Button>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleMoveCategory(category._id, 'down')}
-                  >
-                    <i className="fas fa-arrow-down"></i>
-                  </Button>
                   <Button
                     variant="outline-primary"
                     size="sm"
@@ -589,22 +613,6 @@ const AdminDashboard = () => {
                         </div>
                         <div className="mt-2 mt-md-0">
                           <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            className="me-2"
-                            onClick={() => handleMoveSubCategory(subCategory._id, 'up')}
-                          >
-                            <i className="fas fa-arrow-up"></i>
-                          </Button>
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            className="me-2"
-                            onClick={() => handleMoveSubCategory(subCategory._id, 'down')}
-                          >
-                            <i className="fas fa-arrow-down"></i>
-                          </Button>
-                          <Button
                             variant="outline-primary"
                             size="sm"
                             className="me-2"
@@ -630,64 +638,61 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <h5 className="mt-3 mb-2">Resources:</h5>
-                      <ListGroup>
-                        {resources
-                          .filter(resource => resource.category === category.name && resource.subCategory === subCategory.name)
-                          .map(resource => (
-                            <ListGroup.Item key={resource._id} className="d-flex justify-content-between align-items-center">
-                              <Link to={`/resources/${resource._id}`} className='text-decoration-none'>{resource.name}</Link>
-                              <div>
-                                <Button
-                                  variant="outline-secondary"
-                                  size="sm"
-                                  className="me-2"
-                                  onClick={() => handleMoveResource(resource._id, 'up')}
-                                >
-                                  <i className="fas fa-arrow-up"></i>
-                                </Button>
-                                <Button
-                                  variant="outline-secondary"
-                                  size="sm"
-                                  className="me-2"
-                                  onClick={() => handleMoveResource(resource._id, 'down')}
-                                >
-                                  <i className="fas fa-arrow-down"></i>
-                                </Button>
-                                <Button
-                                  variant="outline-primary"
-                                  size="sm"
-                                  className="me-2"
-                                  onClick={() => {
-                                    if (resource._id) {
-                                      setSelectedResource(resource);
-                                      setShowUpdateResourceModal(true);
-                                    } else {
-                                      console.error('Resource _id is missing');
-                                    }
-                                  }}
-                                >
-                                  <i className="fas fa-edit"></i>
-                                </Button>
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={() => handleDeleteResource(resource._id, resource.name)}
-                                >
-                                  <i className="fas fa-trash-alt"></i>
-                                </Button>
-                              </div>
-                            </ListGroup.Item>
-                          ))
-                        }
-                      </ListGroup>
+                      <Droppable droppableId={`${category.name}-${subCategory.name}`}>
+                        {(provided) => (
+                          <div {...provided.droppableProps} ref={provided.innerRef}>
+                            {resources
+                              .filter(resource => resource.category === category.name && resource.subCategory === subCategory.name)
+                              .map((resource, index) => (
+                                <Draggable key={resource._id} draggableId={resource._id} index={index}>
+                                  {(provided) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      className="d-flex justify-content-between align-items-center mb-2"
+                                    >
+                                      <Link to={`/resources/${resource._id}`} className='text-decoration-none'>{resource.name}</Link>
+                                      <div>
+                                        <Button
+                                          variant="outline-primary"
+                                          size="sm"
+                                          className="me-2"
+                                          onClick={() => {
+                                            if (resource._id) {
+                                              setSelectedResource(resource);
+                                              setShowUpdateResourceModal(true);
+                                            } else {
+                                              console.error('Resource _id is missing');
+                                            }
+                                          }}
+                                        >
+                                          <i className="fas fa-edit"></i>
+                                        </Button>
+                                        <Button
+                                          variant="outline-danger"
+                                          size="sm"
+                                          onClick={() => handleDeleteResource(resource._id, resource.name)}
+                                        >
+                                          <i className="fas fa-trash-alt"></i>
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
                     </ListGroup.Item>
-                  ))
-                }
+                  ))}
               </ListGroup>
             </div>
           </div>
         ))}
       </div>
+    </DragDropContext>
 
       <Modal show={showResourceModal} onHide={() => setShowResourceModal(false)}>
         <Modal.Header closeButton>
