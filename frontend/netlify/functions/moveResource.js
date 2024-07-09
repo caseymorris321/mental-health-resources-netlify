@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
 
     const pathParts = event.path.split('/');
     const id = pathParts[pathParts.length - 2];
-    const direction = pathParts[pathParts.length - 1];
+    const { newIndex } = JSON.parse(event.body);
 
     const resource = await Resource.findById(id);
     if (!resource) {
@@ -23,32 +23,33 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const operator = direction === 'up' ? '$lt' : '$gt';
-    const sort = direction === 'up' ? -1 : 1;
+    const oldIndex = resource.order;
 
-    const adjacentResource = await Resource.findOne({
-      category: resource.category,
-      subCategory: resource.subCategory,
-      order: { [operator]: resource.order }
-    }).sort({ order: sort });
-
-    if (adjacentResource) {
-      const tempOrder = resource.order;
-      resource.order = adjacentResource.order;
-      adjacentResource.order = tempOrder;
-
-      await Promise.all([resource.save(), adjacentResource.save()]);
-    } else {
-      const extremeResource = await Resource.findOne({
-        category: resource.category,
-        subCategory: resource.subCategory
-      }).sort({ order: direction === 'up' ? 1 : -1 });
-      if (extremeResource && extremeResource._id.toString() !== resource._id.toString()) {
-        resource.order = direction === 'up' ? extremeResource.order - 1 : extremeResource.order + 1;
-        await resource.save();
-      }
+    // Update orders
+    if (newIndex > oldIndex) {
+      await Resource.updateMany(
+        { 
+          category: resource.category, 
+          subCategory: resource.subCategory, 
+          order: { $gt: oldIndex, $lte: newIndex } 
+        },
+        { $inc: { order: -1 } }
+      );
+    } else if (newIndex < oldIndex) {
+      await Resource.updateMany(
+        { 
+          category: resource.category, 
+          subCategory: resource.subCategory, 
+          order: { $gte: newIndex, $lt: oldIndex } 
+        },
+        { $inc: { order: 1 } }
+      );
     }
 
+    resource.order = newIndex;
+    await resource.save();
+
+    // Normalize orders
     const allResources = await Resource.find({
       category: resource.category,
       subCategory: resource.subCategory
@@ -58,14 +59,9 @@ exports.handler = async (event, context) => {
       await allResources[i].save();
     }
 
-    const updatedResources = await Resource.find({
-      category: resource.category,
-      subCategory: resource.subCategory
-    }).sort('order');
-
     return {
       statusCode: 200,
-      body: JSON.stringify(updatedResources)
+      body: JSON.stringify(allResources)
     };
   } catch (error) {
     console.error('Error in moveResource:', error);
