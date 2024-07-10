@@ -129,7 +129,7 @@
   status = 200
 
 [[redirects]]
-  from = "/api/*"
+  from = "/api/resources/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
