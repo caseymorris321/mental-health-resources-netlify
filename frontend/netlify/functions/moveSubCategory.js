@@ -1,5 +1,6 @@
 const { getConnection } = require('./db');
-const { SubCategory, Resource } = require('./models/resourceModel');
+const { SubCategory } = require('./models/resourceModel');
+const mongoose = require('mongoose');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -12,10 +13,18 @@ exports.handler = async (event, context) => {
     }
 
     const pathParts = event.path.split('/');
-    const id = pathParts[pathParts.length - 2];
     const direction = pathParts[pathParts.length - 1];
+    const id = pathParts[pathParts.length - 2];
 
-    const subCategory = await SubCategory.findById(id);
+    // Validate id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Invalid subcategory ID' })
+      };
+    }
+
+    const subCategory = await SubCategory.findOne({ _id: mongoose.Types.ObjectId(id), isDeleted: false });
     if (!subCategory) {
       return {
         statusCode: 404,
@@ -28,7 +37,8 @@ exports.handler = async (event, context) => {
 
     const adjacentSubCategory = await SubCategory.findOne({
       category: subCategory.category,
-      order: { [operator]: subCategory.order }
+      order: { [operator]: subCategory.order },
+      isDeleted: false
     }).sort({ order: sort });
 
     if (adjacentSubCategory) {
@@ -38,7 +48,7 @@ exports.handler = async (event, context) => {
 
       await Promise.all([subCategory.save(), adjacentSubCategory.save()]);
     } else {
-      const extremeSubCategory = await SubCategory.findOne({ category: subCategory.category })
+      const extremeSubCategory = await SubCategory.findOne({ category: subCategory.category, isDeleted: false })
         .sort({ order: direction === 'up' ? 1 : -1 });
       if (extremeSubCategory && extremeSubCategory._id.toString() !== subCategory._id.toString()) {
         subCategory.order = direction === 'up' ? extremeSubCategory.order - 1 : extremeSubCategory.order + 1;
@@ -46,13 +56,13 @@ exports.handler = async (event, context) => {
       }
     }
 
-    const allSubCategories = await SubCategory.find({ category: subCategory.category }).sort('order');
+    const allSubCategories = await SubCategory.find({ category: subCategory.category, isDeleted: false }).sort('order');
     for (let i = 0; i < allSubCategories.length; i++) {
       allSubCategories[i].order = i;
       await allSubCategories[i].save();
     }
 
-    const updatedSubCategories = await SubCategory.find().sort('category order');
+    const updatedSubCategories = await SubCategory.find({ isDeleted: false }).sort('category order');
     return {
       statusCode: 200,
       body: JSON.stringify(updatedSubCategories)
@@ -61,7 +71,7 @@ exports.handler = async (event, context) => {
     console.error('Error in moveSubCategory:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: error.message })
+      body: JSON.stringify({ message: error.message, stack: error.stack })
     };
   }
 };
