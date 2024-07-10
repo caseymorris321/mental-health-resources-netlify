@@ -4,7 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import CreateResourceForm from '../components/CreateResourceForm';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import AutoScroller from './components/AutoScroller';
+import AutoScroller from '../components/AutoScroller';
 import '../loading.css'
 
 
