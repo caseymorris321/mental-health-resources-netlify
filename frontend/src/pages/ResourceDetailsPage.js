@@ -2,8 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import ResourceDetails from '../components/Resources/ResourceDetails';
-import { Button, Modal, Alert } from 'react-bootstrap';
-import CreateResourceForm from '../components/CreateResourceForm';
+import { Button, Alert } from 'react-bootstrap';
 import '../loading.css';
 
 const ResourceDetailsPage = () => {
@@ -13,7 +12,6 @@ const ResourceDetailsPage = () => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [error, setError] = useState(null);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const navigate = useNavigate();
 
@@ -96,7 +94,6 @@ const ResourceDetailsPage = () => {
       if (response.ok) {
         const data = await response.json();
         setResource(data);
-        setShowUpdateModal(false);
       } else {
         throw new Error('Failed to update resource');
       }
@@ -118,11 +115,9 @@ const ResourceDetailsPage = () => {
         });
         if (response.ok) {
           setIsDeleted(true);
-          // Don't navigate away immediately
-          // Instead, set a timeout to navigate after a delay
           setTimeout(() => {
             navigate('/');
-          }, 15000); // 15 seconds delay
+          }, 15000);
         } else {
           throw new Error('Failed to delete resource');
         }
@@ -132,7 +127,6 @@ const ResourceDetailsPage = () => {
       }
     }
   };
-  
 
   const handleUndoDelete = async () => {
     try {
@@ -140,9 +134,9 @@ const ResourceDetailsPage = () => {
       const fetchUrl = isProduction ? `${apiUrl}/undoDeleteResource/${id}` : `${apiUrl}/api/resources/undoDelete/${id}`;
       const response = await fetch(fetchUrl, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         },
       });
       if (response.ok) {
@@ -179,26 +173,10 @@ const ResourceDetailsPage = () => {
         <>
           <ResourceDetails
             resource={resource}
-            onUpdate={() => setShowUpdateModal(true)}
+            onUpdate={handleUpdate}
             onDelete={handleDelete}
             showAdminControls={isAuthenticated}
           />
-          {isAuthenticated && (
-            <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
-              <Modal.Header closeButton>
-                <Modal.Title>Update Resource</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <CreateResourceForm
-                  initialData={resource}
-                  categories={categories}
-                  subCategories={subCategories}
-                  isCreate={false}
-                  onSubmit={handleUpdate}
-                />
-              </Modal.Body>
-            </Modal>
-          )}
           {resource.updatedAt && (
             <p className="text-muted small">
               This page was last edited on {formatDate(resource.updatedAt)}
