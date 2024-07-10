@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { Category, SubCategory, Resource } = require('./models/resourceModel');
+const { Category } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -7,31 +7,41 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'POST') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const id = event.path.split('/').pop();
-    const category = await Category.findByIdAndUpdate(id, { isDeleted: false }, { new: true });
-
-    if (!category) {
-      return { statusCode: 404, body: JSON.stringify({ error: 'Category not found' }) };
+    const body = JSON.parse(event.body);
+    
+    // Check only for non-deleted categories with the same name
+    const existingCategory = await Category.findOne({ name: body.name, isDeleted: { $ne: true } });
+    
+    if (existingCategory) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'A category with this name already exists.' })
+      };
     }
 
-    // Restore associated subcategories
-    await SubCategory.updateMany({ category: category.name }, { isDeleted: false });
-    const subCategories = await SubCategory.find({ category: category.name, isDeleted: false });
-
-    // Restore associated resources
-    await Resource.updateMany({ category: category.name }, { isDeleted: false });
-    const resources = await Resource.find({ category: category.name, isDeleted: false });
-
+    // Create a new category
+    const maxOrderCategory = await Category.findOne().sort('-order');
+    const newOrder = maxOrderCategory ? maxOrderCategory.order + 1 : 0;
+    const newCategory = new Category({
+      ...body,
+      order: newOrder,
+      isDeleted: false
+    });
+    await newCategory.save();
+    
     return {
-      statusCode: 200,
-      body: JSON.stringify({ category, subCategories, resources })
+      statusCode: 201,
+      body: JSON.stringify(newCategory)
     };
   } catch (error) {
-    console.error('Error in undoDeleteCategory:', error);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to undo delete category' }) };
-  }
+    console.error('Error in createCategory:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: error.message })
+    };
+  } 
 };
