@@ -199,7 +199,7 @@ const AdminDashboard = () => {
         setDeletedResource({ _id: id, name }); // Set the deletedResource state
         setResources(prevResources => prevResources.filter(resource => resource._id !== id)); // Update resources state
         // Set a timeout to clear the deleted resource after a few seconds
-        setTimeout(() => setDeletedResource(null), 5000);
+        setTimeout(() => setDeletedResource(null), 15000);
       } else {
         console.error('Failed to delete resource');
       }
