@@ -212,7 +212,7 @@ const AdminDashboard = () => {
     }
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl('undoDeleteResource'), {
+      const response = await fetch(`/.netlify/functions/undoDeleteResource`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -233,6 +233,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
   
   
   
