@@ -656,11 +656,11 @@ const AdminDashboard = () => {
 
   const onDragEnd = async (result) => {
     if (!result.destination) return;
-  
+
     const { source, destination, type, draggableId } = result;
-  
+
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-  
+
     if (type === 'category') {
       try {
         const token = await getAccessTokenSilently();
