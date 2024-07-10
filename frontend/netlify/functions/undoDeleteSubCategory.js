@@ -11,14 +11,16 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const subCategoryData = JSON.parse(event.body);
-    delete subCategoryData._id; // Remove _id to avoid duplicate key error
+    const id = event.path.split('/').pop();
+    const subCategory = await SubCategory.findByIdAndUpdate(id, { isDeleted: false }, { new: true });
 
-    const restoredSubCategory = await SubCategory.create(subCategoryData);
+    if (!subCategory) {
+      return { statusCode: 404, body: JSON.stringify({ error: 'Subcategory not found' }) };
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(restoredSubCategory)
+      body: JSON.stringify(subCategory)
     };
   } catch (error) {
     console.error('Error in undoDeleteSubCategory:', error);
