@@ -87,7 +87,7 @@ const AdminDashboard = () => {
       if (response.ok) {
         const data = await response.json();
         const sortedData = data
-          .filter(subCategory => !subCategory.isDeleted)
+          .filter(subCategory => !subCategory.isDeleted)  // Add this line
           .sort((a, b) => {
             if (a.category !== b.category) {
               return a.category.localeCompare(b.category);
@@ -100,6 +100,7 @@ const AdminDashboard = () => {
       console.error('Error fetching subcategories:', error);
     }
   }, [getAccessTokenSilently, fetchUrl, isProduction]);
+  
 
 
   const fetchResources = useCallback(async () => {

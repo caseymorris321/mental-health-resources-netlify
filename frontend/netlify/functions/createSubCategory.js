@@ -1,5 +1,5 @@
 const { getConnection, closeConnection } = require('./db');
-const { SubCategory } = require('./models/resourceModel');
+const { SubCategory, Category } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -13,8 +13,17 @@ exports.handler = async (event, context) => {
 
     const body = JSON.parse(event.body);
 
+    // Check if the category exists
+    const categoryExists = await Category.findOne({ name: body.category, isDeleted: false });
+    if (!categoryExists) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'The specified category does not exist.' })
+      };
+    }
+
     // Check for existing non-deleted subcategory with the same name in the same category
-    const existingSubCategory = await SubCategory.findOne({ 
+    const existingSubCategory = await SubCategory.findOne({
       name: body.name,
       category: body.category,
       isDeleted: false
@@ -27,9 +36,14 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Create a new subcategory, regardless of whether a deleted one exists
-    const maxOrderSubCategory = await SubCategory.findOne({ category: body.category }).sort('-order');
+    // Find the maximum order of non-deleted subcategories in the same category
+    const maxOrderSubCategory = await SubCategory.findOne({ 
+      category: body.category, 
+      isDeleted: false 
+    }).sort('-order');
+
     const newOrder = maxOrderSubCategory ? maxOrderSubCategory.order + 1 : 0;
+
     const newSubCategory = new SubCategory({
       ...body,
       order: newOrder,
@@ -47,5 +61,5 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({ message: 'Internal Server Error', error: error.message, stack: error.stack })
     };
-  } 
+  }
 };
