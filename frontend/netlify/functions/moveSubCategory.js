@@ -21,12 +21,23 @@ exports.handler = async (event, context) => {
     const oldCategory = subCategory.category;
     const oldIndex = subCategory.order;
 
+    // Check for existing subcategory with the same name in the new category
+    const existingSubCategory = await SubCategory.findOne({
+      name: subCategory.name,
+      category: newCategory,
+      _id: { $ne: subCategoryId }
+    });
+
+    if (existingSubCategory) {
+      return { statusCode: 400, body: JSON.stringify({ message: 'A subcategory with this name already exists in the target category' }) };
+    }
+
     // Update category if changed
     if (newCategory) {
       subCategory.category = newCategory;
     }
 
-    // If moving within the same category
+    // Adjust orders
     if (oldCategory === subCategory.category) {
       if (newIndex > oldIndex) {
         await SubCategory.updateMany(
@@ -40,7 +51,6 @@ exports.handler = async (event, context) => {
         );
       }
     } else {
-      // Moving to a different category
       await SubCategory.updateMany(
         { category: oldCategory, order: { $gt: oldIndex } },
         { $inc: { order: -1 } }
@@ -57,12 +67,12 @@ exports.handler = async (event, context) => {
 
     // Update resources associated with this subcategory
     await Resource.updateMany(
-      { subCategory: subCategory.name },
+      { subCategory: subCategory.name, category: oldCategory },
       { category: subCategory.category }
     );
 
     // Normalize orders in both old and new categories
-    const categoriesToNormalize = [oldCategory, subCategory.category];
+    const categoriesToNormalize = [...new Set([oldCategory, subCategory.category])];
 
     for (const category of categoriesToNormalize) {
       const subCategories = await SubCategory.find({ category }).sort('order');

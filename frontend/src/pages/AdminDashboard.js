@@ -413,7 +413,7 @@ const AdminDashboard = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(`/.netlify/functions/undoDeleteCategory/${deletedCategory._id}`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -536,7 +536,7 @@ const AdminDashboard = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(`/.netlify/functions/undoDeleteSubCategory/${deletedSubCategory._id}`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
