@@ -405,6 +405,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
   const handleUndoDeleteCategory = async () => {
     if (!deletedCategory) return;
@@ -419,9 +420,11 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const restoredCategory = await response.json();
-        setCategories(prev => [...prev, restoredCategory]);
+        setCategories(prev => {
+          const newCategories = prev.filter(cat => cat._id !== restoredCategory._id);
+          return [...newCategories, restoredCategory].sort((a, b) => a.order - b.order);
+        });
         setDeletedCategory(null);
-        // Fetch subcategories and resources for this category
         fetchSubCategories();
         fetchResources();
       } else {
@@ -431,6 +434,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
@@ -616,11 +620,11 @@ const AdminDashboard = () => {
 
   const onDragEnd = async (result) => {
     if (!result.destination) return;
-
+  
     const { source, destination, type, draggableId } = result;
-
+  
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-
+  
     if (type === 'category') {
       try {
         const token = await getAccessTokenSilently();

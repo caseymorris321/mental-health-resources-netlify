@@ -16,7 +16,7 @@ exports.handler = async (event, context) => {
     const direction = pathParts[pathParts.length - 1];
 
     const category = await Category.findById(id);
-    if (!category) {
+    if (!category || category.isDeleted) {
       return {
         statusCode: 404,
         body: JSON.stringify({ message: 'Category not found' })
@@ -26,8 +26,10 @@ exports.handler = async (event, context) => {
     const operator = direction === 'up' ? '$lt' : '$gt';
     const sort = direction === 'up' ? -1 : 1;
 
-    const adjacentCategory = await Category.findOne({ order: { [operator]: category.order } })
-      .sort({ order: sort });
+    const adjacentCategory = await Category.findOne({ 
+      order: { [operator]: category.order },
+      isDeleted: false
+    }).sort({ order: sort });
 
     if (adjacentCategory) {
       const tempOrder = category.order;
@@ -36,21 +38,21 @@ exports.handler = async (event, context) => {
 
       await Promise.all([category.save(), adjacentCategory.save()]);
     } else {
-      const extremeCategory = await Category.findOne().sort({ order: direction === 'up' ? 1 : -1 });
+      const extremeCategory = await Category.findOne({ isDeleted: false })
+        .sort({ order: direction === 'up' ? 1 : -1 });
       if (extremeCategory && extremeCategory._id.toString() !== category._id.toString()) {
         category.order = direction === 'up' ? extremeCategory.order - 1 : extremeCategory.order + 1;
         await category.save();
       }
     }
 
-    const allCategories = await Category.find().sort('order');
+    const allCategories = await Category.find({ isDeleted: false }).sort('order');
     for (let i = 0; i < allCategories.length; i++) {
       allCategories[i].order = i;
       await allCategories[i].save();
     }
 
-    const updatedCategories = await Category.find().sort('order');
-    // console.log('Sending updated categories:', updatedCategories);
+    const updatedCategories = await Category.find({ isDeleted: false }).sort('order');
     return {
       statusCode: 200,
       body: JSON.stringify(updatedCategories)
