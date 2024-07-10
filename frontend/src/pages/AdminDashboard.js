@@ -228,20 +228,16 @@ const AdminDashboard = () => {
         console.log('Undo delete successful:', restoredResource);
         
         setResources(prevResources => {
-          const newResources = [...prevResources];
-          const insertIndex = newResources.findIndex(resource => 
-            resource.category > restoredResource.category || 
-            (resource.category === restoredResource.category && resource.subCategory > restoredResource.subCategory) ||
-            (resource.category === restoredResource.category && resource.subCategory === restoredResource.subCategory && resource.order > restoredResource.order)
-          );
-          
-          if (insertIndex === -1) {
-            newResources.push(restoredResource);
-          } else {
-            newResources.splice(insertIndex, 0, restoredResource);
-          }
-          
-          return newResources;
+          const newResources = [...prevResources, restoredResource];
+          return newResources.sort((a, b) => {
+            if (a.category !== b.category) {
+              return a.category.localeCompare(b.category);
+            }
+            if (a.subCategory !== b.subCategory) {
+              return a.subCategory.localeCompare(b.subCategory);
+            }
+            return a.order - b.order;
+          });
         });
         
         setDeletedResource(null);
@@ -253,6 +249,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
   
 
   const handleUpdateResource = async (updatedResource) => {
