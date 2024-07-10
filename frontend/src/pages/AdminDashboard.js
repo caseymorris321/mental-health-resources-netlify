@@ -591,7 +591,7 @@ const AdminDashboard = () => {
   //   }
   // };
 
-  const handleMoveSubCategory = async (subCategoryId, newCategoryName, newIndex) => {
+  const handleMoveSubCategory = async (subCategoryId, newIndex, newCategory) => {
     try {
       const token = await getAccessTokenSilently();
       const endpoint = isProduction ? `moveSubCategory` : `subcategories/move`;
@@ -601,7 +601,7 @@ const AdminDashboard = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ subCategoryId, newCategoryName, newIndex }),
+        body: JSON.stringify({ subCategoryId, newIndex, newCategory }),
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
@@ -614,8 +614,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
-
+  
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
       const targetSubCategory = subCategories.find(subCat => subCat.name === newSubCategory && subCat.category === newCategory);
@@ -675,7 +674,8 @@ const AdminDashboard = () => {
       try {
         await handleMoveSubCategory(
           draggableId,
-          destination.index > source.index ? 'down' : 'up'
+          destination.index,
+          destination.droppableId
         );
       } catch (error) {
         console.error('Failed to move subcategory:', error);
