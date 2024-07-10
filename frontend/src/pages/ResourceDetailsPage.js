@@ -154,7 +154,7 @@ const ResourceDetailsPage = () => {
       ) : (
         <p className="loading-text">Loading resource...</p>
       )}
-      <Button variant="primary" onClick={handleGoBack} className="mb-3">
+      <Button variant="secondary" onClick={handleGoBack} className="mb-3">
         Back to Resources
       </Button>
     </div>
