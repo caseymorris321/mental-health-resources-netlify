@@ -89,21 +89,24 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        const sortedData = data.sort((a, b) => {
-          if (a.category !== b.category) {
-            return a.category.localeCompare(b.category);
-          }
-          if (a.subCategory !== b.subCategory) {
-            return a.subCategory.localeCompare(b.subCategory);
-          }
-          return a.order - b.order;
-        });
+        const sortedData = data
+          .filter(resource => !resource.isDeleted)  // Only show non-deleted resources
+          .sort((a, b) => {
+            if (a.category !== b.category) {
+              return a.category.localeCompare(b.category);
+            }
+            if (a.subCategory !== b.subCategory) {
+              return a.subCategory.localeCompare(b.subCategory);
+            }
+            return a.order - b.order;
+          });
         setResources(sortedData);
       }
     } catch (error) {
       console.error('Error fetching resources:', error);
     }
   }, [getAccessTokenSilently, fetchUrl, isProduction]);
+
 
   const fetchAllData = useCallback(async () => {
     setIsLoading(true);
@@ -204,7 +207,9 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
+
+
+
   const handleUndoDelete = async () => {
     if (!deletedResource || !deletedResource._id) {
       console.error('No resource to undo delete or missing resource ID');
@@ -232,7 +237,8 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
+
+
   const handleUpdateResource = async (updatedResource) => {
     if (!updatedResource._id) {
       console.error('Resource _id is undefined');
@@ -762,6 +768,9 @@ const AdminDashboard = () => {
                                     </Draggable>
                                   ))}
                                 {provided.placeholder}
+                                {subCategories.filter(subCat => subCat.category === category.name).length === 0 && (
+                                  <div style={{ minHeight: '50px', padding: '10px', background: '#f8f9fa', borderRadius: '4px' }}>No subcategories</div>
+                                )}
                               </ListGroup>
                             )}
                           </Droppable>
