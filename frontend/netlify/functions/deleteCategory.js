@@ -12,7 +12,7 @@ exports.handler = async (event, context) => {
     }
 
     const id = event.path.split('/').pop();
-    const category = await Category.findById(id);
+    const category = await Category.findByIdAndDelete(id);
     if (!category) {
       return {
         statusCode: 404,
@@ -20,19 +20,13 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Soft delete the category
-    category.isDeleted = true;
-    await category.save();
-
-    // Soft delete associated subcategories
-    await SubCategory.updateMany({ category: category.name }, { isDeleted: true });
-
-    // Soft delete associated resources
-    await Resource.updateMany({ category: category.name }, { isDeleted: true });
+    // Delete associated subcategories and resources
+    await SubCategory.deleteMany({ category: category.name });
+    await Resource.deleteMany({ category: category.name });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Category and associated items soft deleted' })
+      body: JSON.stringify({ message: 'Category and associated items deleted' })
     };
   } catch (error) {
     console.error('Error in deleteCategory:', error);

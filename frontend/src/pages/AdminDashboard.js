@@ -207,9 +207,9 @@ const AdminDashboard = () => {
     return <Navigate to="/login" replace />;
   }
 
-  
 
-  
+
+
 
   const handleDeleteResource = async (id, name) => {
     const isConfirmed = window.confirm(`Are you sure you want to delete the resource "${name}"?`);
@@ -397,6 +397,7 @@ const AdminDashboard = () => {
         setCategories(prevCategories => prevCategories.filter(cat => cat._id !== id));
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat.category !== name));
         setResources(prevResources => prevResources.filter(resource => resource.category !== name));
+        setTimeout(() => setDeletedCategory(null), 15000);
       } else {
         console.error('Failed to delete category');
       }
@@ -404,19 +405,22 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
+
   const handleUndoDeleteCategory = async () => {
     if (!deletedCategory) return;
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? `undoDeleteCategory/${deletedCategory._id}` : `categories/undoDelete/${deletedCategory._id}`), {
-        method: 'PUT',
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify(deletedCategory),
       });
       if (response.ok) {
-        setCategories(prev => [...prev, deletedCategory]);
+        const restoredCategory = await response.json();
+        setCategories(prev => [...prev, restoredCategory]);
         setDeletedCategory(null);
       } else {
         console.error('Failed to undo delete category');
@@ -425,9 +429,10 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
-  
-  
+
+
+
+
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
@@ -506,6 +511,7 @@ const AdminDashboard = () => {
         setDeletedSubCategory(deletedSubCat);
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat._id !== id));
         setResources(prevResources => prevResources.filter(resource => resource.subCategory !== name));
+        setTimeout(() => setDeletedSubCategory(null), 15000);
       } else {
         console.error('Failed to delete subcategory');
       }
@@ -513,19 +519,22 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
+
   const handleUndoDeleteSubCategory = async () => {
     if (!deletedSubCategory) return;
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? `undoDeleteSubCategory/${deletedSubCategory._id}` : `subcategories/undoDelete/${deletedSubCategory._id}`), {
-        method: 'PUT',
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify(deletedSubCategory),
       });
       if (response.ok) {
-        setSubCategories(prev => [...prev, deletedSubCategory]);
+        const restoredSubCategory = await response.json();
+        setSubCategories(prev => [...prev, restoredSubCategory]);
         setDeletedSubCategory(null);
       } else {
         console.error('Failed to undo delete subcategory');
@@ -534,8 +543,8 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
-  
+
+
 
   // const handleMoveCategory = async (categoryId, direction) => {
   //   try {
