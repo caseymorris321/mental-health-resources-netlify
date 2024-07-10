@@ -335,7 +335,7 @@ const AdminDashboard = () => {
       setCategoryError('An error occurred while creating the category.');
     }
   };
-  
+
 
   const handleUpdateCategory = async (updatedCategory) => {
     try {
@@ -413,10 +413,10 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const { category, subCategories, resources } = await response.json();
-        
+
         // Update categories
         setCategories(prev => [...prev, category].sort((a, b) => a.order - b.order));
-        
+
         // Update subcategories
         setSubCategories(prev => {
           const newSubCategories = prev.filter(sc => sc.category !== category.name);
@@ -427,7 +427,7 @@ const AdminDashboard = () => {
             return a.order - b.order;
           });
         });
-        
+
         // Update resources
         setResources(prev => {
           const newResources = prev.filter(r => r.category !== category.name);
@@ -441,7 +441,7 @@ const AdminDashboard = () => {
             return a.order - b.order;
           });
         });
-  
+
         setDeletedCategory(null);
       } else {
         console.error('Failed to undo delete category');
@@ -450,8 +450,8 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
-  
+
+
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
@@ -482,8 +482,8 @@ const AdminDashboard = () => {
       setSubCategoryError('An error occurred while creating the subcategory.');
     }
   };
-  
-  
+
+
 
   const handleUpdateSubCategory = async (updatedSubCategory) => {
     try {
@@ -531,7 +531,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const deletedSubCat = subCategories.find(subCat => subCat._id === id);
-    setDeletedSubCategory({...deletedSubCat, originalOrder: deletedSubCat.order});
+        setDeletedSubCategory({ ...deletedSubCat, originalOrder: deletedSubCat.order });
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat._id !== id));
         setResources(prevResources => prevResources.filter(resource => resource.subCategory !== name));
         setTimeout(() => setDeletedSubCategory(null), 15000);
@@ -566,9 +566,9 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
-  
-  
+
+
+
 
   // const handleMoveCategory = async (categoryId, direction) => {
   //   try {
@@ -591,7 +591,7 @@ const AdminDashboard = () => {
   //   }
   // };
 
-  const handleMoveSubCategory = async (subCategoryId, direction) => {
+  const handleMoveSubCategory = async (subCategoryId, newCategoryName, newIndex) => {
     try {
       const token = await getAccessTokenSilently();
       const endpoint = isProduction ? `moveSubCategory` : `subcategories/move`;
@@ -601,7 +601,7 @@ const AdminDashboard = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ subCategoryId, direction }),
+        body: JSON.stringify({ subCategoryId, newCategoryName, newIndex }),
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
@@ -614,8 +614,6 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
-
 
 
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {

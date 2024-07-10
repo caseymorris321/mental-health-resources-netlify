@@ -9,8 +9,6 @@ const ResourceDetailsPage = () => {
   const { id } = useParams();
   const { isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [resource, setResource] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
   const [error, setError] = useState(null);
   const [isDeleted, setIsDeleted] = useState(false);
   const navigate = useNavigate();
@@ -34,39 +32,9 @@ const ResourceDetailsPage = () => {
     }
   }, [id, isProduction, apiUrl]);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const fetchUrl = isProduction ? `${apiUrl}/getCategories` : `${apiUrl}/api/resources/categories`;
-      const response = await fetch(fetchUrl);
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  }, [isProduction, apiUrl]);
-
-  const fetchSubCategories = useCallback(async () => {
-    try {
-      const fetchUrl = isProduction ? `${apiUrl}/getSubCategories` : `${apiUrl}/api/resources/subcategories`;
-      const response = await fetch(fetchUrl);
-      if (response.ok) {
-        const data = await response.json();
-        setSubCategories(data);
-      }
-    } catch (error) {
-      console.error('Error fetching subcategories:', error);
-    }
-  }, [isProduction, apiUrl]);
-
   useEffect(() => {
     fetchResource();
-    if (isAuthenticated) {
-      fetchCategories();
-      fetchSubCategories();
-    }
-  }, [fetchResource, fetchCategories, fetchSubCategories, isAuthenticated]);
+  }, [fetchResource]);
 
   const handleGoBack = () => {
     navigate('/', {

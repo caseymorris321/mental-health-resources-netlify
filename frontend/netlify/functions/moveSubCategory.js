@@ -1,6 +1,5 @@
 const { getConnection } = require('./db');
-const { SubCategory } = require('./models/resourceModel');
-const mongoose = require('mongoose');
+const { SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -12,16 +11,9 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const { subCategoryId, direction } = JSON.parse(event.body);
+    const { subCategoryId, newCategoryName, newIndex } = JSON.parse(event.body);
 
-    if (!mongoose.Types.ObjectId.isValid(subCategoryId)) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: 'Invalid subcategory ID' })
-      };
-    }
-
-    const subCategory = await SubCategory.findOne({ _id: new mongoose.Types.ObjectId(subCategoryId), isDeleted: false });
+    const subCategory = await SubCategory.findById(subCategoryId);
     if (!subCategory) {
       return {
         statusCode: 404,
@@ -29,41 +21,37 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const operator = direction === 'up' ? '$lt' : '$gt';
-    const sort = direction === 'up' ? -1 : 1;
+    const oldCategory = subCategory.category;
+    subCategory.category = newCategoryName;
 
-    const adjacentSubCategory = await SubCategory.findOne({
-      category: subCategory.category,
-      order: { [operator]: subCategory.order },
-      isDeleted: false
-    }).sort({ order: sort });
+    // Update order of subcategories in the old category
+    await SubCategory.updateMany(
+      { category: oldCategory, order: { $gt: subCategory.order } },
+      { $inc: { order: -1 } }
+    );
 
-    if (adjacentSubCategory) {
-      const tempOrder = subCategory.order;
-      subCategory.order = adjacentSubCategory.order;
-      adjacentSubCategory.order = tempOrder;
+    // Update order of subcategories in the new category
+    await SubCategory.updateMany(
+      { category: newCategoryName, order: { $gte: newIndex } },
+      { $inc: { order: 1 } }
+    );
 
-      await Promise.all([subCategory.save(), adjacentSubCategory.save()]);
-    } else {
-      const extremeSubCategory = await SubCategory.findOne({ 
-        category: subCategory.category, 
-        isDeleted: false 
-      }).sort({ order: direction === 'up' ? 1 : -1 });
-      
-      if (extremeSubCategory && extremeSubCategory._id.toString() !== subCategory._id.toString()) {
-        subCategory.order = direction === 'up' ? extremeSubCategory.order - 1 : extremeSubCategory.order + 1;
-        await subCategory.save();
+    subCategory.order = newIndex;
+    await subCategory.save();
+
+    // Update associated resources
+    await Resource.updateMany(
+      { subCategory: subCategory.name, category: oldCategory },
+      { category: newCategoryName }
+    );
+
+    // Normalize orders in both old and new categories
+    for (const category of [oldCategory, newCategoryName]) {
+      const subCategories = await SubCategory.find({ category }).sort('order');
+      for (let i = 0; i < subCategories.length; i++) {
+        subCategories[i].order = i;
+        await subCategories[i].save();
       }
-    }
-
-    const allSubCategories = await SubCategory.find({ 
-      category: subCategory.category, 
-      isDeleted: false 
-    }).sort('order');
-    
-    for (let i = 0; i < allSubCategories.length; i++) {
-      allSubCategories[i].order = i;
-      await allSubCategories[i].save();
     }
 
     const updatedSubCategories = await SubCategory.find({ isDeleted: false }).sort('category order');
