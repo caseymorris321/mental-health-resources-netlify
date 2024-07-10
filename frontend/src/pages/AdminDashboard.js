@@ -576,9 +576,9 @@ const AdminDashboard = () => {
 
       <h2 className="mt-5 text-center">Resource Management</h2>
 
-        <DragDropContext onDragEnd={onDragEnd}
-          onDragUpdate={({ clientY }) => autoScroll(clientY)}
-        >
+      <h2 className="mt-5 text-center">Resource Management</h2>
+      <div style={{ height: '80vh', overflow: 'auto' }}>
+        <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="categories" type="category">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef}>
@@ -758,6 +758,8 @@ const AdminDashboard = () => {
             )}
           </Droppable>
         </DragDropContext>
+      </div>
+
 
 
 
