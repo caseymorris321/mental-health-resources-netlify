@@ -394,7 +394,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const deletedCat = categories.find(cat => cat._id === id);
-        setDeletedCategory(deletedCat);
+        setDeletedCategory({ ...deletedCat, originalOrder: deletedCat.order });
         setCategories(prevCategories => prevCategories.filter(cat => cat._id !== id));
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat.category !== name));
         setResources(prevResources => prevResources.filter(resource => resource.category !== name));
@@ -411,17 +411,17 @@ const AdminDashboard = () => {
     if (!deletedCategory) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `createCategory` : `categories`), {
-        method: 'POST',
+      const response = await fetch(fetchUrl(isProduction ? `undoDeleteCategory/${deletedCategory._id}` : `categories/${deletedCategory._id}/restore`), {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: deletedCategory.name }),
+        body: JSON.stringify({ order: deletedCategory.originalOrder }),
       });
       if (response.ok) {
-        const newCategory = await response.json();
-        setCategories(prev => [...prev, newCategory].sort((a, b) => a.order - b.order));
+        const restoredCategory = await response.json();
+        setCategories(prev => [...prev, restoredCategory].sort((a, b) => a.order - b.order));
         setDeletedCategory(null);
         fetchSubCategories();
         fetchResources();
@@ -432,6 +432,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
 
 
@@ -510,7 +511,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const deletedSubCat = subCategories.find(subCat => subCat._id === id);
-        setDeletedSubCategory(deletedSubCat);
+    setDeletedSubCategory({...deletedSubCat, originalOrder: deletedSubCat.order});
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat._id !== id));
         setResources(prevResources => prevResources.filter(resource => resource.subCategory !== name));
         setTimeout(() => setDeletedSubCategory(null), 15000);
@@ -526,20 +527,21 @@ const AdminDashboard = () => {
     if (!deletedSubCategory) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `createSubCategory` : `subcategories`), {
-        method: 'POST',
+      const response = await fetch(fetchUrl(isProduction ? `undoDeleteSubCategory/${deletedSubCategory._id}` : `subcategories/${deletedSubCategory._id}/restore`), {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: deletedSubCategory.name,
-          category: deletedSubCategory.category
+          category: deletedSubCategory.category,
+          order: deletedSubCategory.originalOrder
         }),
       });
       if (response.ok) {
-        const newSubCategory = await response.json();
-        setSubCategories(prev => [...prev, newSubCategory].sort((a, b) => {
+        const restoredSubCategory = await response.json();
+        setSubCategories(prev => [...prev, restoredSubCategory].sort((a, b) => {
           if (a.category !== b.category) {
             return a.category.localeCompare(b.category);
           }
@@ -554,6 +556,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
   // const handleMoveCategory = async (categoryId, direction) => {
   //   try {
@@ -593,13 +596,13 @@ const AdminDashboard = () => {
         setSubCategories(updatedSubCategories.filter(subCat => !subCat.isDeleted));
         fetchResources(); // Fetch resources to ensure they're up to date
       } else {
-        console.error('Failed to move subcategory');  
+        console.error('Failed to move subcategory');
       }
     } catch (error) {
       console.error('Error:', error);
     }
   };
-  
+
 
 
 
