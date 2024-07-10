@@ -403,7 +403,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
+
   const handleUndoDeleteCategory = async () => {
     if (!deletedCategory) return;
     try {
@@ -429,8 +429,8 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
-  
+
+
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
@@ -446,8 +446,9 @@ const AdminDashboard = () => {
         body: JSON.stringify(newSubCategory),
       });
       if (response.ok) {
+        const newSubCategory = await response.json();
+        setSubCategories(prev => [...prev, newSubCategory].sort((a, b) => a.order - b.order));
         setShowSubCategoryModal(false);
-        fetchSubCategories();
         setNewSubCategory({ name: '', category: '' });
       } else {
         const errorData = await response.json();
@@ -517,7 +518,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
+
   const handleUndoDeleteSubCategory = async () => {
     if (!deletedSubCategory) return;
     try {
@@ -528,9 +529,9 @@ const AdminDashboard = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          name: deletedSubCategory.name, 
-          category: deletedSubCategory.category 
+        body: JSON.stringify({
+          name: deletedSubCategory.name,
+          category: deletedSubCategory.category
         }),
       });
       if (response.ok) {
@@ -550,8 +551,6 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
-
 
   // const handleMoveCategory = async (categoryId, direction) => {
   //   try {
@@ -574,22 +573,19 @@ const AdminDashboard = () => {
   //   }
   // };
 
-  const handleMoveSubCategory = async (subCategoryId, newIndex, newCategory) => {
+  const handleMoveSubCategory = async (subCategoryId, direction) => {
     try {
       const token = await getAccessTokenSilently();
-      const endpoint = isProduction ? `moveSubCategory` : `subcategories/move`;
+      const endpoint = isProduction ? `moveSubCategory/${subCategoryId}/${direction}` : `subcategories/${subCategoryId}/move/${direction}`;
       const response = await fetch(fetchUrl(endpoint), {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ subCategoryId, newIndex, newCategory }),
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories);
-        fetchResources();
       } else {
         console.error('Failed to move subcategory');
       }
@@ -597,6 +593,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+
 
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
@@ -624,11 +621,11 @@ const AdminDashboard = () => {
 
   const onDragEnd = async (result) => {
     if (!result.destination) return;
-  
+
     const { source, destination, type, draggableId } = result;
-  
+
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-  
+
     if (type === 'category') {
       try {
         const token = await getAccessTokenSilently();
@@ -649,13 +646,10 @@ const AdminDashboard = () => {
         fetchCategories();
       }
     } else if (type === 'subcategory') {
-      const destCategory = destination.droppableId;
-
       try {
         await handleMoveSubCategory(
           draggableId,
-          destination.index,
-          destCategory
+          destination.index > source.index ? 'down' : 'up'
         );
       } catch (error) {
         console.error('Failed to move subcategory:', error);
