@@ -28,16 +28,6 @@ table, p {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
-.custom-scrollbar {
-  scrollbar-width: none;  /* Firefox */
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-}
-.custom-scrollbar::-webkit-scrollbar { 
-  width: 0;
-  height: 0;
-}
-
-
 @media (max-width: 991px) {
   .navbar-collapse {
     position: relative;

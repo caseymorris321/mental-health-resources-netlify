@@ -558,7 +558,7 @@ const AdminDashboard = () => {
         </div>
       </div>
   
-      <div className="flex-grow-1 overflow-auto p-3 custom-scrollbar">
+      <div className="flex-grow-1 overflow-auto p-3">
   <h2 className="mb-4 text-center">Resource Management</h2>
   <DragDropContext onDragEnd={onDragEnd}>
     <Droppable droppableId="categories" type="category">
