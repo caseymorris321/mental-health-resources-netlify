@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { Category, SubCategory, Resource } = require('./models/resourceModel');
+const { Category } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -12,21 +12,16 @@ exports.handler = async (event, context) => {
     }
 
     const id = event.path.split('/').pop();
-    const category = await Category.findByIdAndDelete(id);
+    const category = await Category.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
     if (!category) {
       return {
         statusCode: 404,
         body: JSON.stringify({ message: 'Category not found' })
       };
     }
-
-    // Delete associated subcategories and resources
-    await SubCategory.deleteMany({ category: category.name });
-    await Resource.deleteMany({ category: category.name });
-
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Category and associated items deleted' })
+      body: JSON.stringify(category)
     };
   } catch (error) {
     console.error('Error in deleteCategory:', error);

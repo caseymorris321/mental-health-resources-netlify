@@ -11,14 +11,16 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const categoryData = JSON.parse(event.body);
-    delete categoryData._id; // Remove _id to avoid duplicate key error
+    const id = event.path.split('/').pop();
+    const category = await Category.findByIdAndUpdate(id, { isDeleted: false }, { new: true });
 
-    const restoredCategory = await Category.create(categoryData);
+    if (!category) {
+      return { statusCode: 404, body: JSON.stringify({ error: 'Category not found' }) };
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(restoredCategory)
+      body: JSON.stringify(category)
     };
   } catch (error) {
     console.error('Error in undoDeleteCategory:', error);

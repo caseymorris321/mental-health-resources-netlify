@@ -381,7 +381,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteCategory = async (id, name) => {
-    const isConfirmed = window.confirm(`Are you sure you want to delete the category "${name}"? This will also delete all associated subcategories and resources.`);
+    const isConfirmed = window.confirm(`Are you sure you want to delete the category "${name}"? This will also hide all associated subcategories and resources.`);
     if (!isConfirmed) return;
     try {
       const token = await getAccessTokenSilently();
@@ -392,7 +392,7 @@ const AdminDashboard = () => {
         },
       });
       if (response.ok) {
-        const deletedCat = categories.find(cat => cat._id === id);
+        const deletedCat = await response.json();
         setDeletedCategory(deletedCat);
         setCategories(prevCategories => prevCategories.filter(cat => cat._id !== id));
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat.category !== name));
@@ -405,7 +405,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
+  
   const handleUndoDeleteCategory = async () => {
     if (!deletedCategory) return;
     try {
@@ -416,12 +416,14 @@ const AdminDashboard = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(deletedCategory),
       });
       if (response.ok) {
         const restoredCategory = await response.json();
         setCategories(prev => [...prev, restoredCategory]);
         setDeletedCategory(null);
+        // Fetch subcategories and resources for this category
+        fetchSubCategories();
+        fetchResources();
       } else {
         console.error('Failed to undo delete category');
       }
@@ -429,9 +431,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
-
-
+  
 
 
   const handleAddSubCategory = async (e) => {
@@ -615,43 +615,43 @@ const AdminDashboard = () => {
   };
 
 
-  const onDragEnd = async (result) => {
-    if (!result.destination) return;
-  
-    const { source, destination, type, draggableId } = result;
-  
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-  
-    if (type === 'category') {
-      // Optimistically update the UI
-      const newCategories = Array.from(categories);
-      const [reorderedItem] = newCategories.splice(source.index, 1);
-      newCategories.splice(destination.index, 0, reorderedItem);
-      setCategories(newCategories);
-  
-      try {
-        const token = await getAccessTokenSilently();
-        const response = await fetch(fetchUrl(isProduction ? `moveCategory/${reorderedItem._id}/${destination.index > source.index ? 'down' : 'up'}` : `categories/${reorderedItem._id}/move/${destination.index > source.index ? 'down' : 'up'}`), {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const updatedCategories = await response.json();
-          // Only update if the server response is different from our optimistic update
-          if (JSON.stringify(updatedCategories) !== JSON.stringify(newCategories)) {
-            setCategories(updatedCategories);
-          }
-        } else {
-          throw new Error('Failed to update category order');
+ const onDragEnd = async (result) => {
+  if (!result.destination) return;
+
+  const { source, destination, type, draggableId } = result;
+
+  if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+  if (type === 'category') {
+    // Optimistically update the UI
+    const newCategories = Array.from(categories);
+    const [reorderedItem] = newCategories.splice(source.index, 1);
+    newCategories.splice(destination.index, 0, reorderedItem);
+    setCategories(newCategories);
+
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(fetchUrl(isProduction ? `moveCategory/${reorderedItem._id}/${destination.index > source.index ? 'down' : 'up'}` : `categories/${reorderedItem._id}/move/${destination.index > source.index ? 'down' : 'up'}`), {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const updatedCategories = await response.json();
+        // Only update if the server response is different from our optimistic update
+        if (JSON.stringify(updatedCategories) !== JSON.stringify(newCategories)) {
+          setCategories(updatedCategories);
         }
-      } catch (error) {
-        console.error('Error:', error);
-        // Revert to the original order if there's an error
-        fetchCategories();
+      } else {
+        throw new Error('Failed to update category order');
       }
-    } else if (type === 'subcategory') {
+    } catch (error) {
+      console.error('Error:', error);
+      // Revert to the original order if there's an error
+      fetchCategories();
+    }
+  } else if (type === 'subcategory') {
       const destCategory = destination.droppableId;
 
       try {
