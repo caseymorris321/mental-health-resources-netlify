@@ -1,4 +1,4 @@
-const { getConnection, closeConnection } = require('./db');
+const { getConnection } = require('./db');
 const { Category, SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
@@ -6,12 +6,21 @@ exports.handler = async (event, context) => {
 
   try {
     await getConnection();
+
     if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     const id = event.path.split('/').pop();
     const { name, oldName } = JSON.parse(event.body);
+
+    const existingCategory = await Category.findOne({ name, isDeleted: false, _id: { $ne: id } });
+    if (existingCategory) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'A category with this name already exists.' })
+      };
+    }
 
     const updatedCategory = await Category.findByIdAndUpdate(
       id,
@@ -26,21 +35,11 @@ exports.handler = async (event, context) => {
       };
     }
 
-    await Promise.all([
-      SubCategory.updateMany(
-        { category: oldName },
-        { category: name }
-      ),
-      Resource.updateMany(
-        { category: oldName },
-        { category: name }
-      )
-    ]);
+    await SubCategory.updateMany({ category: oldName }, { category: name });
+    await Resource.updateMany({ category: oldName }, { category: name });
 
-    const [updatedSubCategories, updatedResources] = await Promise.all([
-      SubCategory.find({ category: name }),
-      Resource.find({ category: name })
-    ]);
+    const updatedSubCategories = await SubCategory.find({ category: name });
+    const updatedResources = await Resource.find({ category: name });
 
     return {
       statusCode: 200,
@@ -51,11 +50,10 @@ exports.handler = async (event, context) => {
       })
     };
   } catch (error) {
-    console.error('Detailed error:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('Error in updateCategory:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Internal server error', error: error.message })
+      body: JSON.stringify({ message: error.message })
     };
   } 
 };

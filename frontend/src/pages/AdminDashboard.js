@@ -42,7 +42,6 @@ const AdminDashboard = () => {
 
   const fetchCategories = useCallback(async () => {
     try {
-
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? 'getCategories' : 'categories'), {
         headers: {
@@ -51,12 +50,13 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setCategories(data.sort((a, b) => a.order - b.order));
+        setCategories(data.filter(category => !category.isDeleted).sort((a, b) => a.order - b.order));
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
   }, [getAccessTokenSilently, fetchUrl, isProduction]);
+
 
   const fetchSubCategories = useCallback(async () => {
     try {
@@ -68,18 +68,21 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        const sortedData = data.sort((a, b) => {
-          if (a.category !== b.category) {
-            return a.category.localeCompare(b.category);
-          }
-          return a.order - b.order;
-        });
+        const sortedData = data
+          .filter(subCategory => !subCategory.isDeleted)
+          .sort((a, b) => {
+            if (a.category !== b.category) {
+              return a.category.localeCompare(b.category);
+            }
+            return a.order - b.order;
+          });
         setSubCategories(sortedData);
       }
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
   }, [getAccessTokenSilently, fetchUrl, isProduction]);
+
 
   const fetchResources = useCallback(async () => {
     try {

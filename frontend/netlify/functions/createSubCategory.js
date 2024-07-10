@@ -13,10 +13,10 @@ exports.handler = async (event, context) => {
 
     const body = JSON.parse(event.body);
 
-    // Check for existing subcategory with the same name ONLY in the SAME category
     const existingSubCategory = await SubCategory.findOne({ 
       name: body.name,
-      category: body.category 
+      category: body.category,
+      isDeleted: false
     });
 
     if (existingSubCategory) {
@@ -30,7 +30,8 @@ exports.handler = async (event, context) => {
     const newOrder = maxOrderSubCategory ? maxOrderSubCategory.order + 1 : 0;
     const subCategory = new SubCategory({
       ...body,
-      order: newOrder
+      order: newOrder,
+      isDeleted: false
     });
     const newSubCategory = await subCategory.save();
     return {

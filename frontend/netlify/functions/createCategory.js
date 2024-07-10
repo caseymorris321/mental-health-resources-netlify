@@ -12,11 +12,21 @@ exports.handler = async (event, context) => {
     }
 
     const body = JSON.parse(event.body);
+    const existingCategory = await Category.findOne({ name: body.name, isDeleted: false });
+    
+    if (existingCategory) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'A category with this name already exists.' })
+      };
+    }
+
     const maxOrderCategory = await Category.findOne().sort('-order');
     const newOrder = maxOrderCategory ? maxOrderCategory.order + 1 : 0;
     const category = new Category({
       ...body,
-      order: newOrder
+      order: newOrder,
+      isDeleted: false
     });
     const newCategory = await category.save();
     return {
@@ -26,7 +36,7 @@ exports.handler = async (event, context) => {
   } catch (error) {
     console.error('Error in createCategory:', error);
     return {
-      statusCode: 400,
+      statusCode: 500,
       body: JSON.stringify({ message: error.message })
     };
   } 

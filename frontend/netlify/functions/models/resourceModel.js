@@ -4,6 +4,22 @@ const Schema = mongoose.Schema;
 const CategorySchema = new Schema({
   name: { type: String, required: true, unique: true },
   order: { type: Number, default: 0, index: true },
+  isDeleted: { type: Boolean, default: false },
+});
+
+CategorySchema.pre('save', async function(next) {
+  const category = this;
+  if (category.isModified('name')) {
+    const existingCategory = await Category.findOne({ 
+      name: category.name, 
+      isDeleted: false,
+      _id: { $ne: category._id }
+    });
+    if (existingCategory) {
+      return next(new Error('A category with this name already exists'));
+    }
+  }
+  next();
 });
 
 const Category = mongoose.model('Category', CategorySchema);
@@ -14,7 +30,24 @@ const SubCategorySchema = new Schema({
     type: String, 
     required: true,
   },
-  order: { type: Number, default: 0, index: true }
+  order: { type: Number, default: 0, index: true },
+  isDeleted: { type: Boolean, default: false },
+});
+
+SubCategorySchema.pre('save', async function(next) {
+  const subCategory = this;
+  if (subCategory.isModified('name') || subCategory.isModified('category')) {
+    const existingSubCategory = await SubCategory.findOne({ 
+      name: subCategory.name, 
+      category: subCategory.category,
+      isDeleted: false,
+      _id: { $ne: subCategory._id }
+    });
+    if (existingSubCategory) {
+      return next(new Error('A subcategory with this name already exists in this category'));
+    }
+  }
+  next();
 });
 
 const SubCategory = mongoose.model('SubCategory', SubCategorySchema);

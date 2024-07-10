@@ -1,5 +1,5 @@
 const { getConnection, closeConnection } = require('./db');
-const { SubCategory } = require('./models/resourceModel');
+const { SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -12,16 +12,24 @@ exports.handler = async (event, context) => {
     }
 
     const id = event.path.split('/').pop();
-    const subCategory = await SubCategory.findByIdAndDelete(id);
+    const subCategory = await SubCategory.findById(id);
     if (!subCategory) {
       return {
         statusCode: 404,
         body: JSON.stringify({ message: 'Subcategory not found' })
       };
     }
+
+    // Soft delete the subcategory
+    subCategory.isDeleted = true;
+    await subCategory.save();
+
+    // Soft delete associated resources
+    await Resource.updateMany({ subCategory: subCategory.name }, { isDeleted: true });
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Subcategory deleted' })
+      body: JSON.stringify({ message: 'Subcategory and associated resources soft deleted' })
     };
   } catch (error) {
     console.error('Error in deleteSubCategory:', error);

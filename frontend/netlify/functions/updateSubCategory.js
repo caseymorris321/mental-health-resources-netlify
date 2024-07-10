@@ -14,11 +14,11 @@ exports.handler = async (event, context) => {
     const id = event.path.split('/').pop();
     const { name, oldName, category } = JSON.parse(event.body);
 
-    // Check for existing subcategory with the same name ONLY in the SAME category
     const existingSubCategory = await SubCategory.findOne({ 
       name: name,
       category: category,
-      _id: { $ne: id } // Exclude the current subcategory
+      isDeleted: false,
+      _id: { $ne: id }
     });
 
     if (existingSubCategory) {

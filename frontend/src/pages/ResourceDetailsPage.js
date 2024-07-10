@@ -118,6 +118,11 @@ const ResourceDetailsPage = () => {
         });
         if (response.ok) {
           setIsDeleted(true);
+          // Don't navigate away immediately
+          // Instead, set a timeout to navigate after a delay
+          setTimeout(() => {
+            navigate('/');
+          }, 15000); // 15 seconds delay
         } else {
           throw new Error('Failed to delete resource');
         }
@@ -127,6 +132,7 @@ const ResourceDetailsPage = () => {
       }
     }
   };
+  
 
   const handleUndoDelete = async () => {
     try {
