@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const categories = await Category.find({}).sort('order');
+    const categories = await Category.find({ isDeleted: false }).sort('order');
     return {
       statusCode: 200,
       body: JSON.stringify(categories)

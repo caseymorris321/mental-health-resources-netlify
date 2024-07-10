@@ -396,8 +396,8 @@ const AdminDashboard = () => {
       if (response.ok) {
         const restoredData = await response.json();
         setCategories(prev => [...prev, restoredData.category]);
-        setSubCategories(prev => [...prev, ...restoredData.subCategories]);
-        setResources(prev => [...prev, ...restoredData.resources]);
+        setSubCategories(prev => [...prev, ...(restoredData.subCategories || [])]); // Use empty array if subCategories is undefined
+        setResources(prev => [...prev, ...(restoredData.resources || [])]); // Use empty array if resources is undefined
         setDeletedCategory(null);
       } else {
         console.error('Failed to undo delete category');
@@ -406,7 +406,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
+  
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
@@ -506,7 +506,7 @@ const AdminDashboard = () => {
       if (response.ok) {
         const restoredData = await response.json();
         setSubCategories(prev => [...prev, restoredData.subCategory]);
-        setResources(prev => [...prev, ...restoredData.resources]);
+        setResources(prev => [...prev, ...(restoredData.resources || [])]); // Use empty array if resources is undefined
         setDeletedSubCategory(null);
       } else {
         console.error('Failed to undo delete subcategory');
@@ -515,7 +515,6 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
 
   // const handleMoveCategory = async (categoryId, direction) => {
   //   try {
