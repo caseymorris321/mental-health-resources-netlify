@@ -1,4 +1,4 @@
-const { getConnection, closeConnection } = require('./db');
+const { getConnection } = require('./db');
 const { Category } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
@@ -7,59 +7,40 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const pathParts = event.path.split('/');
-    const id = pathParts[pathParts.length - 2];
-    const direction = pathParts[pathParts.length - 1];
+    const [, , categoryId, direction] = event.path.split('/');
 
-    const category = await Category.findById(id);
-    if (!category) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Category not found' })
-      };
+    const categories = await Category.find().sort('order');
+    const currentIndex = categories.findIndex(cat => cat._id.toString() === categoryId);
+
+    if (currentIndex === -1) {
+      return { statusCode: 404, body: JSON.stringify({ error: 'Category not found' }) };
     }
 
-    const operator = direction === 'up' ? '$lt' : '$gt';
-    const sort = direction === 'up' ? -1 : 1;
+    const newIndex = direction === 'up' ? Math.max(0, currentIndex - 1) : Math.min(categories.length - 1, currentIndex + 1);
 
-    const adjacentCategory = await Category.findOne({ order: { [operator]: category.order } })
-      .sort({ order: sort });
+    if (newIndex !== currentIndex) {
+      const [movedCategory] = categories.splice(currentIndex, 1);
+      categories.splice(newIndex, 0, movedCategory);
 
-    if (adjacentCategory) {
-      const tempOrder = category.order;
-      category.order = adjacentCategory.order;
-      adjacentCategory.order = tempOrder;
-
-      await Promise.all([category.save(), adjacentCategory.save()]);
-    } else {
-      const extremeCategory = await Category.findOne().sort({ order: direction === 'up' ? 1 : -1 });
-      if (extremeCategory && extremeCategory._id.toString() !== category._id.toString()) {
-        category.order = direction === 'up' ? extremeCategory.order - 1 : extremeCategory.order + 1;
-        await category.save();
+      // Update orders
+      for (let i = 0; i < categories.length; i++) {
+        categories[i].order = i;
+        await categories[i].save();
       }
     }
 
-    const allCategories = await Category.find().sort('order');
-    for (let i = 0; i < allCategories.length; i++) {
-      allCategories[i].order = i;
-      await allCategories[i].save();
-    }
-
     const updatedCategories = await Category.find().sort('order');
-    // console.log('Sending updated categories:', updatedCategories);
+
     return {
       statusCode: 200,
       body: JSON.stringify(updatedCategories)
     };
   } catch (error) {
     console.error('Error in moveCategory:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: error.message })
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to move category' }) };
   }
 };

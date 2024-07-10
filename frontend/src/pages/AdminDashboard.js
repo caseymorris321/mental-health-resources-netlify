@@ -623,15 +623,9 @@ const AdminDashboard = () => {
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
     if (type === 'category') {
-      const newCategories = Array.from(categories);
-      const [reorderedItem] = newCategories.splice(source.index, 1);
-      newCategories.splice(destination.index, 0, reorderedItem);
-
-      setCategories(newCategories);
-
       try {
         const token = await getAccessTokenSilently();
-        const response = await fetch(fetchUrl(isProduction ? `moveCategory/${reorderedItem._id}/${destination.index > source.index ? 'down' : 'up'}` : `categories/${reorderedItem._id}/move/${destination.index > source.index ? 'down' : 'up'}`), {
+        const response = await fetch(fetchUrl(isProduction ? `moveCategory/${draggableId}/${destination.index > source.index ? 'down' : 'up'}` : `categories/${draggableId}/move/${destination.index > source.index ? 'down' : 'up'}`), {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,
