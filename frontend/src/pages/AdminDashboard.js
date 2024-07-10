@@ -213,22 +213,25 @@ const AdminDashboard = () => {
     }
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `undoDeleteResource/${deletedResource._id}` : `undoDelete/${deletedResource._id}`), {
+      const response = await fetch(fetchUrl(isProduction ? 'undoDeleteResource' : `undoDelete/${deletedResource._id}`), {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ id: deletedResource._id }),
       });
       if (response.ok) {
         setDeletedResource(null);
         fetchResources();
       } else {
-        console.error('Failed to undo delete');
+        console.error('Failed to undo delete:', await response.text());
       }
     } catch (error) {
       console.error('Error:', error);
     }
   };
+  
 
 
   const handleUpdateResource = async (updatedResource) => {
