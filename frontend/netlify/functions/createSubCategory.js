@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { SubCategory, Category } = require('./models/resourceModel');
+const { SubCategory } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -11,15 +11,7 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const { name, category, categoryId } = JSON.parse(event.body);
-
-    const existingCategory = await Category.findById(categoryId);
-    if (!existingCategory) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: 'Category not found' })
-      };
-    }
+    const { name, category } = JSON.parse(event.body);
 
     const existingSubCategory = await SubCategory.findOne({
       name,
@@ -40,7 +32,6 @@ exports.handler = async (event, context) => {
     const newSubCategory = new SubCategory({
       name,
       category,
-      categoryId,
       order: newOrder,
       isDeleted: false
     });

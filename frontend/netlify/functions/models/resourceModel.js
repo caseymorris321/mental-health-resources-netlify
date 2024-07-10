@@ -26,11 +26,6 @@ const Category = mongoose.model('Category', CategorySchema);
 
 const SubCategorySchema = new Schema({
   name: { type: String, required: true },
-  categoryId: { 
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: true
-  },
   category: { 
     type: String, 
     required: true,
@@ -72,11 +67,6 @@ const ResourceSchema = new Schema({
     }
   },
   
-  categoryId: { 
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: true
-  },
   category: { 
     type: String, 
     required: true,
