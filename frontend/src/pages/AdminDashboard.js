@@ -455,20 +455,27 @@ const AdminDashboard = () => {
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
-    setSubCategoryError(null); // Clear any previous errors
+    setSubCategoryError(null);
     try {
       const token = await getAccessTokenSilently();
+      const category = categories.find(cat => cat.name === newSubCategory.category);
+      if (!category) {
+        throw new Error('Category not found');
+      }
       const response = await fetch(fetchUrl(isProduction ? 'createSubCategory' : 'subcategories'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newSubCategory),
+        body: JSON.stringify({
+          ...newSubCategory,
+          categoryId: category._id
+        }),
       });
       if (response.ok) {
-        const newSubCategory = await response.json();
-        setSubCategories(prev => [...prev, newSubCategory].sort((a, b) => a.order - b.order));
+        const newSubCategoryData = await response.json();
+        setSubCategories(prev => [...prev, newSubCategoryData].sort((a, b) => a.order - b.order));
         setShowSubCategoryModal(false);
         setNewSubCategory({ name: '', category: '' });
       } else {
@@ -481,6 +488,7 @@ const AdminDashboard = () => {
       setSubCategoryError('An error occurred while creating the subcategory.');
     }
   };
+  
 
   const handleUpdateSubCategory = async (updatedSubCategory) => {
     try {

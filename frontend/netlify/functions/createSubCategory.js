@@ -1,31 +1,29 @@
-const { getConnection, closeConnection } = require('./db');
+const { getConnection } = require('./db');
 const { SubCategory, Category } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-  }
-
   try {
     await getConnection();
 
-    const body = JSON.parse(event.body);
+    if (event.httpMethod !== 'POST') {
+      return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+    }
 
-    // Check if the category exists
-    const categoryExists = await Category.findOne({ name: body.category, isDeleted: false });
-    if (!categoryExists) {
+    const { name, category, categoryId } = JSON.parse(event.body);
+
+    const existingCategory = await Category.findById(categoryId);
+    if (!existingCategory) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'The specified category does not exist.' })
+        body: JSON.stringify({ message: 'Category not found' })
       };
     }
 
-    // Check for existing non-deleted subcategory with the same name in the same category
     const existingSubCategory = await SubCategory.findOne({
-      name: body.name,
-      category: body.category,
+      name,
+      category,
       isDeleted: false
     });
 
@@ -36,19 +34,17 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Find the maximum order of non-deleted subcategories in the same category
-    const maxOrderSubCategory = await SubCategory.findOne({ 
-      category: body.category, 
-      isDeleted: false 
-    }).sort('-order');
-
+    const maxOrderSubCategory = await SubCategory.findOne({ category }).sort('-order');
     const newOrder = maxOrderSubCategory ? maxOrderSubCategory.order + 1 : 0;
 
     const newSubCategory = new SubCategory({
-      ...body,
+      name,
+      category,
+      categoryId,
       order: newOrder,
       isDeleted: false
     });
+
     await newSubCategory.save();
 
     return {
@@ -56,10 +52,10 @@ exports.handler = async (event, context) => {
       body: JSON.stringify(newSubCategory)
     };
   } catch (error) {
-    console.error('Detailed error in createSubCategory:', error);
+    console.error('Error in createSubCategory:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Internal Server Error', error: error.message, stack: error.stack })
+      body: JSON.stringify({ message: error.message })
     };
   }
 };
