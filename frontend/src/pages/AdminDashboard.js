@@ -427,20 +427,22 @@ const AdminDashboard = () => {
   //   }
   // };
 
-  const handleMoveSubCategory = async (subCategoryId, direction) => {
+  const handleMoveSubCategory = async (subCategoryId, newIndex, newCategory) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `moveSubCategory/${subCategoryId}/${direction}` : `subcategories/${subCategoryId}/move/${direction}`), {
+      const endpoint = isProduction ? `moveSubCategory` : `subcategories/move`;
+      const response = await fetch(fetchUrl(endpoint), {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ subCategoryId, newIndex, newCategory }),
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories);
-        // We might need to fetch all subcategories again to ensure the state is fully updated
-        fetchSubCategories();
+        fetchSubCategories(); // You might want to fetch resources as well if they've been updated
       } else {
         console.error('Failed to move subcategory');
       }
@@ -448,6 +450,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+
 
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
@@ -506,26 +509,19 @@ const AdminDashboard = () => {
         fetchCategories();
       }
     } else if (type === 'subcategory') {
-      const direction = destination.index > source.index ? 'down' : 'up';
+      const destCategory = destination.droppableId;
+
       try {
-        await handleMoveSubCategory(draggableId, direction);
+        await handleMoveSubCategory(
+          draggableId,
+          destination.index,
+          destCategory
+        );
       } catch (error) {
         console.error('Failed to move subcategory:', error);
       }
-    } else if (type === 'resource') {
-      const [destCategory, destSubCategory] = destination.droppableId.split('-');
-      
-      try {
-        await handleMoveResource(
-          draggableId, 
-          destination.index,
-          destCategory,
-          destSubCategory
-        );
-      } catch (error) {
-        console.error('Failed to move resource:', error);
-      }
-    }    
+    }
+
   };
 
   return (

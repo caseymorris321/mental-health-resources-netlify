@@ -1,67 +1,81 @@
-const { getConnection, closeConnection } = require('./db');
-const { SubCategory } = require('./models/resourceModel');
+const { getConnection } = require('./db');
+const { SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   try {
     await getConnection();
-    if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
+
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const pathParts = event.path.split('/');
-    const id = pathParts[pathParts.length - 2];
-    const direction = pathParts[pathParts.length - 1];
+    const { subCategoryId, newIndex, newCategory } = JSON.parse(event.body);
 
-    const subCategory = await SubCategory.findById(id);
+    const subCategory = await SubCategory.findById(subCategoryId);
     if (!subCategory) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Subcategory not found' })
-      };
+      return { statusCode: 404, body: JSON.stringify({ message: 'SubCategory not found' }) };
     }
 
-    const operator = direction === 'up' ? '$lt' : '$gt';
-    const sort = direction === 'up' ? -1 : 1;
+    const oldCategory = subCategory.category;
+    const oldIndex = subCategory.order;
 
-    const adjacentSubCategory = await SubCategory.findOne({ 
-      category: subCategory.category,
-      order: { [operator]: subCategory.order }
-    }).sort({ order: sort });
+    // Update category if changed
+    if (newCategory) {
+      subCategory.category = newCategory;
+    }
 
-    if (adjacentSubCategory) {
-      const tempOrder = subCategory.order;
-      subCategory.order = adjacentSubCategory.order;
-      adjacentSubCategory.order = tempOrder;
-
-      await Promise.all([subCategory.save(), adjacentSubCategory.save()]);
+    // If moving within the same category
+    if (oldCategory === subCategory.category) {
+      if (newIndex > oldIndex) {
+        await SubCategory.updateMany(
+          { category: subCategory.category, order: { $gt: oldIndex, $lte: newIndex } },
+          { $inc: { order: -1 } }
+        );
+      } else if (newIndex < oldIndex) {
+        await SubCategory.updateMany(
+          { category: subCategory.category, order: { $gte: newIndex, $lt: oldIndex } },
+          { $inc: { order: 1 } }
+        );
+      }
     } else {
-      const extremeSubCategory = await SubCategory.findOne({ category: subCategory.category })
-        .sort({ order: direction === 'up' ? 1 : -1 });
-      if (extremeSubCategory && extremeSubCategory._id.toString() !== subCategory._id.toString()) {
-        subCategory.order = direction === 'up' ? extremeSubCategory.order - 1 : extremeSubCategory.order + 1;
-        await subCategory.save();
+      // Moving to a different category
+      await SubCategory.updateMany(
+        { category: oldCategory, order: { $gt: oldIndex } },
+        { $inc: { order: -1 } }
+      );
+
+      await SubCategory.updateMany(
+        { category: subCategory.category, order: { $gte: newIndex } },
+        { $inc: { order: 1 } }
+      );
+    }
+
+    subCategory.order = newIndex;
+    await subCategory.save();
+
+    // Update resources associated with this subcategory
+    await Resource.updateMany(
+      { subCategory: subCategory.name },
+      { category: subCategory.category }
+    );
+
+    // Normalize orders in both old and new categories
+    const categoriesToNormalize = [oldCategory, subCategory.category];
+
+    for (const category of categoriesToNormalize) {
+      const subCategories = await SubCategory.find({ category }).sort('order');
+      for (let i = 0; i < subCategories.length; i++) {
+        subCategories[i].order = i;
+        await subCategories[i].save();
       }
     }
 
-    const allSubCategories = await SubCategory.find({ category: subCategory.category }).sort('order');
-    for (let i = 0; i < allSubCategories.length; i++) {
-      allSubCategories[i].order = i;
-      await allSubCategories[i].save();
-    }
-
-    const updatedSubCategories = await SubCategory.find({ category: subCategory.category }).sort('order');
-    // console.log('Sending updated subcategories:', updatedSubCategories);
-    return {
-      statusCode: 200,
-      body: JSON.stringify(updatedSubCategories)
-    };
+    const updatedSubCategories = await SubCategory.find().sort('category order');
+    return { statusCode: 200, body: JSON.stringify(updatedSubCategories) };
   } catch (error) {
     console.error('Error in moveSubCategory:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: error.message })
-    };
-  } 
+    return { statusCode: 500, body: JSON.stringify({ message: error.message }) };
+  }
 };
