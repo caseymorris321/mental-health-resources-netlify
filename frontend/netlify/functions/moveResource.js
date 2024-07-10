@@ -71,7 +71,7 @@ exports.handler = async (event, context) => {
       }
     }
 
-    const updatedResources = await Resource.find().sort('category subCategory order');
+    const updatedResources = await Resource.find({ isDeleted: false }).sort('category subCategory order');
     return { statusCode: 200, body: JSON.stringify(updatedResources) };
   } catch (error) {
     console.error('Error in moveResource:', error);

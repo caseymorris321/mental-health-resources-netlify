@@ -100,7 +100,7 @@ const AdminDashboard = () => {
       console.error('Error fetching subcategories:', error);
     }
   }, [getAccessTokenSilently, fetchUrl, isProduction]);
-  
+
 
 
   const fetchResources = useCallback(async () => {
@@ -131,7 +131,7 @@ const AdminDashboard = () => {
       console.error('Error fetching resources:', error);
     }
   }, [getAccessTokenSilently, fetchUrl, isProduction, subCategories]);
-  
+
 
 
   const fetchAllData = useCallback(async () => {
@@ -593,13 +593,13 @@ const AdminDashboard = () => {
         setSubCategories(updatedSubCategories.filter(subCat => !subCat.isDeleted));
         fetchResources();
       } else {
-        console.error('Failed to move subcategory');  
+        console.error('Failed to move subcategory');
       }
     } catch (error) {
       console.error('Error:', error);
     }
   };
-  
+
 
 
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
@@ -621,7 +621,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const updatedResources = await response.json();
-        setResources(updatedResources);
+        setResources(updatedResources.filter(resource => !resource.isDeleted));
       } else {
         console.error('Failed to move resource');
       }
