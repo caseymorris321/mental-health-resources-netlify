@@ -1,4 +1,4 @@
-const { getConnection, closeConnection } = require('./db');
+const { getConnection } = require('./db');
 const { Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
 
     const id = event.path.split('/').pop();
 
-    const resource = await Resource.findById(id);
+    const resource = await Resource.findOne({ _id: id, isDeleted: { $ne: true } });
     if (!resource) {
       return {
         statusCode: 404,
