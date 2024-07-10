@@ -379,7 +379,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteCategory = async (id, name) => {
-    const isConfirmed = window.confirm(`Are you sure you want to delete the category "${name}"? This will also hide all associated subcategories and resources.`);
+    const isConfirmed = window.confirm(`Are you sure you want to delete the category "${name}"? This will also delete all associated subcategories and resources.`);
     if (!isConfirmed) return;
     try {
       const token = await getAccessTokenSilently();
@@ -390,7 +390,7 @@ const AdminDashboard = () => {
         },
       });
       if (response.ok) {
-        const deletedCat = await response.json();
+        const deletedCat = categories.find(cat => cat._id === id);
         setDeletedCategory(deletedCat);
         setCategories(prevCategories => prevCategories.filter(cat => cat._id !== id));
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat.category !== name));
@@ -404,36 +404,26 @@ const AdminDashboard = () => {
     }
   };
   
-
   const handleUndoDeleteCategory = async () => {
-    if (!deletedCategory || !deletedCategory._id) {
-      console.error('No category to undo delete or missing category ID');
-      return;
-    }
+    if (!deletedCategory) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`/.netlify/functions/undoDeleteCategory/${deletedCategory._id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `createCategory` : `categories`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ name: deletedCategory.name }),
       });
       if (response.ok) {
-        const restoredCategory = await response.json();
-        console.log('Undo delete category successful:', restoredCategory);
-  
-        setCategories(prevCategories => {
-          const newCategories = [...prevCategories, restoredCategory];
-          return newCategories.sort((a, b) => a.order - b.order);
-        });
-  
+        const newCategory = await response.json();
+        setCategories(prev => [...prev, newCategory].sort((a, b) => a.order - b.order));
         setDeletedCategory(null);
         fetchSubCategories();
         fetchResources();
       } else {
-        const errorText = await response.text();
-        console.error('Failed to undo delete category:', errorText);
+        console.error('Failed to undo delete category');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -504,7 +494,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteSubCategory = async (id, name) => {
-    const isConfirmed = window.confirm(`Are you sure you want to delete the subcategory "${name}"? This will also hide all associated resources.`);
+    const isConfirmed = window.confirm(`Are you sure you want to delete the subcategory "${name}"? This will also delete all associated resources.`);
     if (!isConfirmed) return;
     try {
       const token = await getAccessTokenSilently();
@@ -515,7 +505,7 @@ const AdminDashboard = () => {
         },
       });
       if (response.ok) {
-        const deletedSubCat = await response.json();
+        const deletedSubCat = subCategories.find(subCat => subCat._id === id);
         setDeletedSubCategory(deletedSubCat);
         setSubCategories(prevSubCategories => prevSubCategories.filter(subCat => subCat._id !== id));
         setResources(prevResources => prevResources.filter(resource => resource.subCategory !== name));
@@ -527,45 +517,40 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
+  
   const handleUndoDeleteSubCategory = async () => {
-    if (!deletedSubCategory || !deletedSubCategory._id) {
-      console.error('No subcategory to undo delete or missing subcategory ID');
-      return;
-    }
+    if (!deletedSubCategory) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`/.netlify/functions/undoDeleteSubCategory/${deletedSubCategory._id}`, {
+      const response = await fetch(fetchUrl(isProduction ? `createSubCategory` : `subcategories`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ 
+          name: deletedSubCategory.name, 
+          category: deletedSubCategory.category 
+        }),
       });
       if (response.ok) {
-        const restoredSubCategory = await response.json();
-        console.log('Undo delete subcategory successful:', restoredSubCategory);
-  
-        setSubCategories(prevSubCategories => {
-          const newSubCategories = [...prevSubCategories, restoredSubCategory];
-          return newSubCategories.sort((a, b) => {
-            if (a.category !== b.category) {
-              return a.category.localeCompare(b.category);
-            }
-            return a.order - b.order;
-          });
-        });
-  
+        const newSubCategory = await response.json();
+        setSubCategories(prev => [...prev, newSubCategory].sort((a, b) => {
+          if (a.category !== b.category) {
+            return a.category.localeCompare(b.category);
+          }
+          return a.order - b.order;
+        }));
         setDeletedSubCategory(null);
         fetchResources();
       } else {
-        const errorText = await response.text();
-        console.error('Failed to undo delete subcategory:', errorText);
+        console.error('Failed to undo delete subcategory');
       }
     } catch (error) {
       console.error('Error:', error);
     }
-  };  
+  };
+  
 
 
   // const handleMoveCategory = async (categoryId, direction) => {
