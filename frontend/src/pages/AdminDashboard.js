@@ -28,6 +28,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [categoryError, setCategoryError] = useState(null);
   const [subCategoryError, setSubCategoryError] = useState(null);
+  const [moveError, setMoveError] = useState(null);
   const [deletedCategory, setDeletedCategory] = useState(null);
   const [deletedSubCategory, setDeletedSubCategory] = useState(null);
   const [deletedResource, setDeletedResource] = useState(null);
@@ -606,20 +607,25 @@ const AdminDashboard = () => {
       if (response.ok) {
         const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories.filter(subCat => !subCat.isDeleted));
-        fetchResources(); // Fetch resources to ensure they're up to date
+        fetchResources();
       } else {
-        console.error('Failed to move subcategory');
+        const errorData = await response.json();
+        setMoveError(errorData.message || 'Failed to move subcategory');
+        setTimeout(() => setMoveError(null), 5000); // Clear error after 5 seconds
       }
     } catch (error) {
       console.error('Error:', error);
+      setMoveError('An error occurred while moving the subcategory');
+      setTimeout(() => setMoveError(null), 5000);
     }
   };
-  
+
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
       const targetSubCategory = subCategories.find(subCat => subCat.name === newSubCategory && subCat.category === newCategory);
       if (!targetSubCategory || targetSubCategory.isDeleted) {
-        console.error('Target subcategory is deleted or does not exist');
+        setMoveError('Target subcategory is deleted or does not exist');
+        setTimeout(() => setMoveError(null), 5000);
         return;
       }
       const token = await getAccessTokenSilently();
@@ -636,10 +642,14 @@ const AdminDashboard = () => {
         const updatedResources = await response.json();
         setResources(updatedResources.filter(resource => !resource.isDeleted));
       } else {
-        console.error('Failed to move resource');
+        const errorData = await response.json();
+        setMoveError(errorData.message || 'Failed to move resource');
+        setTimeout(() => setMoveError(null), 5000);
       }
     } catch (error) {
       console.error('Error:', error);
+      setMoveError('An error occurred while moving the resource');
+      setTimeout(() => setMoveError(null), 5000);
     }
   };
 
@@ -1090,6 +1100,12 @@ const AdminDashboard = () => {
         <div className="position-fixed bottom-0 start-50 translate-middle-x mb-3 p-3 bg-light rounded shadow">
           Resource "{deletedResource.name}" deleted.
           <Button variant="link" onClick={handleUndoDelete}>Undo</Button>
+        </div>
+      )}
+
+      {moveError && (
+        <div className="position-fixed bottom-0 start-50 translate-middle-x mb-3 p-3 bg-danger text-white rounded shadow">
+          {moveError}
         </div>
       )}
 
