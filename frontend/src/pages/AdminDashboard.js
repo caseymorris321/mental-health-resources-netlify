@@ -5,6 +5,7 @@ import CreateResourceForm from '../components/CreateResourceForm';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import '../loading.css'
+import '../index.css';
 
 
 const AdminDashboard = () => {
@@ -536,27 +537,8 @@ const AdminDashboard = () => {
     }
   };
 
-  const autoScroll = (clientY) => {
-    const scrollSpeed = 15;
-    const scrollThreshold = 100;
-    const scrollableElement = document.scrollingElement || document.documentElement;
-
-    const viewportHeight = window.innerHeight;
-    const scrollTop = scrollableElement.scrollTop;
-    const scrollHeight = scrollableElement.scrollHeight;
-
-    if (clientY < scrollThreshold) {
-      // Scroll up
-      scrollableElement.scrollTop = Math.max(0, scrollTop - scrollSpeed);
-    } else if (clientY > viewportHeight - scrollThreshold) {
-      // Scroll down
-      scrollableElement.scrollTop = Math.min(scrollHeight, scrollTop + scrollSpeed);
-    }
-  };
-
-
   return (
-    <Container className="mt-5">
+    <Container fluid className="d-flex flex-column vh-100 p-0">
       <h1 className='text-center'>Admin Dashboard</h1>
       <div className='text-center'>{user && <p>Welcome, {user.name}</p>}</div>
       <div className='text-center'>
@@ -574,10 +556,8 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      <div className="flex-grow-1 overflow-auto p-3">
       <h2 className="mt-5 text-center">Resource Management</h2>
-
-      <h2 className="mt-5 text-center">Resource Management</h2>
-      <div style={{ height: '80vh', overflow: 'auto' }}>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="categories" type="category">
             {(provided) => (
