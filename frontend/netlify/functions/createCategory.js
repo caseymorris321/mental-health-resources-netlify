@@ -13,8 +13,8 @@ exports.handler = async (event, context) => {
 
     const body = JSON.parse(event.body);
     
-    // Check for existing non-deleted category with the same name
-    const existingCategory = await Category.findOne({ name: body.name, isDeleted: false });
+    // Check only for non-deleted categories with the same name
+    const existingCategory = await Category.findOne({ name: body.name, isDeleted: { $ne: true } });
     
     if (existingCategory) {
       return {
@@ -23,7 +23,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Create a new category, regardless of whether a deleted one exists
+    // Create a new category
     const maxOrderCategory = await Category.findOne().sort('-order');
     const newOrder = maxOrderCategory ? maxOrderCategory.order + 1 : 0;
     const newCategory = new Category({
