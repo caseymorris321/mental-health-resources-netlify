@@ -21,7 +21,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const subCategory = await SubCategory.findOne({ _id: mongoose.Types.ObjectId(subCategoryId), isDeleted: false });
+    const subCategory = await SubCategory.findOne({ _id: new mongoose.Types.ObjectId(subCategoryId), isDeleted: false });
     if (!subCategory) {
       return {
         statusCode: 404,
@@ -45,7 +45,6 @@ exports.handler = async (event, context) => {
 
       await Promise.all([subCategory.save(), adjacentSubCategory.save()]);
     } else {
-      // If there's no adjacent subcategory, move to the start or end
       const extremeSubCategory = await SubCategory.findOne({ 
         category: subCategory.category, 
         isDeleted: false 
@@ -57,7 +56,6 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Normalize orders to ensure they are sequential and start from 0
     const allSubCategories = await SubCategory.find({ 
       category: subCategory.category, 
       isDeleted: false 
