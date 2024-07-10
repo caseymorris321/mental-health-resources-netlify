@@ -193,8 +193,7 @@ const AdminDashboard = () => {
         },
       });
       if (response.ok) {
-        const deletedResource = await response.json();
-        setDeletedResource(deletedResource);
+        setDeletedResource({ _id: id, name }); // Set the deletedResource state
         fetchResources();
         // Set a timeout to clear the deleted resource after a few seconds
         setTimeout(() => setDeletedResource(null), 5000);
@@ -205,9 +204,13 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
   const handleUndoDelete = async () => {
-    if (!deletedResource) return;
+    if (!deletedResource || !deletedResource._id) {
+      console.error('No resource to undo delete or missing resource ID');
+      return;
+    }
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? `undoDeleteResource/${deletedResource._id}` : `undoDelete/${deletedResource._id}`), {
@@ -226,6 +229,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+
 
   const handleUpdateResource = async (updatedResource) => {
     if (!updatedResource._id) {
@@ -937,12 +941,13 @@ const AdminDashboard = () => {
         </Modal.Body>
       </Modal>
 
-      {deletedResource && (
+      {deletedResource && deletedResource.name && (
         <div className="position-fixed bottom-0 start-50 translate-middle-x mb-3 p-3 bg-light rounded shadow">
           Resource "{deletedResource.name}" deleted.
           <Button variant="link" onClick={handleUndoDelete}>Undo</Button>
         </div>
       )}
+
     </Container >
   );
 };
