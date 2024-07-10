@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { SubCategory } = require('./models/resourceModel');
+const { SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -19,6 +19,13 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ message: 'Subcategory not found' })
       };
     }
+
+    // Mark associated resources as deleted
+    await Resource.updateMany(
+      { subCategory: subCategory.name, category: subCategory.category },
+      { isDeleted: true }
+    );
+
     return {
       statusCode: 200,
       body: JSON.stringify(subCategory)

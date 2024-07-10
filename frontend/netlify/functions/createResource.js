@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { Resource } = require('./models/resourceModel');
+const { Resource, SubCategory } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -12,14 +12,28 @@ exports.handler = async (event, context) => {
     }
 
     const body = JSON.parse(event.body);
+
+    // Check if the subcategory exists and is not deleted
+    const subCategory = await SubCategory.findOne({
+      name: body.subCategory,
+      category: body.category,
+      isDeleted: false
+    });
+
+    if (!subCategory) {
+      return { statusCode: 400, body: JSON.stringify({ message: 'Invalid or deleted subcategory' }) };
+    }
+
     const maxOrderResource = await Resource.findOne({
       category: body.category,
-      subCategory: body.subCategory
+      subCategory: body.subCategory,
+      isDeleted: false
     }).sort('-order');
     const newOrder = maxOrderResource ? maxOrderResource.order + 1 : 0;
     const resource = new Resource({
       ...body,
-      order: newOrder
+      order: newOrder,
+      isDeleted: false
     });
     const newResource = await resource.save();
     return {
@@ -32,5 +46,5 @@ exports.handler = async (event, context) => {
       statusCode: 400,
       body: JSON.stringify({ message: error.message })
     };
-  } 
+  }
 };
