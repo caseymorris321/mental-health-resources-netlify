@@ -212,13 +212,12 @@ const AdminDashboard = () => {
     }
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`/.netlify/functions/undoDeleteResource`, {
+      const response = await fetch(`/.netlify/functions/undoDeleteResource/${deletedResource._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ id: deletedResource._id }),
       });
       if (response.ok) {
         const result = await response.json();
@@ -233,9 +232,6 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
-  
-  
   
   const handleUpdateResource = async (updatedResource) => {
     if (!updatedResource._id) {

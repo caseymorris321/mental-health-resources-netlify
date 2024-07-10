@@ -11,20 +11,27 @@ exports.handler = async (event, context) => {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const { id } = JSON.parse(event.body);
+    const urlParts = event.path.split('/');
+    const resourceId = urlParts[urlParts.length - 1];
 
-    if (!id) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Resource ID is required' }) };
+    if (!resourceId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Invalid resource ID' }),
+      };
     }
 
     const resource = await Resource.findByIdAndUpdate(
-      id,
+      resourceId,
       { isDeleted: false },
       { new: true }
     );
 
     if (!resource) {
-      return { statusCode: 404, body: JSON.stringify({ error: 'Resource not found' }) };
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: 'No such resource' }),
+      };
     }
 
     return {
@@ -33,6 +40,9 @@ exports.handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Error in undoDeleteResource:', error);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to undo delete resource' }) };
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to undo delete resource' }),
+    };
   }
 };
