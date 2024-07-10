@@ -134,13 +134,21 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                           border: 'none',
                           fontSize: 'clamp(12px, 2vw, 16px)',
                           width: cell.column.width,
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word'
+                          whiteSpace: cell.column.id === 'link' ? 'nowrap' : 'pre-wrap',
+                          wordBreak: cell.column.id === 'link' ? 'normal' : 'break-word',
+                          overflow: cell.column.id === 'link' ? 'hidden' : 'visible',
+                          textOverflow: cell.column.id === 'link' ? 'ellipsis' : 'clip'
                         }}
                       >
                         {cell.column.id === 'link' ? (
                           cell.value ? (
-                            <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                            <a
+                              href={formatLink(cell.value)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-decoration-none"
+                              style={{ display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >
                               {cell.value}
                             </a>
                           ) : (
@@ -157,6 +165,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                             : cell.render('Cell')
                         )}
                       </td>
+
                     );
                   })}
                 </tr>
