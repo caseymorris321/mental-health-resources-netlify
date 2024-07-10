@@ -428,19 +428,21 @@ const AdminDashboard = () => {
   //   }
   // };
 
-  const handleMoveSubCategory = async (subCategoryId, direction) => {
+  const handleMoveSubCategory = async (subCategoryId, newIndex, newCategory) => {
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `moveSubCategory/${subCategoryId}/${direction}` : `subcategories/${subCategoryId}/move/${direction}`), {
+      const endpoint = isProduction ? `moveSubCategory` : `subcategories/move`;
+      const response = await fetch(fetchUrl(endpoint), {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ subCategoryId, newIndex, newCategory }),
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories);
-        // Fetch resources to ensure they're up to date
         fetchResources();
       } else {
         console.error('Failed to move subcategory');
@@ -449,8 +451,6 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
-
 
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
