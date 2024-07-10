@@ -49,11 +49,10 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
           <>
             <Card.Title>{resource.name}</Card.Title>
             <Card.Text>
-              <strong>Description:</strong><br />
+              <strong>Description:</strong>{' '}
               {resource.description.split('\n').map((line, index) => (
                 <React.Fragment key={index}>
-                  {line}
-                  <br />
+                  {index === 0 ? line : <><br />{line}</>}
                 </React.Fragment>
               ))}
             </Card.Text>
@@ -64,29 +63,26 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
               </a>
             </Card.Text>
             <Card.Text>
-              <strong>Contact Info:</strong><br />
+              <strong>Contact Info:</strong>{' '}
               {resource.contactInfo.split('\n').map((line, index) => (
                 <React.Fragment key={index}>
-                  {line}
-                  <br />
+                  {index === 0 ? line : <><br />{line}</>}
                 </React.Fragment>
               ))}
             </Card.Text>
             <Card.Text>
-              <strong>Address:</strong><br />
+              <strong>Address:</strong>{' '}
               {resource.address.split('\n').map((line, index) => (
                 <React.Fragment key={index}>
-                  {line}
-                  <br />
+                  {index === 0 ? line : <><br />{line}</>}
                 </React.Fragment>
               ))}
             </Card.Text>
             <Card.Text>
-              <strong>Available Hours:</strong><br />
+              <strong>Available Hours:</strong>{' '}
               {resource.availableHours.split('\n').map((line, index) => (
                 <React.Fragment key={index}>
-                  {line}
-                  <br />
+                  {index === 0 ? line : <><br />{line}</>}
                 </React.Fragment>
               ))}
             </Card.Text>
