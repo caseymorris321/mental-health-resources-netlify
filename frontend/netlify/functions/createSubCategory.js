@@ -13,6 +13,7 @@ exports.handler = async (event, context) => {
 
     const body = JSON.parse(event.body);
 
+    // Check for existing non-deleted subcategory with the same name in the same category
     const existingSubCategory = await SubCategory.findOne({ 
       name: body.name,
       category: body.category,
@@ -26,14 +27,16 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Create a new subcategory, regardless of whether a deleted one exists
     const maxOrderSubCategory = await SubCategory.findOne({ category: body.category }).sort('-order');
     const newOrder = maxOrderSubCategory ? maxOrderSubCategory.order + 1 : 0;
-    const subCategory = new SubCategory({
+    const newSubCategory = new SubCategory({
       ...body,
       order: newOrder,
       isDeleted: false
     });
-    const newSubCategory = await subCategory.save();
+    await newSubCategory.save();
+
     return {
       statusCode: 201,
       body: JSON.stringify(newSubCategory)
