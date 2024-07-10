@@ -520,8 +520,20 @@ const AdminDashboard = () => {
       } catch (error) {
         console.error('Failed to move subcategory:', error);
       }
-    }
+    } else if (type === 'resource') {
+      const [destCategory, destSubCategory] = destination.droppableId.split('-');
 
+      try {
+        await handleMoveResource(
+          draggableId,
+          destination.index,
+          destCategory,
+          destSubCategory
+        );
+      } catch (error) {
+        console.error('Failed to move resource:', error);
+      }
+    }
   };
 
   return (
