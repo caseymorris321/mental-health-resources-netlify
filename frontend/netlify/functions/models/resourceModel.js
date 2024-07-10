@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const CategorySchema = new Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
   order: { type: Number, default: 0, index: true },
   isDeleted: { type: Boolean, default: false },
 });
@@ -25,7 +25,7 @@ CategorySchema.pre('save', async function(next) {
 const Category = mongoose.model('Category', CategorySchema);
 
 const SubCategorySchema = new Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
   category: { 
     type: String, 
     required: true,
