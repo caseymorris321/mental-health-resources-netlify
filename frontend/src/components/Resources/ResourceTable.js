@@ -126,7 +126,18 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                   {row.cells.map(cell => {
                     const { key, ...restCellProps } = cell.getCellProps();
                     return (
-                      <td key={key} {...restCellProps} className="align-middle" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)', width: cell.column.width }}>
+                      <td
+                        key={key}
+                        {...restCellProps}
+                        className="align-middle"
+                        style={{
+                          border: 'none',
+                          fontSize: 'clamp(12px, 2vw, 16px)',
+                          width: cell.column.width,
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word'
+                        }}
+                      >
                         {cell.column.id === 'link' ? (
                           cell.value ? (
                             <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
@@ -136,7 +147,14 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                             'N/A'
                           )
                         ) : (
-                          cell.render('Cell')
+                          cell.value && typeof cell.value === 'string'
+                            ? cell.value.split('\n').map((text, index) => (
+                              <React.Fragment key={index}>
+                                {text}
+                                {index < cell.value.split('\n').length - 1 && <br />}
+                              </React.Fragment>
+                            ))
+                            : cell.render('Cell')
                         )}
                       </td>
                     );

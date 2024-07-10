@@ -205,7 +205,6 @@ const AdminDashboard = () => {
     }
   };
   
-
   const handleUndoDelete = async () => {
     if (!deletedResource || !deletedResource._id) {
       console.error('No resource to undo delete or missing resource ID');
@@ -222,18 +221,19 @@ const AdminDashboard = () => {
         body: JSON.stringify({ id: deletedResource._id }),
       });
       if (response.ok) {
+        const result = await response.json();
+        console.log('Undo delete successful:', result);
         setDeletedResource(null);
         fetchResources();
       } else {
-        console.error('Failed to undo delete:', await response.text());
+        const errorText = await response.text();
+        console.error('Failed to undo delete:', errorText);
       }
     } catch (error) {
       console.error('Error:', error);
     }
   };
   
-
-
   const handleUpdateResource = async (updatedResource) => {
     if (!updatedResource._id) {
       console.error('Resource _id is undefined');
