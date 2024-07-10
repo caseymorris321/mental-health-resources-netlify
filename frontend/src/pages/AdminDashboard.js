@@ -420,9 +420,35 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const { category, subCategories, resources } = await response.json();
+        
+        // Update categories
         setCategories(prev => [...prev, category].sort((a, b) => a.order - b.order));
-        setSubCategories(prev => [...prev, ...subCategories].sort((a, b) => a.order - b.order));
-        setResources(prev => [...prev, ...resources].sort((a, b) => a.order - b.order));
+        
+        // Update subcategories
+        setSubCategories(prev => {
+          const newSubCategories = prev.filter(sc => sc.category !== category.name);
+          return [...newSubCategories, ...subCategories].sort((a, b) => {
+            if (a.category !== b.category) {
+              return a.category.localeCompare(b.category);
+            }
+            return a.order - b.order;
+          });
+        });
+        
+        // Update resources
+        setResources(prev => {
+          const newResources = prev.filter(r => r.category !== category.name);
+          return [...newResources, ...resources].sort((a, b) => {
+            if (a.category !== b.category) {
+              return a.category.localeCompare(b.category);
+            }
+            if (a.subCategory !== b.subCategory) {
+              return a.subCategory.localeCompare(b.subCategory);
+            }
+            return a.order - b.order;
+          });
+        });
+  
         setDeletedCategory(null);
       } else {
         console.error('Failed to undo delete category');
@@ -431,6 +457,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
   
 
   const handleAddSubCategory = async (e) => {

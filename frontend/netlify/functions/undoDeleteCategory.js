@@ -18,34 +18,17 @@ exports.handler = async (event, context) => {
       return { statusCode: 404, body: JSON.stringify({ error: 'Category not found' }) };
     }
 
-    const subCategories = await SubCategory.find({ category: category.name, isDeleted: true });
-    const subCategoryIds = subCategories.map(sc => sc._id);
+    // Restore associated subcategories
+    await SubCategory.updateMany({ category: category.name }, { isDeleted: false });
+    const subCategories = await SubCategory.find({ category: category.name, isDeleted: false });
 
-    await SubCategory.updateMany(
-      { _id: { $in: subCategoryIds } },
-      { isDeleted: false }
-    );
-
-    const resources = await Resource.find({
-      $or: [
-        { category: category.name, isDeleted: true },
-        { subCategory: { $in: subCategories.map(sc => sc.name) }, isDeleted: true }
-      ]
-    });
-    const resourceIds = resources.map(r => r._id);
-
-    await Resource.updateMany(
-      { _id: { $in: resourceIds } },
-      { isDeleted: false }
-    );
+    // Restore associated resources
+    await Resource.updateMany({ category: category.name }, { isDeleted: false });
+    const resources = await Resource.find({ category: category.name, isDeleted: false });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        category,
-        subCategories: await SubCategory.find({ _id: { $in: subCategoryIds } }),
-        resources: await Resource.find({ _id: { $in: resourceIds } })
-      })
+      body: JSON.stringify({ category, subCategories, resources })
     };
   } catch (error) {
     console.error('Error in undoDeleteCategory:', error);
