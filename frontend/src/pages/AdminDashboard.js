@@ -411,17 +411,20 @@ const AdminDashboard = () => {
     if (!deletedCategory) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `undoDeleteCategory/${deletedCategory._id}` : `categories/${deletedCategory._id}/restore`), {
-        method: 'PUT',
+      const response = await fetch(fetchUrl(isProduction ? `createCategory` : `categories`), {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ order: deletedCategory.originalOrder }),
+        body: JSON.stringify({ 
+          name: deletedCategory.name,
+          order: deletedCategory.order // Include the original order
+        }),
       });
       if (response.ok) {
-        const restoredCategory = await response.json();
-        setCategories(prev => [...prev, restoredCategory].sort((a, b) => a.order - b.order));
+        const newCategory = await response.json();
+        setCategories(prev => [...prev, newCategory].sort((a, b) => a.order - b.order));
         setDeletedCategory(null);
         fetchSubCategories();
         fetchResources();
@@ -527,8 +530,8 @@ const AdminDashboard = () => {
     if (!deletedSubCategory) return;
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? `undoDeleteSubCategory/${deletedSubCategory._id}` : `subcategories/${deletedSubCategory._id}/restore`), {
-        method: 'PUT',
+      const response = await fetch(fetchUrl(isProduction ? `createSubCategory` : `subcategories`), {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -536,12 +539,12 @@ const AdminDashboard = () => {
         body: JSON.stringify({
           name: deletedSubCategory.name,
           category: deletedSubCategory.category,
-          order: deletedSubCategory.originalOrder
+          order: deletedSubCategory.order // Include the original order
         }),
       });
       if (response.ok) {
-        const restoredSubCategory = await response.json();
-        setSubCategories(prev => [...prev, restoredSubCategory].sort((a, b) => {
+        const newSubCategory = await response.json();
+        setSubCategories(prev => [...prev, newSubCategory].sort((a, b) => {
           if (a.category !== b.category) {
             return a.category.localeCompare(b.category);
           }
@@ -556,7 +559,6 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-  
 
   // const handleMoveCategory = async (categoryId, direction) => {
   //   try {

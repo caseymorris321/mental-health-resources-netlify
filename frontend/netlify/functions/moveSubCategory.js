@@ -8,23 +8,20 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'PATCH' && event.httpMethod !== 'PUT') {
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const pathParts = event.path.split('/');
-    const direction = pathParts[pathParts.length - 1];
-    const id = pathParts[pathParts.length - 2];
+    const { subCategoryId, direction } = JSON.parse(event.body);
 
-    // Validate id
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(subCategoryId)) {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'Invalid subcategory ID' })
       };
     }
 
-    const subCategory = await SubCategory.findOne({ _id: mongoose.Types.ObjectId(id), isDeleted: false });
+    const subCategory = await SubCategory.findOne({ _id: mongoose.Types.ObjectId(subCategoryId), isDeleted: false });
     if (!subCategory) {
       return {
         statusCode: 404,
@@ -48,15 +45,24 @@ exports.handler = async (event, context) => {
 
       await Promise.all([subCategory.save(), adjacentSubCategory.save()]);
     } else {
-      const extremeSubCategory = await SubCategory.findOne({ category: subCategory.category, isDeleted: false })
-        .sort({ order: direction === 'up' ? 1 : -1 });
+      // If there's no adjacent subcategory, move to the start or end
+      const extremeSubCategory = await SubCategory.findOne({ 
+        category: subCategory.category, 
+        isDeleted: false 
+      }).sort({ order: direction === 'up' ? 1 : -1 });
+      
       if (extremeSubCategory && extremeSubCategory._id.toString() !== subCategory._id.toString()) {
         subCategory.order = direction === 'up' ? extremeSubCategory.order - 1 : extremeSubCategory.order + 1;
         await subCategory.save();
       }
     }
 
-    const allSubCategories = await SubCategory.find({ category: subCategory.category, isDeleted: false }).sort('order');
+    // Normalize orders to ensure they are sequential and start from 0
+    const allSubCategories = await SubCategory.find({ 
+      category: subCategory.category, 
+      isDeleted: false 
+    }).sort('order');
+    
     for (let i = 0; i < allSubCategories.length; i++) {
       allSubCategories[i].order = i;
       await allSubCategories[i].save();
