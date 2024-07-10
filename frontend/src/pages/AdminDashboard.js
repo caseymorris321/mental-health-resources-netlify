@@ -26,7 +26,6 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [categoryError, setCategoryError] = useState(null);
   const [subCategoryError, setSubCategoryError] = useState(null);
-  const [draggingCategoryId, setDraggingCategoryId] = useState(null);
   const location = useLocation();
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
