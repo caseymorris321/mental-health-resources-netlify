@@ -4,7 +4,6 @@ import { useAuth0 } from '@auth0/auth0-react';
 import CreateResourceForm from '../components/CreateResourceForm';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import AutoScroller from '../components/AutoScroller';
 import '../loading.css'
 
 
@@ -577,7 +576,6 @@ const AdminDashboard = () => {
 
       <h2 className="mt-5 text-center">Resource Management</h2>
 
-      <AutoScroller>
         <DragDropContext onDragEnd={onDragEnd}
           onDragUpdate={({ clientY }) => autoScroll(clientY)}
         >
@@ -760,7 +758,6 @@ const AdminDashboard = () => {
             )}
           </Droppable>
         </DragDropContext>
-      </AutoScroller>
 
 
 
