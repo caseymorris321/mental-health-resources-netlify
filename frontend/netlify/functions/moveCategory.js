@@ -1,6 +1,8 @@
 const { getConnection, closeConnection } = require('./db');
 const { Category } = require('./models/resourceModel');
 
+// frontend/netlify/functions/moveCategory.js
+
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -14,7 +16,7 @@ exports.handler = async (event, context) => {
     const { categoryId, newIndex } = JSON.parse(event.body);
 
     const category = await Category.findById(categoryId);
-    if (!category) {
+    if (!category || category.isDeleted) {
       return { statusCode: 404, body: JSON.stringify({ message: 'Category not found' }) };
     }
 
