@@ -60,7 +60,12 @@ const ResourceSchema = new Schema({
 
 ResourceSchema.pre('save', async function(next) {
   const resource = this;
-  const existingResource = await Resource.findOne({ name: resource.name, category: resource.category, subCategory: resource.subCategory });
+  const existingResource = await Resource.findOne({
+    name: resource.name,
+    category: resource.category,
+    subCategory: resource.subCategory,
+    isDeleted: false
+  });
 
   if (existingResource && existingResource._id.toString() !== resource._id.toString()) {
     return next(new Error(`A resource with the name "${resource.name}" already exists in the "${resource.category}" category and "${resource.subCategory}" subcategory.`));
@@ -68,6 +73,7 @@ ResourceSchema.pre('save', async function(next) {
 
   next();
 });
+
 
 const Resource = mongoose.model('Resource', ResourceSchema);
 

@@ -24,7 +24,7 @@ exports.handler = async (event, context) => {
     const resource = await Resource.findByIdAndUpdate(
       resourceId,
       { isDeleted: false },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!resource) {

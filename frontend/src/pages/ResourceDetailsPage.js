@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import ResourceDetails from '../components/Resources/ResourceDetails';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Modal, Alert } from 'react-bootstrap';
 import CreateResourceForm from '../components/CreateResourceForm';
 import '../loading.css';
 
@@ -14,6 +14,7 @@ const ResourceDetailsPage = () => {
   const [subCategories, setSubCategories] = useState([]);
   const [error, setError] = useState(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
   const navigate = useNavigate();
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
@@ -116,7 +117,7 @@ const ResourceDetailsPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
-          navigate('/');
+          setIsDeleted(true);
         } else {
           throw new Error('Failed to delete resource');
         }
@@ -124,6 +125,30 @@ const ResourceDetailsPage = () => {
         console.error('Error deleting resource:', error);
         setError(error.message);
       }
+    }
+  };
+
+  const handleUndoDelete = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      const fetchUrl = isProduction ? `${apiUrl}/undoDeleteResource/${id}` : `${apiUrl}/api/resources/undoDelete/${id}`;
+      const response = await fetch(fetchUrl, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+      });
+      if (response.ok) {
+        const restoredResource = await response.json();
+        setResource(restoredResource);
+        setIsDeleted(false);
+      } else {
+        throw new Error('Failed to undo delete');
+      }
+    } catch (error) {
+      console.error('Error undoing delete:', error);
+      setError(error.message);
     }
   };
 
@@ -139,7 +164,12 @@ const ResourceDetailsPage = () => {
   return (
     <div className="container">
       <h2>Resource Details</h2>
-      {resource ? (
+      {isDeleted ? (
+        <Alert variant="warning">
+          Resource has been deleted.
+          <Button variant="link" onClick={handleUndoDelete}>Undo</Button>
+        </Alert>
+      ) : resource ? (
         <>
           <ResourceDetails
             resource={resource}
