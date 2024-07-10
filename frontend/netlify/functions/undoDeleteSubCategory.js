@@ -18,15 +18,24 @@ exports.handler = async (event, context) => {
       return { statusCode: 404, body: JSON.stringify({ error: 'Subcategory not found' }) };
     }
 
-    // Restore associated resources
+    const resources = await Resource.find({
+      category: subCategory.category,
+      subCategory: subCategory.name,
+      isDeleted: true
+    });
+    const resourceIds = resources.map(r => r._id);
+
     await Resource.updateMany(
-      { subCategory: subCategory.name, category: subCategory.category },
+      { _id: { $in: resourceIds } },
       { isDeleted: false }
     );
 
     return {
       statusCode: 200,
-      body: JSON.stringify(subCategory)
+      body: JSON.stringify({
+        subCategory,
+        resources: await Resource.find({ _id: { $in: resourceIds } })
+      })
     };
   } catch (error) {
     console.error('Error in undoDeleteSubCategory:', error);

@@ -419,15 +419,11 @@ const AdminDashboard = () => {
         },
       });
       if (response.ok) {
-        const restoredCategory = await response.json();
-        setCategories(prevCategories => {
-          const newCategories = [...prevCategories, restoredCategory];
-          return newCategories.sort((a, b) => a.order - b.order);
-        });
+        const { category, subCategories, resources } = await response.json();
+        setCategories(prev => [...prev, category].sort((a, b) => a.order - b.order));
+        setSubCategories(prev => [...prev, ...subCategories].sort((a, b) => a.order - b.order));
+        setResources(prev => [...prev, ...resources].sort((a, b) => a.order - b.order));
         setDeletedCategory(null);
-        // Fetch subcategories and resources associated with this category
-        fetchSubCategories();
-        fetchResources();
       } else {
         console.error('Failed to undo delete category');
       }
@@ -435,6 +431,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
@@ -535,19 +532,10 @@ const AdminDashboard = () => {
         },
       });
       if (response.ok) {
-        const restoredSubCategory = await response.json();
-        setSubCategories(prevSubCategories => {
-          const newSubCategories = [...prevSubCategories, restoredSubCategory];
-          return newSubCategories.sort((a, b) => {
-            if (a.category !== b.category) {
-              return a.category.localeCompare(b.category);
-            }
-            return a.order - b.order;
-          });
-        });
+        const { subCategory, resources } = await response.json();
+        setSubCategories(prev => [...prev, subCategory].sort((a, b) => a.order - b.order));
+        setResources(prev => [...prev, ...resources].sort((a, b) => a.order - b.order));
         setDeletedSubCategory(null);
-        // Fetch resources associated with this subcategory
-        fetchResources();
       } else {
         console.error('Failed to undo delete subcategory');
       }
@@ -555,6 +543,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
   
   
 
