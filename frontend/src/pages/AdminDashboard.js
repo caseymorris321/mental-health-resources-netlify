@@ -308,7 +308,7 @@ const AdminDashboard = () => {
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    setCategoryError(null); // Clear any previous errors
+    setCategoryError(null);
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(fetchUrl(isProduction ? 'createCategory' : 'categories'), {
@@ -320,29 +320,22 @@ const AdminDashboard = () => {
         body: JSON.stringify({ name: newCategory }),
       });
       if (response.ok) {
+        const newCategoryData = await response.json();
+        setCategories(prev => [...prev, newCategoryData].sort((a, b) => a.order - b.order));
         setShowCategoryModal(false);
-        fetchCategories();
         setNewCategory('');
+        // Refresh all data to ensure consistency
+        fetchAllData();
       } else {
-        let errorMessage = 'Failed to create category';
-        if (isProduction) {
-          const { error } = await response.json();
-          errorMessage = error.message || errorMessage;
-        } else {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        }
-        if (errorMessage.includes('duplicate key error')) {
-          setCategoryError('A category with this name already exists.');
-        } else {
-          setCategoryError(errorMessage);
-        }
+        const errorData = await response.json();
+        setCategoryError(errorData.error || 'Failed to create category');
       }
     } catch (error) {
       console.error('Error:', error);
-      setCategoryError('A category with this name already exists.');
+      setCategoryError('An error occurred while creating the category.');
     }
   };
+  
 
   const handleUpdateCategory = async (updatedCategory) => {
     try {
