@@ -439,9 +439,10 @@ const AdminDashboard = () => {
         },
       });
       if (response.ok) {
-        const { updatedSubCategories, updatedResources } = await response.json();
+        const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories);
-        setResources(updatedResources);
+        // Fetch resources to ensure they're up to date
+        fetchResources();
       } else {
         console.error('Failed to move subcategory');
       }
@@ -536,6 +537,25 @@ const AdminDashboard = () => {
     }
   };
 
+  const autoScroll = (clientY) => {
+    const scrollSpeed = 15;
+    const scrollThreshold = 100;
+    const scrollableElement = document.scrollingElement || document.documentElement;
+
+    const viewportHeight = window.innerHeight;
+    const scrollTop = scrollableElement.scrollTop;
+    const scrollHeight = scrollableElement.scrollHeight;
+
+    if (clientY < scrollThreshold) {
+      // Scroll up
+      scrollableElement.scrollTop = Math.max(0, scrollTop - scrollSpeed);
+    } else if (clientY > viewportHeight - scrollThreshold) {
+      // Scroll down
+      scrollableElement.scrollTop = Math.min(scrollHeight, scrollTop + scrollSpeed);
+    }
+  };
+
+
   return (
     <Container className="mt-5">
       <h1 className='text-center'>Admin Dashboard</h1>
@@ -558,7 +578,9 @@ const AdminDashboard = () => {
       <h2 className="mt-5 text-center">Resource Management</h2>
 
       <AutoScroller>
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd}
+          onDragUpdate={({ clientY }) => autoScroll(clientY)}
+        >
           <Droppable droppableId="categories" type="category">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef}>
