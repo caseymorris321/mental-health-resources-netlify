@@ -12,28 +12,18 @@ exports.handler = async (event, context) => {
     }
 
     const body = JSON.parse(event.body);
-    let category = await Category.findOne({ name: body.name });
+    const existingCategory = await Category.findOne({ name: body.name, isDeleted: false });
     
-    if (category) {
-      if (category.isDeleted) {
-        // If the category exists but is deleted, restore it
-        category.isDeleted = false;
-        await category.save();
-        return {
-          statusCode: 200,
-          body: JSON.stringify({ message: 'Category restored', category })
-        };
-      } else {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({ message: 'A category with this name already exists.' })
-        };
-      }
+    if (existingCategory) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'A category with this name already exists.' })
+      };
     }
 
     const maxOrderCategory = await Category.findOne().sort('-order');
     const newOrder = maxOrderCategory ? maxOrderCategory.order + 1 : 0;
-    category = new Category({
+    const category = new Category({
       ...body,
       order: newOrder,
       isDeleted: false

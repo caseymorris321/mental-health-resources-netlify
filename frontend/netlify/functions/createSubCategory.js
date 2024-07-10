@@ -13,31 +13,22 @@ exports.handler = async (event, context) => {
 
     const body = JSON.parse(event.body);
 
-    let subCategory = await SubCategory.findOne({ 
+    const existingSubCategory = await SubCategory.findOne({ 
       name: body.name,
-      category: body.category
+      category: body.category,
+      isDeleted: false
     });
 
-    if (subCategory) {
-      if (subCategory.isDeleted) {
-        // If the subcategory exists but is deleted, restore it
-        subCategory.isDeleted = false;
-        await subCategory.save();
-        return {
-          statusCode: 200,
-          body: JSON.stringify({ message: 'Subcategory restored', subCategory })
-        };
-      } else {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({ message: 'A subcategory with this name already exists in this category.' })
-        };
-      }
+    if (existingSubCategory) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'A subcategory with this name already exists in this category.' })
+      };
     }
 
     const maxOrderSubCategory = await SubCategory.findOne({ category: body.category }).sort('-order');
     const newOrder = maxOrderSubCategory ? maxOrderSubCategory.order + 1 : 0;
-    subCategory = new SubCategory({
+    const subCategory = new SubCategory({
       ...body,
       order: newOrder,
       isDeleted: false
