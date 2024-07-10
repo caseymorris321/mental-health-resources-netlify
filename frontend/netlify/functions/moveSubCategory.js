@@ -73,7 +73,9 @@ exports.handler = async (event, context) => {
     }
 
     const updatedSubCategories = await SubCategory.find().sort('category order');
-    return { statusCode: 200, body: JSON.stringify(updatedSubCategories) };
+    const updatedResources = await Resource.find().sort('category subCategory order');
+
+    return { statusCode: 200, body: JSON.stringify(updatedSubCategories, updatedResources) };
   } catch (error) {
     console.error('Error in moveSubCategory:', error);
     return { statusCode: 500, body: JSON.stringify({ message: error.message }) };
