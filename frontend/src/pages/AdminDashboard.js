@@ -664,11 +664,13 @@ const AdminDashboard = () => {
     if (type === 'category') {
       try {
         const token = await getAccessTokenSilently();
-        const response = await fetch(fetchUrl(isProduction ? `moveCategory/${draggableId}/${destination.index > source.index ? 'down' : 'up'}` : `categories/${draggableId}/move/${destination.index > source.index ? 'down' : 'up'}`), {
+        const response = await fetch(fetchUrl(isProduction ? `moveCategory` : `categories/move`), {
           method: 'PUT',
           headers: {
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({ categoryId: draggableId, newIndex: destination.index }),
         });
         if (response.ok) {
           const updatedCategories = await response.json();

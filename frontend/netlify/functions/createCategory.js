@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { Category } = require('./models/resourceModel');
+const { Category, SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -13,14 +13,24 @@ exports.handler = async (event, context) => {
 
     const body = JSON.parse(event.body);
     
-    // Check only for non-deleted categories with the same name
-    const existingCategory = await Category.findOne({ name: body.name, isDeleted: { $ne: true } });
+    // Check for any active category with this name
+    const existingActiveCategory = await Category.findOne({ name: body.name, isDeleted: false });
     
-    if (existingCategory) {
+    if (existingActiveCategory) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'A category with this name already exists.' })
+        body: JSON.stringify({ message: 'An active category with this name already exists.' })
       };
+    }
+
+    // Check for a deleted category with this name
+    const existingDeletedCategory = await Category.findOne({ name: body.name, isDeleted: true });
+
+    if (existingDeletedCategory) {
+      // If it exists and is deleted, permanently delete it and its associated data
+      await Category.deleteOne({ _id: existingDeletedCategory._id });
+      await SubCategory.deleteMany({ category: body.name });
+      await Resource.deleteMany({ category: body.name });
     }
 
     // Create a new category
