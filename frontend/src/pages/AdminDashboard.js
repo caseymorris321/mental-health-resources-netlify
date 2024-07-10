@@ -76,30 +76,30 @@ const AdminDashboard = () => {
   }, [getAccessTokenSilently, fetchUrl, isProduction]);
 
 
-  const fetchSubCategories = useCallback(async () => {
-    try {
-      const token = await getAccessTokenSilently();
-      const response = await fetch(fetchUrl(isProduction ? 'getSubCategories' : 'subcategories'), {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const sortedData = data
-          .filter(subCategory => !subCategory.isDeleted)  // Add this line
-          .sort((a, b) => {
-            if (a.category !== b.category) {
-              return a.category.localeCompare(b.category);
-            }
-            return a.order - b.order;
-          });
-        setSubCategories(sortedData);
-      }
-    } catch (error) {
-      console.error('Error fetching subcategories:', error);
-    }
-  }, [getAccessTokenSilently, fetchUrl, isProduction]);
+  // const fetchSubCategories = useCallback(async () => {
+  //   try {
+  //     const token = await getAccessTokenSilently();
+  //     const response = await fetch(fetchUrl(isProduction ? 'getSubCategories' : 'subcategories'), {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       const sortedData = data
+  //         .filter(subCategory => !subCategory.isDeleted)  // Add this line
+  //         .sort((a, b) => {
+  //           if (a.category !== b.category) {
+  //             return a.category.localeCompare(b.category);
+  //           }
+  //           return a.order - b.order;
+  //         });
+  //       setSubCategories(sortedData);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching subcategories:', error);
+  //   }
+  // }, [getAccessTokenSilently, fetchUrl, isProduction]);
 
 
 
