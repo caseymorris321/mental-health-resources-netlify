@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
 
     const id = event.path.split('/').pop();
 
-    const resource = await Resource.findOne({ _id: id, isDeleted: { $ne: true } });
+    const resource = await Resource.findById({ _id: id, isDeleted: { $ne: true } });
     if (!resource) {
       return {
         statusCode: 404,
