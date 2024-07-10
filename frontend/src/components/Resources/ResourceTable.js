@@ -4,7 +4,22 @@ import '../../index.css';
 import '../../loading.css';
 
 const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId }) => {
-  const memoizedColumns = useMemo(() => columns, [columns]);
+  const memoizedColumns = useMemo(() => {
+    // Define fixed widths for each column
+    const columnWidths = {
+      name: '25%',
+      description: '30%',
+      link: '20%',
+      contactInfo: '25%',
+      // Add other columns as needed
+    };
+
+    return columns.map(col => ({
+      ...col,
+      width: columnWidths[col.accessor] || 'auto' // Use predefined width or auto
+    }));
+  }, [columns]);
+
   const memoizedData = useMemo(() => data, [data]);
 
   const savedState = JSON.parse(localStorage.getItem(`tableState_${tableId}`)) || {};
@@ -79,9 +94,8 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
     <div className="d-flex flex-column align-items-center">
       <h3 className="text-center mb-3">{title}</h3>
 
-      <div className="table-responsive">
-      <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6' }}>
-
+      <div className="table-responsive w-100">
+        <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6', width: '100%' }}>
           <thead className="table-light">
             {headerGroups.map(headerGroup => {
               const { key, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps();
@@ -90,7 +104,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                   {headerGroup.headers.map(column => {
                     const { key, ...restHeaderProps } = column.getHeaderProps(column.getSortByToggleProps());
                     return (
-                      <th key={key} {...restHeaderProps} className="text-nowrap" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)' }}>
+                      <th key={key} {...restHeaderProps} className="text-nowrap" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)', width: column.width }}>
                         {column.render('Header')}
                         <span>
                           {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
@@ -103,45 +117,35 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
             })}
           </thead>
           <tbody {...getTableBodyProps()}>
-    <tr style={{ display: 'none' }}></tr>
-    {page.map(row => {
-      prepareRow(row);
-      const { key, ...restRowProps } = row.getRowProps();
-      return (
-        <tr key={key} {...restRowProps}>
-          {row.cells.map(cell => {
-            const { key, ...restCellProps } = cell.getCellProps();
-            return (
-              <td 
-                key={key} 
-                {...restCellProps} 
-                className="align-middle" 
-                style={{ 
-                  border: 'none', 
-                  fontSize: 'clamp(12px, 2vw, 16px)',
-                  wordWrap: 'break-word',
-                  whiteSpace: 'normal'
-                }}
-              >
-                {cell.column.id === 'link' ? (
-                  cell.value ? (
-                    <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                      {cell.value}
-                    </a>
-                  ) : (
-                    'N/A'
-                  )
-                ) : (
-                  cell.render('Cell')
-                )}
-              </td>
-            );
-          })}
-        </tr>
-      );
-    })}
-  </tbody>
-</table>
+            <tr style={{ display: 'none' }}></tr>
+            {page.map(row => {
+              prepareRow(row);
+              const { key, ...restRowProps } = row.getRowProps();
+              return (
+                <tr key={key} {...restRowProps}>
+                  {row.cells.map(cell => {
+                    const { key, ...restCellProps } = cell.getCellProps();
+                    return (
+                      <td key={key} {...restCellProps} className="align-middle" style={{ border: 'none', fontSize: 'clamp(12px, 2vw, 16px)', width: cell.column.width }}>
+                        {cell.column.id === 'link' ? (
+                          cell.value ? (
+                            <a href={formatLink(cell.value)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                              {cell.value}
+                            </a>
+                          ) : (
+                            'N/A'
+                          )
+                        ) : (
+                          cell.render('Cell')
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
       <div className="d-flex flex-column align-items-center mb-1">
         <div className="mb-2">
