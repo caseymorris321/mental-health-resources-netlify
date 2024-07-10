@@ -113,8 +113,9 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const data = await response.json();
+        const activeSubCategories = subCategories.filter(subCat => !subCat.isDeleted).map(subCat => subCat.name);
         const sortedData = data
-          .filter(resource => !resource.isDeleted)  // Only show non-deleted resources
+          .filter(resource => !resource.isDeleted && activeSubCategories.includes(resource.subCategory))
           .sort((a, b) => {
             if (a.category !== b.category) {
               return a.category.localeCompare(b.category);
@@ -129,7 +130,8 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching resources:', error);
     }
-  }, [getAccessTokenSilently, fetchUrl, isProduction]);
+  }, [getAccessTokenSilently, fetchUrl, isProduction, subCategories]);
+  
 
 
   const fetchAllData = useCallback(async () => {
@@ -577,17 +579,19 @@ const AdminDashboard = () => {
   const handleMoveSubCategory = async (subCategoryId, direction) => {
     try {
       const token = await getAccessTokenSilently();
-      const endpoint = isProduction ? `moveSubCategory/${subCategoryId}/${direction}` : `subcategories/${subCategoryId}/move/${direction}`;
+      const endpoint = isProduction ? `moveSubCategory` : `subcategories/move`;
       const response = await fetch(fetchUrl(endpoint), {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ subCategoryId, direction }),
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories.filter(subCat => !subCat.isDeleted));
-        fetchResources(); // Fetch resources to ensure they're up to date
+        fetchResources();
       } else {
         console.error('Failed to move subcategory');  
       }
@@ -595,10 +599,16 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
 
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
+      const targetSubCategory = subCategories.find(subCat => subCat.name === newSubCategory && subCat.category === newCategory);
+      if (!targetSubCategory || targetSubCategory.isDeleted) {
+        console.error('Target subcategory is deleted or does not exist');
+        return;
+      }
       const token = await getAccessTokenSilently();
       const endpoint = isProduction ? `moveResource` : `resources/move`;
       const response = await fetch(fetchUrl(endpoint), {
