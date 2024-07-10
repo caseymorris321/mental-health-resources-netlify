@@ -197,7 +197,7 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         setDeletedResource({ _id: id, name }); // Set the deletedResource state
-        fetchResources();
+        setResources(prevResources => prevResources.filter(resource => resource._id !== id)); // Update resources state
         // Set a timeout to clear the deleted resource after a few seconds
         setTimeout(() => setDeletedResource(null), 5000);
       } else {
@@ -207,7 +207,6 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
-
 
 
   const handleUndoDelete = async () => {
@@ -227,8 +226,8 @@ const AdminDashboard = () => {
       if (response.ok) {
         const result = await response.json();
         console.log('Undo delete successful:', result);
+        setResources(prevResources => [...prevResources, result]); // Add the resource back to the state
         setDeletedResource(null);
-        fetchResources();
       } else {
         const errorText = await response.text();
         console.error('Failed to undo delete:', errorText);
@@ -237,6 +236,7 @@ const AdminDashboard = () => {
       console.error('Error:', error);
     }
   };
+  
 
 
   const handleUpdateResource = async (updatedResource) => {
