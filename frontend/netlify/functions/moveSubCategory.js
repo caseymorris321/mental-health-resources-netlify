@@ -1,5 +1,6 @@
 const { getConnection } = require('./db');
 const { SubCategory } = require('./models/resourceModel');
+const mongoose = require('mongoose');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -12,10 +13,18 @@ exports.handler = async (event, context) => {
     }
 
     const pathParts = event.path.split('/');
-    const id = pathParts[pathParts.length - 2];
     const direction = pathParts[pathParts.length - 1];
+    const id = pathParts[pathParts.length - 2];
 
-    const subCategory = await SubCategory.findOne({ _id: id, isDeleted: false });
+    // Validate id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Invalid subcategory ID' })
+      };
+    }
+
+    const subCategory = await SubCategory.findOne({ _id: mongoose.Types.ObjectId(id), isDeleted: false });
     if (!subCategory) {
       return {
         statusCode: 404,

@@ -586,9 +586,10 @@ const AdminDashboard = () => {
       });
       if (response.ok) {
         const updatedSubCategories = await response.json();
-        setSubCategories(updatedSubCategories);
+        setSubCategories(updatedSubCategories.filter(subCat => !subCat.isDeleted));
+        fetchResources(); // Fetch resources to ensure they're up to date
       } else {
-        console.error('Failed to move subcategory');
+        console.error('Failed to move subcategory');  
       }
     } catch (error) {
       console.error('Error:', error);
