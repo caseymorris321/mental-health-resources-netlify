@@ -26,6 +26,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [categoryError, setCategoryError] = useState(null);
   const [subCategoryError, setSubCategoryError] = useState(null);
+  const [draggingCategoryId, setDraggingCategoryId] = useState(null);
   const location = useLocation();
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
@@ -442,7 +443,8 @@ const AdminDashboard = () => {
       if (response.ok) {
         const updatedSubCategories = await response.json();
         setSubCategories(updatedSubCategories);
-        fetchSubCategories(); // You might want to fetch resources as well if they've been updated
+        fetchSubCategories();
+        fetchResources();
       } else {
         console.error('Failed to move subcategory');
       }
@@ -557,185 +559,186 @@ const AdminDashboard = () => {
 
       <h2 className="mt-5 text-center">Resource Management</h2>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="categories" type="category">
-          {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              {categories.map((category, index) => (
-                <Draggable key={category._id} draggableId={category._id} index={index}>
-                  {(provided) => (
-                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="card mb-4">
-                      <div className="card-header">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div className="d-flex align-items-center flex-wrap">
-                            <h3 className="mb-0 me-2">Category: {category.name}</h3>
-                            <Button
-                              variant="success"
-                              size="sm"
-                              className="mt-2 mt-md-0"
-                              onClick={() => {
-                                setNewSubCategory({ name: '', category: category.name });
-                                setShowSubCategoryModal(true);
-                              }}
-                            >
-                              <i className="fas fa-plus me-1"></i>
-                              <span className="d-none d-md-inline">New Subcategory</span>
-                            </Button>
-                          </div>
-                          <div className="mt-2 mt-md-0">
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => {
-                                setSelectedCategory({ ...category, oldName: category.name });
-                                setShowUpdateCategoryModal(true);
-                              }}
-                            >
-                              <i className="fas fa-edit"></i>
-                            </Button>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => handleDeleteCategory(category._id, category.name)}
-                            >
-                              <i className="fas fa-trash-alt"></i>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="card-body p-0">
-                        <Droppable droppableId={category.name} type="subcategory">
-                          {(provided) => (
-                            <ListGroup variant="flush" {...provided.droppableProps} ref={provided.innerRef}>
-                              {subCategories
-                                .filter(subCat => subCat.category === category.name)
-                                .map((subCategory, index) => (
-                                  <Draggable key={subCategory._id} draggableId={subCategory._id} index={index}>
-                                    {(provided) => (
-                                      <ListGroup.Item
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        className="border-0"
-                                      >
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                          <div className="d-flex align-items-center flex-wrap">
-                                            <h4 className="mb-0 me-2">Subcategory: {subCategory.name}</h4>
-                                            <Button
-                                              variant="success"
-                                              size="sm"
-                                              className="mt-2 mt-md-0"
-                                              onClick={() => {
-                                                setSelectedResource({
-                                                  name: '',
-                                                  description: '',
-                                                  link: '',
-                                                  category: category.name,
-                                                  subCategory: subCategory.name,
-                                                  contactInfo: '',
-                                                  address: '',
-                                                  availableHours: '',
-                                                  tags: []
-                                                });
-                                                setShowResourceModal(true);
-                                              }}
-                                            >
-                                              <i className="fas fa-plus me-1"></i>
-                                              <span className="d-none d-md-inline">New Resource</span>
-                                            </Button>
-                                          </div>
-                                          <div className="mt-2 mt-md-0">
-                                            <Button
-                                              variant="outline-primary"
-                                              size="sm"
-                                              className="me-2"
-                                              onClick={() => {
-                                                setSelectedSubCategory({
-                                                  _id: subCategory._id,
-                                                  name: subCategory.name,
-                                                  oldName: subCategory.name,
-                                                  category: subCategory.category
-                                                });
-                                                setShowUpdateSubCategoryModal(true);
-                                              }}
-                                            >
-                                              <i className="fas fa-edit"></i>
-                                            </Button>
-                                            <Button
-                                              variant="outline-danger"
-                                              size="sm"
-                                              onClick={() => handleDeleteSubCategory(subCategory._id, subCategory.name)}
-                                            >
-                                              <i className="fas fa-trash-alt"></i>
-                                            </Button>
-                                          </div>
-                                        </div>
-                                        <h5 className="mt-3 mb-2">Resources:</h5>
-                                        <Droppable droppableId={`${category.name}-${subCategory.name}`} type="resource">
-                                          {(provided) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef}>
-                                              {resources
-                                                .filter(resource => resource.category === category.name && resource.subCategory === subCategory.name)
-                                                .map((resource, index) => (
-                                                  <Draggable key={resource._id} draggableId={resource._id} index={index}>
-                                                    {(provided) => (
-                                                      <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        className="d-flex justify-content-between align-items-center"
-                                                      >
-                                                        <Link to={`/resources/${resource._id}`} className='text-decoration-none'>{resource.name}</Link>
-                                                        <div>
-                                                          <Button
-                                                            variant="outline-primary"
-                                                            size="sm"
-                                                            className="me-2"
-                                                            onClick={() => {
-                                                              if (resource._id) {
-                                                                setSelectedResource(resource);
-                                                                setShowUpdateResourceModal(true);
-                                                              } else {
-                                                                console.error('Resource _id is missing');
-                                                              }
-                                                            }}
-                                                          >
-                                                            <i className="fas fa-edit"></i>
-                                                          </Button>
-                                                          <Button
-                                                            variant="outline-danger"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteResource(resource._id, resource.name)}
-                                                          >
-                                                            <i className="fas fa-trash-alt"></i>
-                                                          </Button>
-                                                        </div>
-                                                      </div>
-                                                    )}
-                                                  </Draggable>
-                                                ))}
-                                              {provided.placeholder}
-                                            </div>
-                                          )}
-                                        </Droppable>
-                                      </ListGroup.Item>
-                                    )}
-                                  </Draggable>
-                                ))}
-                              {provided.placeholder}
-                            </ListGroup>
-                          )}
-                        </Droppable>
-                      </div>
+  <Droppable droppableId="categories" type="category">
+    {(provided) => (
+      <div {...provided.droppableProps} ref={provided.innerRef}>
+        {categories.map((category, index) => (
+          <Draggable key={category._id} draggableId={category._id} index={index}>
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="card mb-4">
+                <div className="card-header">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center flex-wrap">
+                      <h3 className="mb-0 me-2">Category: {category.name}</h3>
+                      <Button
+                        variant="success"
+                        size="sm"
+                        className="mt-2 mt-md-0"
+                        onClick={() => {
+                          setNewSubCategory({ name: '', category: category.name });
+                          setShowSubCategoryModal(true);
+                        }}
+                      >
+                        <i className="fas fa-plus me-1"></i>
+                        <span className="d-none d-md-inline">New Subcategory</span>
+                      </Button>
                     </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                    <div className="mt-2 mt-md-0">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => {
+                          setSelectedCategory({ ...category, oldName: category.name });
+                          setShowUpdateCategoryModal(true);
+                        }}
+                      >
+                        <i className="fas fa-edit"></i>
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => handleDeleteCategory(category._id, category.name)}
+                      >
+                        <i className="fas fa-trash-alt"></i>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="card-body p-0">
+                  <Droppable droppableId={category.name} type="subcategory">
+                    {(provided) => (
+                      <ListGroup variant="flush" {...provided.droppableProps} ref={provided.innerRef}>
+                        {subCategories
+                          .filter(subCat => subCat.category === category.name)
+                          .map((subCategory, index) => (
+                            <Draggable key={subCategory._id} draggableId={subCategory._id} index={index}>
+                              {(provided) => (
+                                <ListGroup.Item
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className="border-0"
+                                >
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <div className="d-flex align-items-center flex-wrap">
+                                      <h4 className="mb-0 me-2">Subcategory: {subCategory.name}</h4>
+                                      <Button
+                                        variant="success"
+                                        size="sm"
+                                        className="mt-2 mt-md-0"
+                                        onClick={() => {
+                                          setSelectedResource({
+                                            name: '',
+                                            description: '',
+                                            link: '',
+                                            category: category.name,
+                                            subCategory: subCategory.name,
+                                            contactInfo: '',
+                                            address: '',
+                                            availableHours: '',
+                                            tags: []
+                                          });
+                                          setShowResourceModal(true);
+                                        }}
+                                      >
+                                        <i className="fas fa-plus me-1"></i>
+                                        <span className="d-none d-md-inline">New Resource</span>
+                                      </Button>
+                                    </div>
+                                    <div className="mt-2 mt-md-0">
+                                      <Button
+                                        variant="outline-primary"
+                                        size="sm"
+                                        className="me-2"
+                                        onClick={() => {
+                                          setSelectedSubCategory({
+                                            _id: subCategory._id,
+                                            name: subCategory.name,
+                                            oldName: subCategory.name,
+                                            category: subCategory.category
+                                          });
+                                          setShowUpdateSubCategoryModal(true);
+                                        }}
+                                      >
+                                        <i className="fas fa-edit"></i>
+                                      </Button>
+                                      <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => handleDeleteSubCategory(subCategory._id, subCategory.name)}
+                                      >
+                                        <i className="fas fa-trash-alt"></i>
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <h5 className="mt-3 mb-2">Resources:</h5>
+                                  <Droppable droppableId={`${category.name}-${subCategory.name}`} type="resource">
+                                    {(provided) => (
+                                      <div {...provided.droppableProps} ref={provided.innerRef}>
+                                        {resources
+                                          .filter(resource => resource.category === category.name && resource.subCategory === subCategory.name)
+                                          .map((resource, index) => (
+                                            <Draggable key={resource._id} draggableId={resource._id} index={index}>
+                                              {(provided) => (
+                                                <div
+                                                  ref={provided.innerRef}
+                                                  {...provided.draggableProps}
+                                                  {...provided.dragHandleProps}
+                                                  className="d-flex justify-content-between align-items-center"
+                                                >
+                                                  <Link to={`/resources/${resource._id}`} className='text-decoration-none'>{resource.name}</Link>
+                                                  <div>
+                                                    <Button
+                                                      variant="outline-primary"
+                                                      size="sm"
+                                                      className="me-2"
+                                                      onClick={() => {
+                                                        if (resource._id) {
+                                                          setSelectedResource(resource);
+                                                          setShowUpdateResourceModal(true);
+                                                        } else {
+                                                          console.error('Resource _id is missing');
+                                                        }
+                                                      }}
+                                                    >
+                                                      <i className="fas fa-edit"></i>
+                                                    </Button>
+                                                    <Button
+                                                      variant="outline-danger"
+                                                      size="sm"
+                                                      onClick={() => handleDeleteResource(resource._id, resource.name)}
+                                                    >
+                                                      <i className="fas fa-trash-alt"></i>
+                                                    </Button>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </Draggable>
+                                          ))}
+                                        {provided.placeholder}
+                                      </div>
+                                    )}
+                                  </Droppable>
+                                </ListGroup.Item>
+                              )}
+                            </Draggable>
+                          ))}
+                        {provided.placeholder}
+                      </ListGroup>
+                    )}
+                  </Droppable>
+                </div>
+              </div>
+            )}
+          </Draggable>
+        ))}
+        {provided.placeholder}
+      </div>
+    )}
+  </Droppable>
+</DragDropContext>
+
 
       <Modal show={showResourceModal} onHide={() => setShowResourceModal(false)}>
         <Modal.Header closeButton>
