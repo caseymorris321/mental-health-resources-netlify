@@ -55,6 +55,7 @@ const ResourceSchema = new Schema({
   availableHours: { type: String },
   tags: [{ type: String }],
   order: { type: Number, default: 0, index: true },
+  isDeleted: { type: Boolean, default: false },
 }, { timestamps: true });
 
 ResourceSchema.pre('save', async function(next) {
