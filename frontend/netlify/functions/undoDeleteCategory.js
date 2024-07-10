@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { Category } = require('./models/resourceModel');
+const { Category, SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'POST') {
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
@@ -17,6 +17,10 @@ exports.handler = async (event, context) => {
     if (!category) {
       return { statusCode: 404, body: JSON.stringify({ error: 'Category not found' }) };
     }
+
+    // Restore associated subcategories and resources
+    await SubCategory.updateMany({ category: category.name }, { isDeleted: false });
+    await Resource.updateMany({ category: category.name }, { isDeleted: false });
 
     return {
       statusCode: 200,

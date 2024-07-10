@@ -7,14 +7,15 @@ exports.handler = async (event, context) => {
   try {
     await getConnection();
 
-    if (event.httpMethod !== 'POST') {
+    if (event.httpMethod !== 'PUT') {
       return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
     const id = event.path.split('/').pop();
     const subCategory = await SubCategory.findByIdAndUpdate(id, { isDeleted: false }, { new: true });
+
     if (!subCategory) {
-      return { statusCode: 404, body: JSON.stringify({ message: 'Subcategory not found' }) };
+      return { statusCode: 404, body: JSON.stringify({ error: 'Subcategory not found' }) };
     }
 
     // Restore associated resources
@@ -29,6 +30,6 @@ exports.handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Error in undoDeleteSubCategory:', error);
-    return { statusCode: 500, body: JSON.stringify({ message: error.message }) };
+    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to undo delete subcategory' }) };
   }
 };
