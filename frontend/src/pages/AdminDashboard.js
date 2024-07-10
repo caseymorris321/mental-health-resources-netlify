@@ -556,8 +556,8 @@ const AdminDashboard = () => {
       </div>
 
       <h2 className="mt-5 text-center">Resource Management</h2>
-      <AutoScroller>
 
+      <AutoScroller>
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="categories" type="category">
             {(provided) => (

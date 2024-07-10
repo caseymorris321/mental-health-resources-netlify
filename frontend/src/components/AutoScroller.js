@@ -34,21 +34,21 @@ const AutoScroller = ({ children }) => {
       }
     };
 
-    document.addEventListener('dragover', handleDragOver);
-    document.addEventListener('dragend', handleDragEnd);
-    document.addEventListener('drop', handleDragEnd);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('dragend', handleDragEnd);
+    window.addEventListener('drop', handleDragEnd);
 
     return () => {
-      document.removeEventListener('dragover', handleDragOver);
-      document.removeEventListener('dragend', handleDragEnd);
-      document.removeEventListener('drop', handleDragEnd);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('dragend', handleDragEnd);
+      window.removeEventListener('drop', handleDragEnd);
       if (scrollInterval) {
         clearInterval(scrollInterval);
       }
     };
   }, []);
 
-  return <>{children}</>;
+  return <div style={{ height: '100%', overflow: 'auto' }}>{children}</div>;
 };
 
 export default AutoScroller;
