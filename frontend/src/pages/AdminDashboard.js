@@ -718,7 +718,7 @@ const AdminDashboard = () => {
                 className="w-100"
               >
                 <i className="fas fa-plus me-1"></i>
-                <span>Create Category</span>
+                <span>New Category</span>
               </Button>
             </div>
           </div>
