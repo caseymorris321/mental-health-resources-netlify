@@ -32,6 +32,10 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
     });
   }, []);
 
+  useEffect(() => {
+    setResource(prevResource => ({ ...prevResource, city: '' }));
+    setCities([]);
+  }, [resource.state]);
 
   useEffect(() => {
     if (initialData) {
@@ -277,7 +281,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
             onBlur={() => {
               setTimeout(() => setShowCityDropdown(false), 200);
             }}
- 
+
             disabled={!resource.state}
           />
           {showCityDropdown && cities.length > 0 && (
