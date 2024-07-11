@@ -7,7 +7,6 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import '../loading.css'
 import '../index.css';
 
-
 const AdminDashboard = () => {
   const { user, getAccessTokenSilently, isAuthenticated, isLoading: authLoading } = useAuth0();
   const [showResourceModal, setShowResourceModal] = useState(false);
@@ -568,9 +567,6 @@ const AdminDashboard = () => {
     }
   };
 
-
-
-
   // const handleMoveCategory = async (categoryId, direction) => {
   //   try {
   //     const token = await getAccessTokenSilently();
@@ -810,7 +806,9 @@ const AdminDashboard = () => {
                                                     contactInfo: '',
                                                     address: '',
                                                     availableHours: '',
-                                                    tags: []
+                                                    tags: [],
+                                                    city: '',
+                                                    state: '',
                                                   });
                                                   setShowResourceModal(true);
                                                 }}

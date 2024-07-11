@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react';
+import { fetchCities, fetchStates } from '../API/fetchLocationData';
+
 
 const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCategory }) => {
   const { getAccessTokenSilently } = useAuth0();
@@ -13,19 +15,23 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
     contactInfo: '',
     address: '',
     availableHours: '',
+    city: '',
+    state: '',
     tags: ''
   });
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [selectedCityIndex, setSelectedCityIndex] = useState(0);
+  const selectedItemRef = useRef(null);
 
-  const isProduction = process.env.REACT_APP_ENV === 'production';
-  const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
 
-  const [message, setMessage] = useState(null);
+  useEffect(() => {
+    fetchStates().then(statesData => {
+      setStates(statesData);
+    });
+  }, []);
 
-    // Automatically adjust textarea height when typing
-  const adjustTextareaHeight = (element) => {
-    element.style.height = 'auto';
-    element.style.height = `${element.scrollHeight}px`;
-  };
 
   useEffect(() => {
     if (initialData) {
@@ -33,13 +39,22 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         ...initialData,
         tags: initialData.tags ? initialData.tags.join(', ') : '',
       });
-      
-      // Adjust height of textareas
       setTimeout(() => {
         document.querySelectorAll('textarea').forEach(adjustTextareaHeight);
       }, 0);
     }
   }, [initialData]);
+
+  const isProduction = process.env.REACT_APP_ENV === 'production';
+  const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
+
+  const [message, setMessage] = useState(null);
+
+  // Automatically adjust textarea height when typing
+  const adjustTextareaHeight = (element) => {
+    element.style.height = 'auto';
+    element.style.height = `${element.scrollHeight}px`;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,7 +70,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
         ? (isProduction ? `${apiUrl}/updateResource/${initialData._id}` : `${apiUrl}/api/resources/${initialData._id}`)
         : (isProduction ? `${apiUrl}/createResource` : `${apiUrl}/api/resources`);
       const method = initialData ? 'PUT' : 'POST';
- 
+
       const response = await fetch(fetchUrl, {
         method: method,
         headers: {
@@ -68,7 +83,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           link: resource.link ? resource.link.trim() : undefined,
         }),
       });
- 
+
       if (response.ok) {
         const data = await response.json();
         console.log(initialData ? 'Resource updated:' : 'Resource created:', data);
@@ -84,7 +99,9 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
             contactInfo: '',
             address: '',
             availableHours: '',
-            tags: ''
+            tags: '',
+            state: '',
+            city: '',
           });
         }
         setTimeout(() => setMessage(null), 5000);
@@ -194,6 +211,99 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
           ref={(el) => el && adjustTextareaHeight(el)}
         />
       </Form.Group>
+      <Form.Group>
+        <Form.Label>State</Form.Label>
+        <Form.Control
+          as="select"
+          name="state"
+          value={resource.state}
+          onChange={handleChange}
+        >
+          <option value="">Select a state</option>
+          {states.map((state) => (
+            <option key={state.abbreviation} value={state.abbreviation}>
+              {state.name}
+            </option>
+          ))}
+        </Form.Control>
+      </Form.Group>
+
+      <Form.Group>
+        <Form.Label>City</Form.Label>
+        <div className="position-relative">
+          <Form.Control
+            type="text"
+            name="city"
+            value={resource.city}
+            onChange={(e) => {
+              const value = e.target.value;
+              setResource({ ...resource, city: value });
+              const filteredCities = cities.filter(city =>
+                city.name.toLowerCase().startsWith(value.toLowerCase())
+              );
+              setCities(filteredCities);
+              setShowCityDropdown(true);
+              const currentIndex = filteredCities.findIndex(city => city.name.toLowerCase() === value.toLowerCase());
+              setSelectedCityIndex(currentIndex !== -1 ? currentIndex : 0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' && selectedCityIndex < cities.length - 1) {
+                setSelectedCityIndex(prevIndex => prevIndex + 1);
+                setResource({ ...resource, city: cities[selectedCityIndex + 1].name });
+              } else if (e.key === 'ArrowUp' && selectedCityIndex > 0) {
+                setSelectedCityIndex(prevIndex => prevIndex - 1);
+                setResource({ ...resource, city: cities[selectedCityIndex - 1].name });
+              } else if (e.key === 'Enter' && cities.length > 0) {
+                e.preventDefault();
+                setResource({ ...resource, city: cities[selectedCityIndex].name });
+                setShowCityDropdown(false);
+              }
+            }}
+            onFocus={() => {
+              if (resource.state) {
+                fetchCities(resource.state).then(fetchedCities => {
+                  setCities(fetchedCities);
+                  const selectedIndex = fetchedCities.findIndex(city => city.name.toLowerCase() === resource.city.toLowerCase());
+                  setSelectedCityIndex(selectedIndex !== -1 ? selectedIndex : 0);
+                  setShowCityDropdown(true);
+                  setTimeout(() => {
+                    if (selectedItemRef.current) {
+                      selectedItemRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
+                    }
+                  }, 0);
+                });
+              }
+            }}
+            onBlur={() => {
+              setTimeout(() => setShowCityDropdown(false), 200);
+            }}
+ 
+            disabled={!resource.state}
+          />
+          {showCityDropdown && cities.length > 0 && (
+            <ul className="list-group position-absolute w-100" style={{ zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}>
+              {cities.map((city, index) => (
+                <li
+                  key={city.name}
+                  ref={index === selectedCityIndex ? selectedItemRef : null}
+                  className={`list-group-item ${index === selectedCityIndex ? 'active' : ''}`}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                  }}
+                  onClick={() => {
+                    setResource({ ...resource, city: city.name });
+                    setShowCityDropdown(false);
+                  }}
+                  onMouseEnter={() => setSelectedCityIndex(index)}
+                >
+                  {city.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Form.Group>
+
       <Form.Group>
         <Form.Label>Tags (comma-separated)</Form.Label>
         <textarea

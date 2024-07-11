@@ -90,6 +90,13 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
                 </React.Fragment>
               ))}
             </Card.Text>
+            <Card.Text>
+              <strong>City:</strong> {resource.city || 'N/A'}
+            </Card.Text>
+            <Card.Text>
+              <strong>State:</strong> {resource.state || 'N/A'}
+            </Card.Text>
+
             <Card.Text><strong>Tags:</strong> {resource.tags.join(', ')}</Card.Text>
           </>
         )}

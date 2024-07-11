@@ -53,6 +53,8 @@ const ResourceSchema = new Schema({
   contactInfo: { type: String },
   address: { type: String },
   availableHours: { type: String },
+  city: { type: String },
+  state: { type: String },
   tags: [{ type: String }],
   order: { type: Number, default: 0, index: true },
 }, { timestamps: true });

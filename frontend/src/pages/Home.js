@@ -96,7 +96,7 @@ const Home = () => {
     setSearchTerm('');
     setDebouncedSearchTerm('');
     updateSearchParams('');
-  
+
     // Keep the currently expanded accordions open
     setExpandedCategoryIds(expandedCategoryIds);
     setExpandedCategoryId(expandedCategoryId);
@@ -154,7 +154,17 @@ const Home = () => {
             </a>
           );
         }
-      }
+      },
+      {
+        Header: 'City',
+        accessor: 'city',
+        Cell: ({ value }) => (value ? value : 'N/A'),
+      },
+      {
+        Header: 'State',
+        accessor: 'state',
+        Cell: ({ value }) => (value ? value : 'N/A'),
+      },
     ],
     []
   );
@@ -169,6 +179,8 @@ const Home = () => {
       resource.contactInfo,
       resource.address,
       resource.availableHours,
+      resource.city,
+      resource.state,
       ...(resource.tags || [])
     ];
 
@@ -264,7 +276,7 @@ const Home = () => {
       setExpandedCategoryIds([categories[0]._id]);
     }
   }, [location.state, categories]);
-  
+
   useEffect(() => {
     if (debouncedSearchTerm) {
       const matchingCategoryIds = categoriesWithResources
@@ -274,7 +286,7 @@ const Home = () => {
           )
         )
         .map(category => category._id);
-  
+
       if (matchingCategoryIds.length > 0) {
         setExpandedCategoryIds(matchingCategoryIds);
         setExpandedCategoryId(matchingCategoryIds[0]);

@@ -128,19 +128,19 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                 const { key, ...restCellProps } = cell.getCellProps();
                 return (
                   <td
-                    key={key}
-                    {...restCellProps}
-                    className="align-middle"
-                    style={{
-                      border: 'none',
-                      fontSize: 'clamp(12px, 2vw, 16px)',
-                      width: cell.column.width,
-                      whiteSpace: cell.column.id === 'link' ? 'nowrap' : 'pre-wrap',
-                      wordBreak: cell.column.id === 'link' ? 'normal' : 'break-word',
-                      overflow: cell.column.id === 'link' ? 'hidden' : 'visible',
-                      textOverflow: cell.column.id === 'link' ? 'ellipsis' : 'clip'
-                    }}
-                  >
+                  key={key}
+                  {...restCellProps}
+                  className="align-middle"
+                  style={{
+                    border: 'none',
+                    fontSize: 'clamp(12px, 2vw, 16px)',
+                    width: cell.column.width,
+                    whiteSpace: 'normal',
+                    hyphens: 'auto',
+                    overflow: cell.column.id === 'link' ? 'hidden' : 'visible',
+                    textOverflow: cell.column.id === 'link' ? 'ellipsis' : 'clip'
+                  }}
+                >
                     {cell.column.id === 'name' ? (
                       <Link to={`/resources/${row.original._id}`} className="text-decoration-none">
                         {cell.value}
