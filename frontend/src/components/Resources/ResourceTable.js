@@ -96,8 +96,8 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
       <h3 className="text-center mb-3">{title}</h3>
 
       <div className="table-responsive w-100">
-        <table {...getTableProps()} className="table table-striped table-hover" style={{ borderCollapse: 'collapse', border: '1px solid #dee2e6', width: '100%' }}>
-          <thead className="table-light">
+        <table {...getTableProps()} className="table table-striped table-hover table-bordered">
+          <thead className="table-primary">
             {headerGroups.map(headerGroup => {
               const { key, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps();
               return (
@@ -117,65 +117,65 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
               );
             })}
           </thead>
-          <tbody {...getTableBodyProps()}>
-        <tr style={{ display: 'none' }}></tr>
-        {page.map(row => {
-          prepareRow(row);
-          const { key, ...restRowProps } = row.getRowProps();
-          return (
-            <tr key={key} {...restRowProps}>
-              {row.cells.map(cell => {
-                const { key, ...restCellProps } = cell.getCellProps();
-                return (
-                  <td
-                  key={key}
-                  {...restCellProps}
-                  className="align-middle"
-                  style={{
-                    border: 'none',
-                    fontSize: 'clamp(12px, 2vw, 16px)',
-                    width: cell.column.width,
-                    whiteSpace: 'normal',
-                    hyphens: 'auto',
-                    overflow: cell.column.id === 'link' ? 'hidden' : 'visible',
-                    textOverflow: cell.column.id === 'link' ? 'ellipsis' : 'clip'
-                  }}
-                >
-                    {cell.column.id === 'name' ? (
-                      <Link to={`/resources/${row.original._id}`} className="text-decoration-none">
-                        {cell.value}
-                      </Link>
-                    ) : cell.column.id === 'link' ? (
-                      cell.value ? (
-                        <a
-                          href={formatLink(cell.value)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-decoration-none"
-                          style={{ display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                        >
-                          {cell.value}
-                        </a>
-                      ) : (
-                        'N/A'
-                      )
-                    ) : (
-                      cell.value && typeof cell.value === 'string'
-                        ? cell.value.split('\n').map((text, index) => (
-                          <React.Fragment key={index}>
-                            {text}
-                            {index < cell.value.split('\n').length - 1 && <br />}
-                          </React.Fragment>
-                        ))
-                        : cell.render('Cell')
-                    )}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
-      </tbody>
+          <tbody {...getTableBodyProps()} className="table-light">
+            <tr style={{ display: 'none' }}></tr>
+            {page.map(row => {
+              prepareRow(row);
+              const { key, ...restRowProps } = row.getRowProps();
+              return (
+                <tr key={key} {...restRowProps}>
+                  {row.cells.map(cell => {
+                    const { key, ...restCellProps } = cell.getCellProps();
+                    return (
+                      <td
+                        key={key}
+                        {...restCellProps}
+                        className="align-middle"
+                        style={{
+                          border: 'none',
+                          fontSize: 'clamp(12px, 2vw, 16px)',
+                          width: cell.column.width,
+                          whiteSpace: 'normal',
+                          hyphens: 'auto',
+                          overflow: cell.column.id === 'link' ? 'hidden' : 'visible',
+                          textOverflow: cell.column.id === 'link' ? 'ellipsis' : 'clip'
+                        }}
+                      >
+                        {cell.column.id === 'name' ? (
+                          <Link to={`/resources/${row.original._id}`} className="text-decoration-none">
+                            {cell.value}
+                          </Link>
+                        ) : cell.column.id === 'link' ? (
+                          cell.value ? (
+                            <a
+                              href={formatLink(cell.value)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-decoration-none"
+                              style={{ display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >
+                              {cell.value}
+                            </a>
+                          ) : (
+                            'N/A'
+                          )
+                        ) : (
+                          cell.value && typeof cell.value === 'string'
+                            ? cell.value.split('\n').map((text, index) => (
+                              <React.Fragment key={index}>
+                                {text}
+                                {index < cell.value.split('\n').length - 1 && <br />}
+                              </React.Fragment>
+                            ))
+                            : cell.render('Cell')
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
       </div>
       <div className="d-flex flex-column align-items-center mb-1">

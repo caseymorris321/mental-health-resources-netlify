@@ -304,18 +304,18 @@ const Home = () => {
         <WelcomeScreen onClose={() => setShowWelcome(false)} />
       )}
 
-      <h1 className="mt-4 mb-4 text-center display-4 fw-bold">Mental Health Resources</h1>
+<h1 className="mt-4 mb-4 text-center display-4 fw-bold text-primary">Mental Health Resources</h1>
 
-      <div className="input-group mb-4">
+      <div className="input-group mb-4 shadow-sm">
         <input
           type="text"
-          className="form-control form-control-lg"
+          className="form-control form-control-lg border-secondary"
           placeholder="Search all resources..."
           value={searchTerm}
           onChange={handleSearch}
         />
         {searchTerm && (
-          <button className="btn btn-outline-secondary" type="button" onClick={clearSearch}>
+          <button className="btn btn-outline-primary" type="button" onClick={clearSearch}>
             Clear
           </button>
         )}

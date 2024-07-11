@@ -3,16 +3,20 @@ import ResourceTable from './Resources/ResourceTable';
 
 const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle }) => {
   return (
-    <div id={id} className="card mb-3">
+    <div id={id} className="card mb-3 shadow-sm">
       <div
         className="card-header"
         onClick={onToggle}
-        style={{ cursor: 'pointer' }}
+        style={{ 
+          cursor: 'pointer',
+          background: '#007BFF', // Primary blue background
+          border: '1px solid #0056b3' // Darker blue border
+        }}
       >
-        <h2 className='text-center'>{category.name}</h2>
+        <h2 className='text-center text-white mb-0'>{category.name}</h2>
       </div>
       {isExpanded && (
-        <div className="card-body">
+        <div className="card-body" style={{ backgroundColor: '#F8F9FA' }}>
           {subCategories.map(subCategory => {
             const subCategoryResources = resources.filter(resource =>
               resource.subCategory.toLowerCase() === subCategory.name.toLowerCase()
@@ -23,8 +27,8 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
             const tableId = `${category.name}-${subCategory.name}`.replace(/\s+/g, '-').toLowerCase();
 
             return (
-              <div key={subCategory._id} className="mb-4" id={`subcategory-${subCategory.name.replace(/\s+/g, '-').toLowerCase()}`}>
-                <h3 className='text-center'>{subCategory.name}</h3>
+              <div key={subCategory._id} className="mb-4 p-3" id={`subcategory-${subCategory.name.replace(/\s+/g, '-').toLowerCase()}`} style={{ backgroundColor: '#FFFFFF', borderRadius: '0.25rem', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
+                <h3 className='text-center text-primary mb-3'>{subCategory.name}</h3>
                 <ResourceTable
                   columns={columns}
                   data={subCategoryResources}
