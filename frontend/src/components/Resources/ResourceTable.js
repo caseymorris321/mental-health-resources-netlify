@@ -147,15 +147,17 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                           </Link>
                         ) : cell.column.id === 'link' ? (
                           cell.value ? (
-                            <a
-                              href={formatLink(cell.value)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-decoration-none"
-                              style={{ display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                            >
-                              {cell.value}
-                            </a>
+                            <div style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <a
+                                href={formatLink(cell.value)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-decoration-none"
+                                title={cell.value}
+                              >
+                                {new URL(formatLink(cell.value)).hostname}
+                              </a>
+                            </div>
                           ) : (
                             'N/A'
                           )

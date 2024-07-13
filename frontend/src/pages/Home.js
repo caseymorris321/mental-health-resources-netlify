@@ -4,7 +4,6 @@ import { debounce } from 'lodash';
 import WelcomeScreen from '../components/WelcomeScreen';
 import QuickLinks from '../components/QuickLinks';
 import CategoryAccordion from '../components/CategoryAccordion';
-import { fetchSAMHSAData, transformSAMHSAData } from '../API/samhsaAPI';
 import '../loading.css';
 
 const Home = () => {
@@ -33,27 +32,6 @@ const Home = () => {
     setSearchTerm(searchTermFromQuery);
     setDebouncedSearchTerm(searchTermFromQuery);
   }, [location.search]);
-
-  useEffect(() => {
-    const fetchSAMHSAResources = async () => {
-      try {
-        const rawData = await fetchSAMHSAData();
-        console.log('Raw SAMHSA data:', rawData);
-        if (rawData.length === 0) {
-          console.log('No SAMHSA data received');
-          return;
-        }
-        const transformedData = transformSAMHSAData(rawData);
-        console.log('Transformed SAMHSA data:', transformedData);
-        setResources(prevResources => [...prevResources, ...transformedData]);
-      } catch (error) {
-        console.error('Error processing SAMHSA resources:', error);
-      }
-    };
-  
-    fetchSAMHSAResources();
-  }, []);
-
 
   useEffect(() => {
     const fetchAllData = async () => {

@@ -12,14 +12,18 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
   };
 
   return (
-    <div id={id} className="card mb-3 shadow-sm">
+    <div id={id} className="card mb-3 shadow-sm" style={{ borderRadius: '15px', overflow: 'hidden' }}>
       <div
         className="card-header"
         onClick={onToggle}
         style={{
           cursor: 'pointer',
           background: 'white',
-          border: '1px solid #0056b3'
+          border: '1px solid #0056b3',
+          borderRadius: '15px',
+          padding: '15px',
+          transition: 'background-color 0.3s ease'
+
         }}
       >
         <h2 className='text-center mb-0' style={{ color: '#333333' }}>{category.name}</h2>

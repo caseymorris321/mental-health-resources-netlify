@@ -28,6 +28,13 @@ table, p {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
+.ellipsis-link {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
 
 
 @media (max-width: 991px) {
