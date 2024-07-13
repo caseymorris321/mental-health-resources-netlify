@@ -2,6 +2,15 @@ import React from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
 const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle }) => {
+  const sortResourcesByStateAndCity = (resources) => {
+    return resources.sort((a, b) => {
+      if (a.state !== b.state) {
+        return a.state.localeCompare(b.state);
+      }
+      return a.city.localeCompare(b.city);
+    });
+  };
+
   return (
     <div id={id} className="card mb-3 shadow-sm">
       <div
@@ -9,8 +18,8 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
         onClick={onToggle}
         style={{
           cursor: 'pointer',
-          background: 'white', // Primary blue background
-          border: '1px solid #0056b3' // Darker blue border
+          background: 'white',
+          border: '1px solid #0056b3'
         }}
       >
         <h2 className='text-center mb-0' style={{ color: '#333333' }}>{category.name}</h2>
@@ -18,11 +27,13 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
       {isExpanded && (
         <div className="card-body" style={{ backgroundColor: '#F8F9FA' }}>
           {subCategories.map(subCategory => {
-            const subCategoryResources = resources.filter(resource =>
+            let subCategoryResources = resources.filter(resource =>
               resource.subCategory.toLowerCase() === subCategory.name.toLowerCase()
             );
 
             if (subCategoryResources.length === 0) return null;
+
+            subCategoryResources = sortResourcesByStateAndCity(subCategoryResources);
 
             const tableId = `${category.name}-${subCategory.name}`.replace(/\s+/g, '-').toLowerCase();
 
