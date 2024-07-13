@@ -198,7 +198,9 @@ const Home = () => {
   const categoriesWithResources = useMemo(() => {
     if (!categories || !filteredResources) return [];
     return categories.filter(category =>
-      filteredResources.some(resource => resource.category.toLowerCase() === category.name.toLowerCase())
+      filteredResources.some(resource =>
+        resource.category.toLowerCase() === category.name.toLowerCase()
+      )
     );
   }, [categories, filteredResources]);
 
@@ -304,7 +306,7 @@ const Home = () => {
         <WelcomeScreen onClose={() => setShowWelcome(false)} />
       )}
 
-<h1 className="mt-4 mb-4 text-center display-4 fw-bold text-primary">Mental Health Resources</h1>
+      <h1 className="mt-4 mb-4 text-center display-4 fw-bold text-primary">Mental Health Resources</h1>
 
       <div className="input-group mb-4 shadow-sm">
         <input
@@ -336,22 +338,33 @@ const Home = () => {
             />
           </div>
           <div className="col-md-9">
-            {categoriesWithResources.map((category, index) => (
-              <CategoryAccordion
-                key={category._id}
-                id={`category-${category._id}`}
-                category={category}
-                subCategories={subCategoriesWithResources.filter(
-                  subCat => subCat.category.toLowerCase() === category.name.toLowerCase()
-                )}
-                resources={filteredResources.filter(
-                  resource => resource.category.toLowerCase() === category.name.toLowerCase()
-                )}
-                columns={columns}
-                isExpanded={expandedCategoryId === category._id || expandedCategoryIds.includes(category._id)}
-                onToggle={() => handleAccordionToggle(category._id)}
-              />
-            ))}
+            {categoriesWithResources.map((category, index) => {
+              const categoryResources = filteredResources.filter(
+                resource => resource.category.toLowerCase() === category.name.toLowerCase()
+              );
+
+              if (categoryResources.length === 0) return null;
+
+              const subCategoriesWithResourcesForCategory = subCategoriesWithResources.filter(
+                subCat => subCat.category.toLowerCase() === category.name.toLowerCase() &&
+                  categoryResources.some(resource => resource.subCategory.toLowerCase() === subCat.name.toLowerCase())
+              );
+
+              if (subCategoriesWithResourcesForCategory.length === 0) return null;
+
+              return (
+                <CategoryAccordion
+                  key={category._id}
+                  id={`category-${category._id}`}
+                  category={category}
+                  subCategories={subCategoriesWithResourcesForCategory}
+                  resources={categoryResources}
+                  columns={columns}
+                  isExpanded={expandedCategoryId === category._id || expandedCategoryIds.includes(category._id)}
+                  onToggle={() => handleAccordionToggle(category._id)}
+                />
+              );
+            })}
           </div>
         </div>
       )}
