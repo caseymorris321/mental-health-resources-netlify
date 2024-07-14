@@ -9,7 +9,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
     // Define fixed widths for each column
     const columnWidths = {
       name: '20%',
-      description: '40%',
+      description: '45%',
       link: '1%',
       contactInfo: '30%',
       city: '1%',
