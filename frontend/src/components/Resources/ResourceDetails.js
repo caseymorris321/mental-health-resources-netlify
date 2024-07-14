@@ -59,7 +59,7 @@ const ResourceDetails = ({ resource, onUpdate, onDelete, showAdminControls }) =>
             </Card.Text>
             <Card.Text>
               <strong>Link:</strong>{' '}
-              <a href={formatLink(resource.link)} target="_blank" rel="noopener noreferrer">
+              <a href={formatLink(resource.link)} target="_blank" rel="noopener noreferrer" >
                 {resource.link}
               </a>
             </Card.Text>
