@@ -33,21 +33,51 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
   }, []);
 
   useEffect(() => {
-    setResource(prevResource => ({ ...prevResource, city: '' }));
-    setCities([]);
-  }, [resource.state]);
+    if (!initialData || resource.state !== initialData.state) {
+      setResource(prevResource => ({ ...prevResource, city: '' }));
+      setCities([]);
+    } else if (initialData && resource.state === initialData.state) {
+      fetchCities(resource.state).then(fetchedCities => {
+        setCities(fetchedCities);
+        if (initialData.city) {
+          const cityIndex = fetchedCities.findIndex(city => city.name.toLowerCase() === initialData.city.toLowerCase());
+          if (cityIndex !== -1) {
+            setSelectedCityIndex(cityIndex);
+          }
+        }
+      });
+    }
+  }, [resource.state, initialData]);
+
 
   useEffect(() => {
     if (initialData) {
-      setResource({
+      const updatedResource = {
         ...initialData,
         tags: initialData.tags ? initialData.tags.join(', ') : '',
-      });
+      };
+      setResource(updatedResource);
+
+      if (initialData.state) {
+        fetchCities(initialData.state).then(fetchedCities => {
+          setCities(fetchedCities);
+          if (initialData.city) {
+            const cityIndex = fetchedCities.findIndex(city => city.name.toLowerCase() === initialData.city.toLowerCase());
+            if (cityIndex !== -1) {
+              setSelectedCityIndex(cityIndex);
+            }
+          }
+        });
+      }
+
       setTimeout(() => {
         document.querySelectorAll('textarea').forEach(adjustTextareaHeight);
       }, 0);
     }
   }, [initialData]);
+
+
+
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
   const apiUrl = process.env.REACT_APP_API_URL || (isProduction ? '/.netlify/functions' : 'http://localhost:4000');
