@@ -11,13 +11,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     
-    <title>Mental Health Resource App | Find Support Services and Wellness Information</title>
+    <title>Mental Health Resource App | Support Services and Wellness Information</title>
     
-    <meta
-      name="description"
-      content="Mental health resources, support services, and wellness information."
-    />
-
+    <meta name="description" content="Mental health resources, support services, and wellness information." />
     <meta name="keywords" content="mental health resources, support services, wellness information, therapy resources, crisis intervention, mental health app">
     
     <meta property="og:title" content="Mental Health Resource App" />
@@ -27,11 +23,16 @@
     <meta property="og:image" content="%PUBLIC_URL%/og-image.jpg" />
     
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Source+Sans+Pro&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    
     <link rel="canonical" href="https://www.mentalhealthresources.netlify.app" />
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <style>
+      /* Inline critical CSS here */
+    </style>
+
     <script type="application/ld+json">
     {
       "@context": "http://schema.org",
@@ -42,6 +43,17 @@
       "applicationCategory": "HealthApplication",
       "operatingSystem": "All"
     }
+    </script>
+
+    <script>
+      function loadCSS(href) {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+      }
+      loadCSS('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Source+Sans+Pro&display=swap');
+      loadCSS('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
     </script>
   </head>
   <body>
