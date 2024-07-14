@@ -13,7 +13,7 @@ const QuickLinks = ({ categories, subCategories, onQuickLinkClick, onSubCategory
 
   return (
     <div className="quick-links">
-      <h4 className="text-center mb-3">Quick Links</h4>
+      <h2 className="text-center mb-3">Quick Links</h2>
       <div className="container-fluid p-0">
         {categories.slice(0, 5).map(category => (
           <div key={category._id} className="row mb-2">
