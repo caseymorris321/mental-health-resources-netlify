@@ -43,7 +43,7 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
 
             return (
               <div key={subCategory._id} className="mb-4 p-3" id={`subcategory-${subCategory.name.replace(/\s+/g, '-').toLowerCase()}`} style={{ backgroundColor: '#FFFFFF', borderRadius: '0.25rem', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
-                <h3 className='text-center' style={{ color: '#7F98B2' }}>{subCategory.name}</h3>
+                <h3 className='text-center' style={{ color: '#4A5D70' }}>{subCategory.name}</h3>
 
                 <ResourceTable
                   columns={columns}
