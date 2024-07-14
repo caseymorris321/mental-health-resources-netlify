@@ -299,6 +299,18 @@ const Home = () => {
     }
   }, [debouncedSearchTerm, categoriesWithResources, filteredResources, expandedCategoryIds, expandedCategoryId]);
 
+  const handleSubCategoryClick = (categoryId, subCategoryName) => {
+    setExpandedCategoryId(categoryId);
+    setExpandedCategoryIds([categoryId]);
+    setTimeout(() => {
+      const element = document.getElementById(`subcategory-${subCategoryName.replace(/\s+/g, '-').toLowerCase()}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant' });
+      }
+    }, 100);
+  };
+  
+
   return (
     <div className="container">
       {showWelcome && (
@@ -333,7 +345,10 @@ const Home = () => {
           <div className="col-md-3">
             <QuickLinks
               categories={categoriesWithResources}
+              subCategories={subCategoriesWithResources}
               onQuickLinkClick={handleQuickLinkClick}
+              onSubCategoryClick={handleSubCategoryClick}
+
             />
           </div>
           <div className="col-md-9">

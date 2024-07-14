@@ -1,24 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const QuickLinks = ({ categories, onQuickLinkClick }) => (
-  <div className="quick-links d-flex justify-content-center">
-    <div>
-      <h3 className="text-center">Quick Links</h3>
-      <ul className="list-unstyled ps-3">
+const QuickLinks = ({ categories, subCategories, onQuickLinkClick, onSubCategoryClick }) => {
+  const [expandedCategories, setExpandedCategories] = useState({});
+
+  const toggleCategory = (categoryId, event) => {
+    event.stopPropagation();
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
+
+  return (
+    <div className="quick-links">
+      <h3 className="text-center mb-3">Quick Links</h3>
+      <div className="container-fluid p-0">
         {categories.slice(0, 5).map(category => (
-          <li key={category._id} className="d-flex align-items-center py-1">
-            <span className="me-2">-</span>
-            <button
-              onClick={() => onQuickLinkClick(category._id)}
-              className="btn btn-link p-0 m-0 text-decoration-none text-start"
-            >
-              {category.name}
-            </button>
-          </li>
+          <div key={category._id} className="row mb-2">
+            <div className="col-12">
+              <div className="d-flex align-items-center" onClick={() => onQuickLinkClick(category._id)}>
+                <span 
+                  className="me-2"
+                  onClick={(e) => toggleCategory(category._id, e)}
+                  style={{ cursor: 'pointer', width: '20px', display: 'inline-block', textAlign: 'center' }}
+                >
+                  {expandedCategories[category._id] ? '▼' : '▶'}
+                </span>
+                <span className="text-decoration-none btn btn-link">{category.name}</span>
+              </div>
+            </div>
+            <div className={`col-12 ${expandedCategories[category._id] ? '' : 'd-none'}`}>
+              <div className="ps-4">
+                {subCategories
+                  .filter(subCat => subCat.category === category.name)
+                  .map(subCategory => (
+                    <div key={subCategory._id} className="py-1">
+                      <span className="me-2">-</span>
+                      <button
+                        onClick={() => onSubCategoryClick(category._id, subCategory.name)}
+                        className="btn btn-link p-0 m-0 text-decoration-none text-start"
+                      >
+                        {subCategory.name}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default QuickLinks;
