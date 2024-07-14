@@ -1,17 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import AccessDenied from './pages/AccessDenied';
-
-// Pages
-import Home from './pages/Home';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminLogin from './pages/AdminLogin';
-import ResourceDetailsPage from './pages/ResourceDetailsPage';
-
-// Components
 import Navbar from './components/Navbar';
+
+const Home = lazy(() => import('./pages/Home'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const ResourceDetailsPage = lazy(() => import('./pages/ResourceDetailsPage'));
+const AccessDenied = lazy(() => import('./pages/AccessDenied'));
 
 const domain = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -43,13 +40,15 @@ function AppContent() {
     <div className="App">
       <Navbar />
       <div className="container mt-4">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/login" element={<AdminLogin />} />
-          <Route path="/access-denied" element={<AccessDenied />} />
-          <Route path="/resources/:id" element={<ResourceDetailsPage />} />
-        </Routes>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/login" element={<AdminLogin />} />
+            <Route path="/access-denied" element={<AccessDenied />} />
+            <Route path="/resources/:id" element={<ResourceDetailsPage />} />
+          </Routes>
+        </Suspense>
       </div>
     </div>
   );
@@ -74,7 +73,7 @@ function App() {
           );
         }}
       >
-        
+
         <ErrorHandler />
         <AppContent />
       </Auth0Provider>
