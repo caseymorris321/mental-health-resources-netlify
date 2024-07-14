@@ -8,11 +8,11 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
   const memoizedColumns = useMemo(() => {
     // Define fixed widths for each column
     const columnWidths = {
-      name: '15%',
-      description: '35%',
-      link: '10%',
-      contactInfo: '10%',
-      city: '5%',
+      name: '20%',
+      description: '40%',
+      link: '1%',
+      contactInfo: '30%',
+      city: '1%',
       state: '1%',
     };
 
