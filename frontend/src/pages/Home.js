@@ -20,7 +20,6 @@ const Home = () => {
   const dataFetchedRef = useRef(false);
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
-  const isReturningFromResource = useRef(false);
 
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
@@ -219,7 +218,7 @@ const Home = () => {
     setTimeout(() => {
       const element = document.getElementById(`category-${categoryId}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'instant' });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
   };
@@ -236,14 +235,14 @@ const Home = () => {
     setTimeout(() => {
       const element = document.getElementById(`category-${categoryId}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'instant' });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
   };
 
   useEffect(() => {
-    const { category, subCategory, scrollToSubCategory } = location.state || {};
-    if (category && categories.length > 0) {
+    const { category, resourceId } = location.state || {};
+    if (category && categories.length > 0 && resourceId) {
       const categoryObj = categories.find(
         cat => cat.name.toLowerCase() === category.toLowerCase()
       );
@@ -251,32 +250,20 @@ const Home = () => {
         setExpandedCategoryId(categoryObj._id);
         setExpandedCategoryIds([categoryObj._id]);
         setTimeout(() => {
-          if (scrollToSubCategory && subCategory) {
-            const subCategoryElement = document.getElementById(`subcategory-${subCategory.replace(/\s+/g, '-').toLowerCase()}`);
-            if (subCategoryElement) {
-              subCategoryElement.scrollIntoView({ behavior: 'instant' });
-            }
-          } else {
-            const element = document.getElementById(`category-${categoryObj._id}`);
-            if (element) {
-              element.scrollIntoView({ behavior: 'instant' });
-            }
+          const resourceRow = document.querySelector(`tr[data-resource-id="${resourceId}"]`);
+          if (resourceRow) {
+            resourceRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            resourceRow.classList.add('table-warning');
+            setTimeout(() => resourceRow.classList.remove('table-warning'), 3000);
           }
         }, 100);
-      } else {
-        setExpandedCategoryId(null);
-        setExpandedCategoryIds([]);
       }
-      isReturningFromResource.current = true;
-    } else if (isReturningFromResource.current) {
-      setExpandedCategoryId(null);
-      setExpandedCategoryIds([]);
-      isReturningFromResource.current = false;
-    } else if (categories.length > 0 && !isReturningFromResource.current) {
-      setExpandedCategoryId(categories[0]._id);
-      setExpandedCategoryIds([categories[0]._id]);
     }
   }, [location.state, categories]);
+
+
+
+
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -305,11 +292,11 @@ const Home = () => {
     setTimeout(() => {
       const element = document.getElementById(`subcategory-${subCategoryName.replace(/\s+/g, '-').toLowerCase()}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'instant' });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
   };
-  
+
 
   return (
     <div className="container">

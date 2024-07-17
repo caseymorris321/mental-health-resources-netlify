@@ -1,12 +1,13 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { useTable, useGlobalFilter, useSortBy, usePagination } from 'react-table';
 import { Link } from 'react-router-dom';
 import '../../index.css';
 import '../../loading.css';
 
-const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId }) => {
+const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId, onTableReady }) => {
+  const tableRef = useRef(null);
+
   const memoizedColumns = useMemo(() => {
-    // Define fixed widths for each column
     const columnWidths = {
       name: '20%',
       description: '45%',
@@ -18,7 +19,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
 
     return columns.map(col => ({
       ...col,
-      width: columnWidths[col.accessor] || 'auto' // Use predefined width or auto
+      width: columnWidths[col.accessor] || 'auto'
     }));
   }, [columns]);
 
@@ -60,6 +61,24 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
   useEffect(() => {
     localStorage.setItem(`tableState_${tableId}`, JSON.stringify({ pageIndex, pageSize }));
   }, [pageIndex, pageSize, tableId]);
+
+  const scrollToResource = useCallback((resourceId) => {
+    if (tableRef.current) {
+      const row = tableRef.current.querySelector(`tr[data-resource-id="${resourceId}"]`);
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        row.classList.add('table-warning');
+        setTimeout(() => row.classList.remove('table-warning'), 3000);
+      }
+    }
+  }, []);
+  
+
+  useEffect(() => {
+    if (onTableReady) {
+      onTableReady({ scrollToResource });
+    }
+  }, [onTableReady, scrollToResource]);
 
   if (isLoading) {
     return (
@@ -113,16 +132,14 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
         </span>
       </div>
     );
-
   });
-
 
   return (
     <div className="d-flex flex-column align-items-center">
       <h3 className="text-center mb-3">{title}</h3>
 
       <div className="table-responsive w-100">
-        <table {...getTableProps()} className="table table-striped table-hover table-bordered">
+        <table {...getTableProps()} className="table table-striped table-hover table-bordered" ref={tableRef}>
           <thead className="table-primary">
             {headerGroups.map(headerGroup => {
               const { key, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps();
@@ -149,7 +166,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
               prepareRow(row);
               const { key, ...restRowProps } = row.getRowProps();
               return (
-                <tr key={key} {...restRowProps}>
+                <tr key={key} {...restRowProps} data-resource-id={row.original._id}>
                   {row.cells.map(cell => {
                     const { key, ...restCellProps } = cell.getCellProps();
                     return (
@@ -186,7 +203,6 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId 
                               >
                                 {new URL(formatLink(cell.value)).hostname}
                               </a>
-
                             </div>
                           ) : (
                             'N/A'

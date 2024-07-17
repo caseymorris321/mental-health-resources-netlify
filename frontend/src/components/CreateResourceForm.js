@@ -302,7 +302,7 @@ const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCate
                   setShowCityDropdown(true);
                   setTimeout(() => {
                     if (selectedItemRef.current) {
-                      selectedItemRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
+                      selectedItemRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                   }, 0);
                 });

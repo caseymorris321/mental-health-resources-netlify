@@ -40,8 +40,7 @@ const ResourceDetailsPage = () => {
     navigate('/', {
       state: {
         category: resource.category,
-        subCategory: resource.subCategory,
-        scrollToSubCategory: true
+        resourceId: resource._id,
       }
     });
   };
