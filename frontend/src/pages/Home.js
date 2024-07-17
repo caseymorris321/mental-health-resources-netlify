@@ -56,6 +56,12 @@ const Home = () => {
             setCategories(categoriesData);
             setSubCategories(subCategoriesData);
             setResources(Array.isArray(resourcesData) ? resourcesData : []);
+
+            if (categoriesData.length > 0) {
+              setExpandedCategoryId(categoriesData[0]._id);
+              setExpandedCategoryIds([categoriesData[0]._id]);
+            }
+
             dataFetchedRef.current = true;
           } else {
             throw new Error('One or more requests failed');
@@ -261,10 +267,6 @@ const Home = () => {
     }
   }, [location.state, categories]);
 
-
-
-
-
   useEffect(() => {
     if (debouncedSearchTerm) {
       const matchingCategoryIds = categoriesWithResources
@@ -296,7 +298,6 @@ const Home = () => {
       }
     }, 100);
   };
-
 
   return (
     <div className="container">
