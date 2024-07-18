@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import '../../index.css';
 import '../../loading.css';
 
-const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId, onTableReady }) => {
+const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId, onTableReady, highlightMatched }) => {
   const tableRef = useRef(null);
 
   const memoizedColumns = useMemo(() => {
@@ -72,7 +72,7 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId,
       }
     }
   }, []);
-  
+
 
   useEffect(() => {
     if (onTableReady) {
@@ -166,7 +166,12 @@ const ResourceTable = ({ title, data, columns, globalFilter, isLoading, tableId,
               prepareRow(row);
               const { key, ...restRowProps } = row.getRowProps();
               return (
-                <tr key={key} {...restRowProps} data-resource-id={row.original._id}>
+                <tr
+                  key={key}
+                  {...restRowProps}
+                  data-resource-id={row.original._id}
+                  className={highlightMatched && row.original.matchedLastSearch ? 'table-warning' : ''}
+                >
                   {row.cells.map(cell => {
                     const { key, ...restCellProps } = cell.getCellProps();
                     return (

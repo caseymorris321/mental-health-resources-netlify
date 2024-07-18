@@ -455,8 +455,6 @@ const AdminDashboard = () => {
     }
   };
 
-
-
   const handleAddSubCategory = async (e) => {
     e.preventDefault();
     setSubCategoryError(null);
@@ -486,8 +484,6 @@ const AdminDashboard = () => {
       setSubCategoryError('An error occurred while creating the subcategory.');
     }
   };
-
-
 
   const handleUpdateSubCategory = async (updatedSubCategory) => {
     try {

@@ -1,7 +1,7 @@
 import React from 'react';
 import ResourceTable from './Resources/ResourceTable';
 
-const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle }) => {
+const CategoryAccordion = ({ id, category, subCategories, resources, columns, isExpanded, onToggle, highlightMatched }) => {
   const sortResourcesByStateAndCity = (resources) => {
     return resources.sort((a, b) => {
       if (a.state !== b.state) {
@@ -49,6 +49,7 @@ const CategoryAccordion = ({ id, category, subCategories, resources, columns, is
                   columns={columns}
                   data={subCategoryResources}
                   tableId={tableId}
+                  highlightMatched={highlightMatched}
                 />
               </div>
             );

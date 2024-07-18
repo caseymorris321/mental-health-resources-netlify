@@ -3,7 +3,6 @@ import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react';
 import { fetchCities, fetchStates } from '../API/fetchLocationData';
 
-
 const CreateResourceForm = ({ onSubmit, initialData, isCreate, category, subCategory }) => {
   const { getAccessTokenSilently } = useAuth0();
   const [resource, setResource] = useState({

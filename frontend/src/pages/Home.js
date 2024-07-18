@@ -9,6 +9,7 @@ import '../loading.css';
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [lastSearchTerm, setLastSearchTerm] = useState('');
   const [subCategories, setSubCategories] = useState([]);
   const [categories, setCategories] = useState([]);
   const [resources, setResources] = useState([]);
@@ -78,8 +79,6 @@ const Home = () => {
     fetchAllData();
   }, [location, isProduction, apiUrl]);
 
-
-
   const updateSearchParams = useCallback((searchTerm) => {
     const searchParams = new URLSearchParams({ search: searchTerm });
     navigate(`?${searchParams.toString()}`);
@@ -93,18 +92,23 @@ const Home = () => {
   const handleSearch = (event) => {
     const searchTerm = event.target.value;
     setSearchTerm(searchTerm);
+    setLastSearchTerm(searchTerm);
     debouncedUpdateSearchParams(searchTerm);
   };
 
+
   const clearSearch = () => {
     setSearchTerm('');
-    setDebouncedSearchTerm('');
     updateSearchParams('');
 
     // Keep the currently expanded accordions open
     setExpandedCategoryIds(expandedCategoryIds);
     setExpandedCategoryId(expandedCategoryId);
+
+    // Instead of clearing debouncedSearchTerm, set it to lastSearchTerm
+    setDebouncedSearchTerm(lastSearchTerm);
   };
+
 
   // useEffect(() => {
   //   if (!searchTerm && categories.length > 0 && expandedCategoryIds.length === 0) {
@@ -195,9 +199,17 @@ const Home = () => {
 
   const filteredResources = useMemo(() => {
     return Array.isArray(resources)
-      ? resources.filter(resource => filterResource(resource, debouncedSearchTerm))
+      ? resources.filter(resource =>
+        filterResource(resource, debouncedSearchTerm) ||
+        filterResource(resource, lastSearchTerm)
+      ).map(resource => ({
+        ...resource,
+        matchedLastSearch: filterResource(resource, lastSearchTerm)
+      }))
       : [];
-  }, [resources, debouncedSearchTerm]);
+  }, [resources, debouncedSearchTerm, lastSearchTerm]);
+
+
 
   const categoriesWithResources = useMemo(() => {
     if (!categories || !filteredResources) return [];
@@ -364,6 +376,7 @@ const Home = () => {
                   columns={columns}
                   isExpanded={expandedCategoryId === category._id || expandedCategoryIds.includes(category._id)}
                   onToggle={() => handleAccordionToggle(category._id)}
+                  highlightMatched={!searchTerm && !!lastSearchTerm}
                 />
               );
             })}
