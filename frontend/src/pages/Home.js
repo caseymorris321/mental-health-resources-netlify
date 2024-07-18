@@ -21,6 +21,7 @@ const Home = () => {
   const dataFetchedRef = useRef(false);
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState([]);
+  const [highlightedResourceIds, setHighlightedResourceIds] = useState([]);
 
 
   const isProduction = process.env.REACT_APP_ENV === 'production';
@@ -100,14 +101,20 @@ const Home = () => {
   const clearSearch = () => {
     setSearchTerm('');
     updateSearchParams('');
-
-    // Keep the currently expanded accordions open
     setExpandedCategoryIds(expandedCategoryIds);
     setExpandedCategoryId(expandedCategoryId);
-
-    // Instead of clearing debouncedSearchTerm, set it to lastSearchTerm
-    setDebouncedSearchTerm(lastSearchTerm);
+    
+    const matchedResourceIds = filteredResources
+      .filter(resource => resource.matchedLastSearch)
+      .map(resource => resource._id);
+    
+    setHighlightedResourceIds(matchedResourceIds);
+  
+    setTimeout(() => {
+      setHighlightedResourceIds([]);
+    }, 5000);
   };
+  
 
 
   // useEffect(() => {
@@ -376,8 +383,8 @@ const Home = () => {
                   columns={columns}
                   isExpanded={expandedCategoryId === category._id || expandedCategoryIds.includes(category._id)}
                   onToggle={() => handleAccordionToggle(category._id)}
-                  highlightMatched={!searchTerm && !!lastSearchTerm}
-                />
+                  highlightedResourceIds={highlightedResourceIds}
+                  />
               );
             })}
           </div>
