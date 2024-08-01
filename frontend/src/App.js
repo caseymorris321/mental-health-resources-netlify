@@ -38,9 +38,9 @@ function ErrorHandler() {
 
 function AppContent() {
   return (
-    <div className="App">
+    <div className="App d-flex flex-column min-vh-100">
       <Navbar />
-      <div className="container mt-4">
+      <div className="container mt-4 flex-grow-1">
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
             <Route path="/" element={<Home />} />
