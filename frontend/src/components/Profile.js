@@ -17,7 +17,7 @@ const Profile = () => {
 
                     />
                 )}
-                <span className="fw-bold">{user?.name}</span>
+                <span className="fw-bold text-white">{user?.name}</span>
             </div>
         )
     );
