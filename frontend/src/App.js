@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, useNavigate, useLocation } from 'react-ro
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 const Home = lazy(() => import('./pages/Home'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -50,6 +51,7 @@ function AppContent() {
           </Routes>
         </Suspense>
       </div>
+      <Footer />
     </div>
   );
 }

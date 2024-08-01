@@ -9,7 +9,7 @@ const CustomNavbar = () => {
   const { isAuthenticated } = useAuth0();
 
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar bg="lotus" variant="dark" expand="lg">
       <Container>
         <div className="d-flex justify-content-between align-items-center w-100">
           <Link to="/" className="text-decoration-none">

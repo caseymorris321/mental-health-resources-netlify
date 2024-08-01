@@ -36,6 +36,9 @@ table, p {
   display: inline-block;
 }
 
+.bg-lotus {
+  background-color: #5d4777;
+}
 
 @media (max-width: 991px) {
   .navbar-collapse {
