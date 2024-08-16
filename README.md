@@ -1,10 +1,10 @@
 # Mental Health Resource Manager App
 
 ## Introduction
-The Mental Health Resource Manager App is a comprehensive web application designed as an internal tool for managing mental health resources. This platform aims to support administrators in organizing, updating, and maintaining a centralized database of mental health resources. By providing an efficient management system, it enables the team to better serve those in need of mental health support and information.
+The Mental Health Resource Manager App is a web application designed as an internal tool for managing mental health resources. This platform aims to support administrators in organizing, updating, and maintaining a centralized database of mental health resources. By providing an efficient management system, it enables the team to better serve those in need of mental health support and information.
 
 ## Project Description
-The Mental Health Resource Manager App is a web application designed to provide users with easy access to mental health resources. The application aims to support individuals seeking help and information related to mental well-being by offering a centralized platform to manage mental health resources. 
+The Mental Health Resource Manager App is an internal tool designed for efficient management and organization of mental health resources. This web application empowers administrators with a user-friendly interface to create, update, delete, and categorize mental health resources. 
 
 ## How to Use the Program
 
