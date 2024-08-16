@@ -61,23 +61,12 @@ exports.handler = async (event, context) => {
       { $set: { category: subCategory.category } }
     );
 
-    // Normalize orders in both old and new categories
-    const categoriesToNormalize = [oldCategory, subCategory.category];
-
-    for (const category of categoriesToNormalize) {
-      const subCategories = await SubCategory.find({ category }).sort('order');
-      for (let i = 0; i < subCategories.length; i++) {
-        subCategories[i].order = i;
-        await subCategories[i].save();
-      }
-    }
-
     const updatedSubCategories = await SubCategory.find().sort('category order');
     const updatedResources = await Resource.find().sort('category subCategory order');
 
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify({ updatedSubCategories, updatedResources }) 
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ updatedSubCategories, updatedResources })
     };
   } catch (error) {
     console.error('Error in moveSubCategory:', error);
