@@ -28,7 +28,7 @@ exports.handler = async (event, context) => {
           { category: newCategory, order: { $gt: oldIndex, $lte: newIndex } },
           { $inc: { order: -1 } }
         );
-      } else {
+      } else if (newIndex < oldIndex) {
         await SubCategory.updateMany(
           { category: newCategory, order: { $gte: newIndex, $lt: oldIndex } },
           { $inc: { order: 1 } }
