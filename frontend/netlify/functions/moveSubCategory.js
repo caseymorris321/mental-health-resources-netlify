@@ -21,44 +21,37 @@ exports.handler = async (event, context) => {
     const oldCategory = subCategory.category;
     const oldIndex = subCategory.order;
 
-    // Update category if changed
-    if (newCategory) {
-      subCategory.category = newCategory;
-    }
-
-    // If moving within the same category
-    if (oldCategory === subCategory.category) {
+    if (oldCategory === newCategory) {
       if (newIndex > oldIndex) {
         await SubCategory.updateMany(
-          { category: subCategory.category, order: { $gt: oldIndex, $lte: newIndex } },
+          { category: newCategory, order: { $gt: oldIndex, $lte: newIndex } },
           { $inc: { order: -1 } }
         );
       } else if (newIndex < oldIndex) {
         await SubCategory.updateMany(
-          { category: subCategory.category, order: { $gte: newIndex, $lt: oldIndex } },
+          { category: newCategory, order: { $gte: newIndex, $lt: oldIndex } },
           { $inc: { order: 1 } }
         );
       }
     } else {
-      // Moving to a different category
       await SubCategory.updateMany(
         { category: oldCategory, order: { $gt: oldIndex } },
         { $inc: { order: -1 } }
       );
 
       await SubCategory.updateMany(
-        { category: subCategory.category, order: { $gte: newIndex } },
+        { category: newCategory, order: { $gte: newIndex } },
         { $inc: { order: 1 } }
       );
     }
 
     subCategory.order = newIndex;
+    subCategory.category = newCategory;
     await subCategory.save();
 
-    // Update associated resources
     await Resource.updateMany(
       { subCategory: subCategory.name, category: oldCategory },
-      { $set: { category: subCategory.category } }
+      { $set: { category: newCategory } }
     );
 
     const updatedSubCategories = await SubCategory.find().sort('category order');
