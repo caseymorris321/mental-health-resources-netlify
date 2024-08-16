@@ -22,23 +22,24 @@ exports.handler = async (event, context) => {
     const oldIndex = subCategory.order;
 
     if (oldCategory === newCategory) {
+      // Moving within the same category
       if (newIndex > oldIndex) {
         await SubCategory.updateMany(
           { category: newCategory, order: { $gt: oldIndex, $lte: newIndex } },
           { $inc: { order: -1 } }
         );
-      } else if (newIndex < oldIndex) {
+      } else {
         await SubCategory.updateMany(
           { category: newCategory, order: { $gte: newIndex, $lt: oldIndex } },
           { $inc: { order: 1 } }
         );
       }
     } else {
+      // Moving to a different category
       await SubCategory.updateMany(
         { category: oldCategory, order: { $gt: oldIndex } },
         { $inc: { order: -1 } }
       );
-
       await SubCategory.updateMany(
         { category: newCategory, order: { $gte: newIndex } },
         { $inc: { order: 1 } }
@@ -49,6 +50,7 @@ exports.handler = async (event, context) => {
     subCategory.category = newCategory;
     await subCategory.save();
 
+    // Update associated resources
     await Resource.updateMany(
       { subCategory: subCategory.name, category: oldCategory },
       { $set: { category: newCategory } }
