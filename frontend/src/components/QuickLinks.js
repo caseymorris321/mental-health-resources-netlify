@@ -13,20 +13,20 @@ const QuickLinks = ({ categories, subCategories, onQuickLinkClick, onSubCategory
 
   return (
     <div className="quick-links">
-      <h2 className="text-center mb-3">Quick Links</h2>
+      <h2 className="mb-3">Quick Links</h2>
       <div className="container-fluid p-0">
         {categories.slice(0, 5).map(category => (
           <div key={category._id} className="row mb-2">
             <div className="col-12">
               <div className="d-flex align-items-center" onClick={() => onQuickLinkClick(category._id)}>
-                <span 
+                <span
                   className="me-2"
                   onClick={(e) => toggleCategory(category._id, e)}
                   style={{ cursor: 'pointer', width: '20px', display: 'inline-block', textAlign: 'center' }}
                 >
                   {expandedCategories[category._id] ? '▼' : '▶'}
                 </span>
-                <span className="text-decoration-none btn btn-link">{category.name}</span>
+                <span className="text-decoration-none btn btn-link text-start p-0">{category.name}</span>
               </div>
             </div>
             <div className={`col-12 ${expandedCategories[category._id] ? '' : 'd-none'}`}>

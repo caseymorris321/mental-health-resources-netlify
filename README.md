@@ -1,9 +1,42 @@
 # Mental Health Resource Manager App
 
+## Introduction
+The Mental Health Resource Manager App is a comprehensive web application designed as an internal tool for managing mental health resources. This platform aims to support administrators in organizing, updating, and maintaining a centralized database of mental health resources. By providing an efficient management system, it enables the team to better serve those in need of mental health support and information.
+
 ## Project Description
 The Mental Health Resource Manager App is a web application designed to provide users with easy access to mental health resources. The application aims to support individuals seeking help and information related to mental well-being by offering a centralized platform to manage mental health resources. 
 
+## How to Use the Program
+
+1. **For Users:**
+   - Visit https://mentalhealthresources.netlify.app/
+   - Browse through the available mental health resources
+   - Use the search and filter functions to find specific resources
+   - Access detailed information about each resource
+
+2. **For Admins:**
+   - Register and log in using the admin authentication system
+   - Access the admin dashboard to manage resources
+   - Create new resources by filling out the resource form
+   - Update existing resources as needed
+   - Delete outdated or irrelevant resources
+   - Move categories, subcategories, and resources using drag-and-drop
+
+## List of Software Used
+- MongoDB: Database management
+- Express.js: Backend framework
+- React: Frontend library
+- Node.js: Runtime environment
+- Auth0: Authentication and authorization
+- React Table: Data table management
+- React Bootstrap: UI components
+- React Router: Navigation management
+- Netlify: Hosting and deployment
+- Countries Now API: Fetching states and cities data for the United States
+- react-beautiful-dnd: Drag and drop functionality for resource management
+
 ## Project Requirements
+
 ### Functionality
 - Admin registration and login
 - Admins can create, update, and delete mental health resources
@@ -64,6 +97,9 @@ The Mental Health Resource Manager App is a web application designed to provide 
 - Host the web app
 - Write comprehensive documentation
 
+## Conclusion
+The Mental Health Resource Manager App provides a user-friendly platform for your team to access and manage mental health resources internally. By utilizing modern web technologies and following my structured development plan, this application streamlines your resource management process. The combination of intuitive navigation for team members and powerful admin tools, including drag-and-drop functionality, ensures that the system remains up-to-date and valuable for your organization's mental health support initiatives.
 
 ## Credits
-Favicon: [Wellness icons created by Nadiinko - Flaticon](https://www.flaticon.com/free-icons/wellness)
+- Favicon: [Wellness icons created by Nadiinko - Flaticon](https://www.flaticon.com/free-icons/wellness)
+- https://delaware211.org/
