@@ -1,15 +1,12 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { useNavigate } from 'react-router-dom';
 
 const LogoutButton = () => {
     const { logout, isAuthenticated } = useAuth0();
-    const navigate = useNavigate();
-
+    
     const handleLogout = () => {
-        localStorage.setItem('redirectAfterLogout', '/');
-        logout({ 
+        logout({
             logoutParams: {
-                returnTo: window.location.origin
+                returnTo: "https://mentalhealthresources.netlify.app/"
             }
         });
     };
