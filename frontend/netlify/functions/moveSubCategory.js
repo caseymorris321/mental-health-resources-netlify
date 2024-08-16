@@ -1,5 +1,5 @@
 const { getConnection } = require('./db');
-const { SubCategory } = require('./models/resourceModel');
+const { SubCategory, Resource } = require('./models/resourceModel');
 
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -55,6 +55,12 @@ exports.handler = async (event, context) => {
     subCategory.order = newIndex;
     await subCategory.save();
 
+    // Update associated resources
+    await Resource.updateMany(
+      { subCategory: subCategory.name, category: oldCategory },
+      { $set: { category: subCategory.category } }
+    );
+
     // Normalize orders in both old and new categories
     const categoriesToNormalize = [oldCategory, subCategory.category];
 
@@ -67,7 +73,12 @@ exports.handler = async (event, context) => {
     }
 
     const updatedSubCategories = await SubCategory.find().sort('category order');
-    return { statusCode: 200, body: JSON.stringify(updatedSubCategories) };
+    const updatedResources = await Resource.find().sort('category subCategory order');
+
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify({ updatedSubCategories, updatedResources }) 
+    };
   } catch (error) {
     console.error('Error in moveSubCategory:', error);
     return { statusCode: 500, body: JSON.stringify({ message: error.message }) };

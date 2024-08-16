@@ -601,13 +601,13 @@ const AdminDashboard = () => {
         body: JSON.stringify({ subCategoryId, newIndex, newCategory }),
       });
       if (response.ok) {
-        const updatedSubCategories = await response.json();
+        const { updatedSubCategories, updatedResources } = await response.json();
         setSubCategories(updatedSubCategories.filter(subCat => !subCat.isDeleted));
-        fetchResources();
+        setResources(updatedResources.filter(resource => !resource.isDeleted));
       } else {
         const errorData = await response.json();
         setMoveError(errorData.message || 'Failed to move subcategory');
-        setTimeout(() => setMoveError(null), 5000); // Clear error after 5 seconds
+        setTimeout(() => setMoveError(null), 5000);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -615,6 +615,7 @@ const AdminDashboard = () => {
       setTimeout(() => setMoveError(null), 5000);
     }
   };
+
 
   const handleMoveResource = async (resourceId, newIndex, newCategory, newSubCategory) => {
     try {
@@ -921,17 +922,17 @@ const AdminDashboard = () => {
           <Modal.Title>Create New Resource</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <Suspense fallback={<div>Loading form...</div>}>
-          <CreateResourceForm
-            category={selectedResource?.category}
-            subCategory={selectedResource?.subCategory}
-            isCreate={true}
-            onSubmit={(resourceData) => {
-              // console.log('Resource created:', resourceData);
-              setShowResourceModal(false);
-              fetchResources();
-            }}
-          />
+          <Suspense fallback={<div>Loading form...</div>}>
+            <CreateResourceForm
+              category={selectedResource?.category}
+              subCategory={selectedResource?.subCategory}
+              isCreate={true}
+              onSubmit={(resourceData) => {
+                // console.log('Resource created:', resourceData);
+                setShowResourceModal(false);
+                fetchResources();
+              }}
+            />
           </Suspense>
         </Modal.Body>
       </Modal>
