@@ -15,7 +15,7 @@ const QuickLinks = ({ categories, subCategories, onQuickLinkClick, onSubCategory
     <div className="quick-links">
       <h2 className="mb-3">Quick Links</h2>
       <div className="container-fluid p-0">
-        {categories.slice(0, 5).map(category => (
+        {categories.map(category => (
           <div key={category._id} className="row mb-2">
             <div className="col-12">
               <div className="d-flex align-items-center" onClick={() => onQuickLinkClick(category._id)}>

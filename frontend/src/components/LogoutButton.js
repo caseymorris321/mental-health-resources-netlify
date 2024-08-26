@@ -6,7 +6,7 @@ const LogoutButton = () => {
     const handleLogout = () => {
         logout({
             logoutParams: {
-                returnTo: "https://mentalhealthresources.netlify.app/"
+                returnTo: window.location.origin
             }
         });
     };
